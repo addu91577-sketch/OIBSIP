@@ -33,11 +33,30 @@ DataAnalytics-L1-CleaningData/
 ├── Notebooks/
 │   └── 01_cafe_sales_data_cleaning.ipynb # Jupyter Notebook data cleaning workflow
 ├── Reports/
-│   └── day2_pseudonull_anomaly_audit.md # Day 2 Forensic Pseudonull & Anomaly Audit Report
+│   ├── day2_pseudonull_anomaly_audit.md # Day 2 Forensic Pseudonull & Anomaly Audit Report
+│   ├── day3_baseline_data_quality_report.md # Day 3 Baseline Data Quality Report & Matrix
+│   └── figures/                        # High-resolution diagnostic visualizations
+│       ├── day3_column_defect_rates.png
+│       ├── day3_record_defect_distribution.png
+│       └── day3_defect_cooccurrence_matrix.png
 └── src/
     ├── __init__.py
     └── utils.py                        # Reusable data audit & metric routines
 ```
+
+---
+
+## 📋 Feature Checklist
+- [x] **Day 1 (Oct 19):** Workspace setup, raw dataset ingestion, and initial schema inspection
+- [x] **Day 2 (Oct 20):** Forensic anomaly detection: catalog pseudonull tokens (`'ERROR'`, `'UNKNOWN'`) and defective value frequencies
+- [x] **Day 3 (Oct 21):** Baseline Data Quality Report generation, record defect density & co-occurrence matrix
+- [ ] **Day 4 (Oct 22):** Text standardization, whitespace trimming, and pseudonull token conversion to `np.nan`
+- [ ] **Day 5 (Oct 23):** Strict data type casting (`datetime64[ns]`, `string` ID, nullable `Int64`, `float64`)
+- [ ] **Day 6 (Oct 24):** Categorical encoding (`Item`, `Payment Method`, `Location`) and memory audit
+- [ ] **Day 7–10:** Domain-informed and mathematical missing data imputation
+- [ ] **Day 11–13:** Multi-tier duplicate resolution and statistical outlier detection
+- [ ] **Day 14–16:** Master Before vs. After comparison summary and clean dataset export
+- [ ] **Day 17–18:** Automated regression testing (`pytest`), CI workflow, and final delivery certification
 
 ---
 
@@ -73,11 +92,48 @@ On Day 2, a forensic anomaly audit cataloged true missing values (`NaN`) alongsi
 | **`Transaction ID`** | `object` | 0 | 0 | 0 | **0** | **0.00%** |
 | **TOTALS** | — | **6,826** | **1,622** | **1,275** | **9,723** | **12.15%** |
 
-### Key Day 2 Audit Insights:
-- **2,897 Pseudonulls Uncovered:** 1,622 `'ERROR'` and 1,275 `'UNKNOWN'` string tokens masqueraded as valid string data, escaping standard `df.isnull()` checks.
-- **True Defect Baseline:** Real defect volume is **9,723 corrupted cells** (12.15% overall corruption rate) rather than 6,826 nulls.
-- **100% Primary Key Integrity:** `Transaction ID` has 0 nulls, 0 errors, and 10,000 unique keys (0 collisions).
-- **Audit Report:** Comprehensive documentation available in `Reports/day2_pseudonull_anomaly_audit.md`.
+- **Report:** Detailed findings in `Reports/day2_pseudonull_anomaly_audit.md`.
+
+---
+
+## 📈 Day 3 Milestone: Baseline Data Quality Report & Defect Distribution Matrix
+
+On Day 3, we formalized the enterprise **Baseline Data Quality Report**, evaluated record-level defect penetration, mapped attribute defect co-occurrence, and verified key integrity:
+
+### 1. Master Baseline Data Quality Health Matrix
+
+| Attribute Name | Stored Dtype | True Nulls (`NaN`) | Pseudonulls (`ERROR`/`UNKNOWN`) | Total Corrupted Cells | Defective Rate (%) | Valid Cardinality | Data Health Assessment |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **`Location`** | `object` | 3,265 | 696 | **3,961** | **39.61%** | 2 fulfillment types | Critical missingness; omitted cashier tagging |
+| **`Payment Method`** | `object` | 2,579 | 599 | **3,178** | **31.78%** | 3 tender types | High missingness; terminal dropouts |
+| **`Item`** | `object` | 333 | 636 | **969** | **9.69%** | 8 menu products | Scanner misses; recoverable via pricing invariant |
+| **`Price Per Unit`** | `object` | 179 | 354 | **533** | **5.33%** | 6 menu prices | Deterministic 1-to-1 lookup with `Item` |
+| **`Total Spent`** | `object` | 173 | 329 | **502** | **5.02%** | 17 price points | Algebraic identity: $\text{Qty} \times \text{Price}$ |
+| **`Quantity`** | `object` | 138 | 341 | **479** | **4.79%** | 5 discrete units | Integer bounds: $1 \le q \le 5$ |
+| **`Transaction Date`** | `object` | 159 | 301 | **460** | **4.60%** | 365 trading days | Contiguous 2023 calendar timeline |
+| **`Transaction ID`** | `object` | 0 | 0 | **0** | **0.00%** | 10,000 unique keys | **100% Unique Surrogate Primary Key** |
+| **TOTALS** | — | **6,826** | **2,897** | **9,723** | **12.15%** | — | **Baseline Certified** |
+
+### 2. Record-Level Defect Density & Naive Deletion Risk
+
+| Defect Count Per Record | Number of Transactions | Share of Dataset (%) | Cumulative Share (%) | Pipeline Implication |
+| :---: | :---: | :---: | :---: | :--- |
+| **0 (Pristine)** | **3,089** | **30.89%** | 30.89% | Valid ground-truth calibration baseline |
+| **1 Defect** | **4,285** | **42.85%** | 73.74% | Deterministic single-attribute recovery |
+| **2 Defects** | **2,136** | **21.36%** | 95.10% | Sequential invariant & formula imputation |
+| **3 Defects** | **439** | **4.39%** | 99.49% | Multi-step algebraic derivation & mode fill |
+| **4 Defects** | **47** | **0.47%** | 99.96% | Boundary constraint propagation |
+| **5 Defects** | **4** | **0.04%** | 100.00% | Composite mode & temporal interpolation |
+
+> [!CAUTION]
+> **Why `df.dropna()` is Fatal:** Running standard row deletion would discard **6,911 transactions (69.11% of the entire dataset)**, biasing business intelligence metrics and discarding over **$61,700 USD** in valid revenue. Row deletion is strictly eliminated in favor of lossless imputation.
+
+### 3. Key Day 3 Audit Achievements:
+- **Zero Full-Row Duplicates:** Confirmed **0 redundant rows** across 10,000 transactions.
+- **100.0% Key Integrity:** Verified **10,000 unique `Transaction ID` surrogate keys** (0 collisions).
+- **Defect Co-Occurrence Heatmap:** Uncovered major clustering between `Location` and `Payment Method` (1,294 co-occurring defects), while confirming extreme sparsity of joint pricing/volume failures ($\le 54$ records).
+- **Diagnostic Visual Suite:** Programmatically synthesized and serialized 3 publication-ready figures to `Reports/figures/`.
+- **Full Report:** Comprehensive analysis available in [`Reports/day3_baseline_data_quality_report.md`](Reports/day3_baseline_data_quality_report.md).
 
 ---
 
