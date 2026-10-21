@@ -1,0 +1,11 @@
+Metric,Raw Value,Cleaned Value,Transformation Impact
+Raw Apps Count,10841,9659,"Filtered shifted row & deduplicated (-1,182)"
+Unique App Names,9660,9659,"100% unique apps maintained (9,659)"
+Corrupted Shifted Rows,1,0,Shifted row 10472 isolated and removed
+Reviews Data Type,object (string with commas),int64,Type cast to 64-bit integer
+Installs Data Type,"object (+ and , formatted)",int64,Stripped symbols and converted to int64
+Price Data Type,object ($ formatted currency),float64,Stripped $ symbol and converted to float64
+Size Representation,"object (M, k, Varies with device)",float64 (MB & Imputed),"Parsed to MB, category-median imputed"
+Rating Out-of-Bounds (>5.0),1,0,"Capped and validated within [1.0, 5.0]"
+Raw Reviews Count,64295,29692,"Purged unreviewed nulls & exact duplicates (-34,603)"
+Reviews Null Translations,26868,0,100% complete review text
