@@ -19,7 +19,7 @@ Perform a comprehensive data analysis of the Google Play Store ecosystem — cle
 
 ## 🛠️ Tech Stack
 - **Programming Language:** Python 3.11+
-- **Data Manipulation & Analysis:** `pandas`, `numpy`
+- **Data Manipulation & Analysis:** `pandas`, `numpy`, `scipy`
 - **Data Visualization & Exploration:** `matplotlib`, `seaborn`, `plotly`
 - **Natural Language Processing:** `nltk`, `textblob`, `pyspellchecker`
 - **Interactive Development:** Jupyter Notebook (`.ipynb`)
@@ -31,9 +31,9 @@ Perform a comprehensive data analysis of the Google Play Store ecosystem — cle
 ## 📋 Feature Checklist
 - [x] **Load the Play Store apps dataset and the user reviews dataset separately**
 - [x] **Data cleaning:** fix incorrect data types (`Installs` as string with `+`, `Price` with `$`, `Reviews` as string), handle nulls, remove duplicates
-- [ ] **Category analysis:** bar chart of app distribution across categories; identify most saturated and niche sectors
-- [ ] **Ratings analysis:** distribution of app ratings; average rating by category; variance and skewness analysis
-- [ ] **Size and installs analysis:** scatter plot of app size vs. number of installs; evaluate size-install correlation
+- [x] **Category analysis:** bar chart of app distribution across categories; identify most saturated and niche sectors
+- [x] **Ratings analysis:** distribution of app ratings; average rating by category; variance and skewness analysis
+- [x] **Size and installs analysis:** scatter plot of app size vs. number of installs; evaluate size-install correlation
 - [ ] **Pricing analysis:** paid vs. free app distribution; price distribution for paid apps; category revenue estimation
 - [ ] **Sentiment analysis on user reviews:** classify reviews as positive/negative/neutral using TextBlob / VADER
 - [ ] **Sentiment by category:** determine which app categories have the most positive and negative user sentiment
@@ -57,18 +57,28 @@ DataAnalytics-L2-GooglePlayStore/
 │   └── license.txt                         # Dataset citation & license terms
 ├── Notebooks/
 │   ├── 01_playstore_inspection_ingestion.ipynb # Day 1: Raw dataset ingestion & structural schema audit
-│   └── 02_playstore_data_cleaning.ipynb    # Day 2: Production cleaning pipeline & data quality audit
+│   ├── 02_playstore_data_cleaning.ipynb    # Day 2: Production cleaning pipeline & data quality audit
+│   └── 03_playstore_category_ratings_size_analysis.ipynb # Day 3: Category, ratings & correlation analysis
 ├── reports/
-│   ├── data_cleaning_audit_summary.csv     # Before vs. after transformation comparison metrics
+│   ├── category_distribution_summary.csv   # Day 3: App volume & percentage share by category
+│   ├── category_ratings_summary.csv        # Day 3: Rating metrics (mean, median, IQR) per category
+│   ├── data_cleaning_audit_summary.csv     # Day 2: Before vs. after transformation comparison metrics
+│   ├── stratified_correlations_summary.csv # Day 3: Size vs installs Spearman correlation per category
 │   └── figures/
-│       ├── day2_missing_data_profile.png   # Missing value rates before vs. after cleaning
-│       └── day2_data_cleaning_audit.png    # Retention, install tiers, app types & sentiment
+│       ├── 01_category_distribution.png    # Day 3: Saturated vs niche category distribution
+│       ├── 02_rating_distributions.png     # Day 3: Rating KDE, skewness & category boxplots
+│       ├── 03_size_vs_installs_scatter.png # Day 3: App size vs log10 installs scatter & trend
+│       ├── 04_category_size_installs_correlations.png # Day 3: Stratified category correlation ranking
+│       ├── day2_data_cleaning_audit.png    # Day 2: Retention, install tiers, app types & sentiment
+│       └── day2_missing_data_profile.png   # Day 2: Missing value rates before vs. after cleaning
 ├── src/
-│   ├── __init__.py                         # Package initialization exposing cleaning APIs
-│   └── data_cleaning.py                    # Modular production data cleaning pipeline
+│   ├── __init__.py                         # Package initialization exposing cleaning and analysis APIs
+│   ├── category_ratings_analysis.py        # Day 3: Category, ratings & correlation analytical engine
+│   └── data_cleaning.py                    # Day 2: Modular production data cleaning pipeline
 └── tests/
     ├── __init__.py                         # Test package initialization
-    └── test_cleaning.py                    # Pytest validation suite for data transformations
+    ├── test_category_ratings.py            # Day 3: Pytest suite for category & correlation calculations
+    └── test_cleaning.py                    # Day 2: Pytest validation suite for data transformations
 ```
 
 ---
@@ -145,29 +155,161 @@ To transition raw catalog data into a reliable foundation for downstream explora
 ### 3. Visual Quality Profiling
 
 #### A. Missing Value Rate Comparison
-Comparison of attribute null rates before and after pipeline execution:
 ![Missing Value Profiling](reports/figures/day2_missing_data_profile.png)
 
 #### B. Retention, Install Tiering & Sentiment Distribution
-Comprehensive 4-panel visual audit verifying app deduplication, install scale distribution, monetization breakdown, and user sentiment class balance:
 ![Data Cleaning Audit](reports/figures/day2_data_cleaning_audit.png)
 
 ---
 
-### 4. Automated Testing & Verification
+## 📈 Day 3: Category, Ratings & Size Market Analysis
 
-A dedicated unit and regression test suite is implemented in [`tests/test_cleaning.py`](tests/test_cleaning.py) and executed via `pytest`:
-- **`test_parse_size_to_mb`:** Validates megabyte conversions (`19M` $\to 19.0$), kilobyte fractional conversions (`512k` $\to 0.5$), and null handling on `Varies with device`.
-- **`test_clean_playstore_apps`:** Tests corrupted row filtering, duplicate retention (retaining max review counts), and automatic type normalization.
-- **`test_clean_user_reviews`:** Validates null review purging, exact duplicate suppression, and sentiment polarity imputation.
-- **`test_saved_cleaned_datasets_exist`:** Asserts the physical integrity, row counts (9,659 unique apps, 29,692 reviews), and schema boundaries of the exported datasets on disk.
+Day 3 executes comprehensive exploratory data analysis, market saturation profiling, rating skewness characterization, and app size vs install econometric modeling across the 9,659 unique apps catalog via [`src/category_ratings_analysis.py`](src/category_ratings_analysis.py) and [`Notebooks/03_playstore_category_ratings_size_analysis.ipynb`](Notebooks/03_playstore_category_ratings_size_analysis.ipynb).
+
+---
+
+### 1. Category Distribution & Market Saturation Analysis
+Across 33 distinct app categories in the Google Play Store:
+- **Hyper-Saturated Sectors**:
+  - `FAMILY`: **1,874 apps** (19.40% catalog share)
+  - `GAME`: **946 apps** (9.79% catalog share)
+  - `TOOLS`: **829 apps** (8.58% catalog share)
+  - *Strategic Takeaway*: The top 3 categories account for **37.78%** of the entire catalog, while the top 5 represent nearly half (**46.22%**). New entrants in these domains encounter hyper-competitive keyword bidding and entrenched incumbents with tens of millions of installs.
+- **Underserved Niche Opportunities**:
+  - `BEAUTY` (53 apps, 0.55%), `COMICS` (56 apps, 0.58%), `PARENTING` (60 apps, 0.62%), `ART_AND_DESIGN` (61 apps, 0.63%), and `EVENTS` (64 apps, 0.66%).
+  - *Strategic Advantage*: Low App Store Optimization (ASO) barrier to entry with highly focused target audiences and minimal incumbent dominance.
+
+| Category Rank | Category Name | App Count | Market Share (%) | Cumulative Share (%) | Competitive Status |
+| :---: | :--- | :---: | :---: | :---: | :--- |
+| **1** | `FAMILY` | 1,874 | 19.40% | 19.40% | Hyper-Saturated |
+| **2** | `GAME` | 946 | 9.79% | 29.20% | Hyper-Saturated |
+| **3** | `TOOLS` | 829 | 8.58% | 37.78% | Hyper-Saturated |
+| **4** | `BUSINESS` | 420 | 4.35% | 42.13% | Moderate Saturation |
+| **5** | `MEDICAL` | 395 | 4.09% | 46.22% | Moderate Saturation |
+| ... | ... | ... | ... | ... | ... |
+| **29** | `EVENTS` | 64 | 0.66% | 97.62% | Niche Opportunity |
+| **30** | `ART_AND_DESIGN` | 61 | 0.63% | 98.25% | Niche Opportunity |
+| **31** | `PARENTING` | 60 | 0.62% | 98.87% | Niche Opportunity |
+| **32** | `COMICS` | 56 | 0.58% | 99.45% | Niche Opportunity |
+| **33** | `BEAUTY` | 53 | 0.55% | 100.00% | Niche Opportunity |
+
+#### Visual Distribution: Saturated vs. Niche Sectors
+![Category Distribution](reports/figures/01_category_distribution.png)
+
+---
+
+### 2. Rating Distribution & Category Performance
+
+- **Statistical Characteristics of User Ratings**:
+  - **Sample Coverage**: 8,196 rated apps (84.85% coverage; 1,463 unrated apps).
+  - **Mean Rating**: **4.173** | **Median Rating**: **4.300** | **Std Dev**: **0.536**.
+  - **Interquartile Range (IQR)**: $[4.00, 4.50]$ ($\Delta = 0.50$).
+  - **Skewness**: **-1.745** (Strong systemic negative skew / rating inflation).
+  - *Market Implication*: With 75% of apps scoring $\ge 4.0$, any app rated below **4.0** sits in the bottom quartile of the marketplace and suffers severe algorithmic ranking suppression and conversion loss.
+- **Top 5 Highest Rated Categories**:
+  1. `EVENTS`: Mean **4.436** (Median: 4.5, Coverage: 70.3%)
+  2. `ART_AND_DESIGN`: Mean **4.359** (Median: 4.4, Coverage: 96.7%)
+  3. `EDUCATION`: Mean **4.355** (Median: 4.4, Std: **0.268** — most consistent quality in the store)
+  4. `BOOKS_AND_REFERENCE`: Mean **4.345** (Median: 4.5, Coverage: 79.7%)
+  5. `PERSONALIZATION`: Mean **4.332** (Median: 4.4, Coverage: 76.8%)
+- **Bottom 5 Lowest Rated Categories**:
+  1. `DATING`: Mean **3.980** (Median: 4.1, Std: 0.629 — *only category in the store with mean < 4.0*)
+  2. `MAPS_AND_NAVIGATION`: Mean **4.036** (Median: 4.2, Std: 0.527)
+  3. `TOOLS`: Mean **4.040** (Median: 4.2, Std: 0.619 — extreme polarity between reliable utilities and ad-heavy clones)
+  4. `VIDEO_PLAYERS`: Mean **4.045** (Median: 4.2, Std: 0.562)
+  5. `TRAVEL_AND_LOCAL`: Mean **4.070** (Median: 4.2, Std: 0.532)
+
+#### Visual Distribution: Rating KDE & Cross-Category Boxplots
+![Rating Distribution](reports/figures/02_rating_distributions.png)
+
+---
+
+### 3. App Size vs. Number of Installs Correlation Analysis
+
+- **Hypothesis Evaluation**:
+  - *Naive Assumption*: Users avoid large downloads due to cellular data caps and storage constraints, implying a negative correlation between binary size and installs.
+  - *Empirical Finding*: **Statistically significant positive correlation** between app binary size and install volume!
+- **Correlation Metrics ($n = 8,431$ apps with explicit sizes)**:
+  - **Pearson Linear Correlation ($r$)**: $+0.1342$ ($p = 3.46 \times 10^{-35}$)
+  - **Spearman Rank Correlation ($\rho$)**: **$+0.3101$** ($p = 2.13 \times 10^{-187}$)
+  - **Pearson with $\log_{10}(\text{Installs})$**: $+0.2998$ ($p = 1.26 \times 10^{-174}$)
+- **The "Feature Richness" Paradox**:
+  - Applications achieving 10M+, 100M+, and 1B+ installs invest extensively in high-fidelity graphics, localization assets, multi-architecture native binaries, and comprehensive feature sets.
+  - In modern cellular and high-speed Wi-Fi ecosystems, users comfortably tolerate larger downloads in exchange for polished, feature-complete experiences.
+
+#### Visual Correlation: Size vs. Installs Scatter & Log-Linear Trend
+![Size vs Installs Scatter](reports/figures/03_size_vs_installs_scatter.png)
+
+---
+
+### 4. Stratified Category-Level Correlations
+The size-to-installs dependency varies substantially by application domain:
+- **Strongest Positive Dependency**: `SHOPPING` ($\rho = +0.578$), `ART_AND_DESIGN` ($\rho = +0.552$), `PHOTOGRAPHY` ($\rho = +0.459$), `FAMILY` ($\rho = +0.450$), `GAME` ($\rho = +0.349$).
+- **Neutral / Negligible Dependency**: `PRODUCTIVITY` ($\rho = +0.001$), `MEDICAL` ($\rho = -0.004$), `PERSONALIZATION` ($\rho = -0.016$), `TOOLS` ($\rho = +0.085$). In functional utilities, users prioritize lightweight, instant execution over feature bloat.
+
+#### Visual Correlation: Stratified Spearman Coefficients by Sector
+![Stratified Category Correlations](reports/figures/04_category_size_installs_correlations.png)
+
+---
+
+### 5. Automated Testing & Verification
+
+A dedicated unit and regression test suite is implemented across [`tests/test_cleaning.py`](tests/test_cleaning.py) and [`tests/test_category_ratings.py`](tests/test_category_ratings.py):
+- **`test_compute_category_distribution`:** Validates category aggregation across all 33 categories, 100% cumulative share bounds, and identifies top (`FAMILY`) and bottom (`BEAUTY`) sectors.
+- **`test_compute_rating_statistics`:** Verifies 8,196 rated vs 1,463 unrated counts, left-skewed rating inflation ($\text{skew} < -1.0$), median (4.30), and IQR bounds.
+- **`test_compute_category_ratings`:** Validates category-level mean rating sorting (`EVENTS` highest, `DATING` lowest < 4.0), and coverage percentage metrics.
+- **`test_compute_size_installs_correlation`:** Verifies Spearman rank correlation ($\rho > 0.25$, $p < 10^{-50}$) and log-transformed Pearson correlation.
+- **`test_compute_stratified_correlations`:** Validates domain stratification for categories with $n \ge 30$ and checks top correlation sectors (`SHOPPING`, `ART_AND_DESIGN`).
+- **`test_generate_category_ratings_reports`:** Confirms end-to-end report and figure serialization integrity using mock/temporary directories.
 
 ```bash
-$ pytest tests/test_cleaning.py -v
+$ pytest tests/ -v
 ============================= test session starts =============================
-tests/test_cleaning.py::test_parse_size_to_mb PASSED                     [ 25%]
-tests/test_cleaning.py::test_clean_playstore_apps PASSED                 [ 50%]
-tests/test_cleaning.py::test_clean_user_reviews PASSED                   [ 75%]
+platform win32 -- Python 3.14.8, pytest-9.1.1, pluggy-1.6.0
+rootdir: C:\Users\Iba Zaidi\Desktop\OIBSIP\DataAnalytics-L2-GooglePlayStore
+collected 10 items
+
+tests/test_category_ratings.py::test_compute_category_distribution PASSED [ 10%]
+tests/test_category_ratings.py::test_compute_rating_statistics PASSED    [ 20%]
+tests/test_category_ratings.py::test_compute_category_ratings PASSED     [ 30%]
+tests/test_category_ratings.py::test_compute_size_installs_correlation PASSED [ 40%]
+tests/test_category_ratings.py::test_compute_stratified_correlations PASSED [ 50%]
+tests/test_category_ratings.py::test_generate_category_ratings_reports PASSED [ 60%]
+tests/test_cleaning.py::test_parse_size_to_mb PASSED                     [ 70%]
+tests/test_cleaning.py::test_clean_playstore_apps PASSED                 [ 80%]
+tests/test_cleaning.py::test_clean_user_reviews PASSED                   [ 90%]
 tests/test_cleaning.py::test_saved_cleaned_datasets_exist PASSED         [100%]
-============================== 4 passed in 4.95s ==============================
+
+====================== 10 passed in 18.09s =======================
+```
+
+---
+
+## 🚀 Execution & Reproduction Guide
+
+### 1. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+### 2. Execute Data Cleaning Pipeline (Day 2)
+```bash
+python src/data_cleaning.py
+```
+
+### 3. Execute Category, Ratings & Size Analysis Pipeline (Day 3)
+```bash
+python src/category_ratings_analysis.py
+```
+
+### 4. Run Automated Pytest Suite
+```bash
+pytest tests/ -v
+```
+
+### 5. Launch Interactive Jupyter Notebooks
+```bash
+jupyter notebook Notebooks/01_playstore_inspection_ingestion.ipynb
+jupyter notebook Notebooks/02_playstore_data_cleaning.ipynb
+jupyter notebook Notebooks/03_playstore_category_ratings_size_analysis.ipynb
 ```
