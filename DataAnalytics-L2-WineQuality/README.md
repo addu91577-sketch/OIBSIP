@@ -30,10 +30,10 @@ Train and compare multiple supervised machine learning classification models to 
 - [x] **Load the Wine Quality dataset and inspect structure; check class distribution of quality scores**
 - [x] **EDA: distribution plots for all chemical features; correlation heatmap**
 - [x] **Discuss class imbalance: are certain quality scores underrepresented? How does this affect modelling?**
-- [ ] **Feature engineering:** consider binning quality scores into binary (good/bad) or 3-class (low/medium/high) groups and justify the decision
-- [ ] **Train/test split with stratification** to preserve class ratios
-- [ ] **Train 3 classifiers:** Random Forest, Stochastic Gradient Descent (SGD), and Support Vector Classifier (SVC)
-- [ ] **Evaluate each:** accuracy, classification report, confusion matrix
+- [x] **Feature engineering:** consider binning quality scores into binary (good/bad) or 3-class (low/medium/high) groups and justify the decision
+- [x] **Train/test split with stratification** to preserve class ratios
+- [x] **Train 3 classifiers:** Random Forest, Stochastic Gradient Descent (SGD), and Support Vector Classifier (SVC)
+- [x] **Evaluate each:** accuracy, classification report, confusion matrix
 - [ ] **Feature importance chart** for the Random Forest model
 - [ ] **Comparison table:** summarise the performance of all 3 models side-by-side
 - [ ] **Conclusion:** which model is most suitable for deployment and why?
@@ -52,15 +52,21 @@ DataAnalytics-L2-WineQuality/
 │   └── winequality.names               # UCI dataset citation & attribute documentation
 ├── Notebooks/
 │   ├── 01_wine_quality_inspection.ipynb # Day 1: Data ingestion, schema inspection & class distribution
-│   └── 02_wine_quality_eda.ipynb       # Day 2: Exploratory data analysis, distributions, outliers & correlation
+│   ├── 02_wine_quality_eda.ipynb       # Day 2: Exploratory data analysis, distributions, outliers & correlation
+│   └── 03_target_engineering_and_baseline_models.ipynb # Day 3: Target binning, domain features & baseline models
 └── reports/
     └── figures/
-        ├── day1_quality_distribution.png     # Annotated quality score frequency distribution plot
-        ├── day2_univariate_distributions.png # 11-panel histogram & KDE distributions
-        ├── day2_feature_boxplots.png         # 11-panel Tukey IQR outlier boxplots
-        ├── day2_features_vs_quality.png      # Bivariate boxplots of key chemical drivers across quality
-        ├── day2_correlation_heatmap.png      # Lower-triangular Pearson correlation matrix heatmap
-        └── day2_top_correlations.png         # Ranked feature correlations with sensory quality
+        ├── day1_quality_distribution.png           # Annotated quality score frequency distribution plot
+        ├── day2_univariate_distributions.png       # 11-panel histogram & KDE distributions
+        ├── day2_feature_boxplots.png               # 11-panel Tukey IQR outlier boxplots
+        ├── day2_features_vs_quality.png            # Bivariate boxplots of key chemical drivers across quality
+        ├── day2_correlation_heatmap.png            # Lower-triangular Pearson correlation matrix heatmap
+        ├── day2_top_correlations.png               # Ranked feature correlations with sensory quality
+        ├── day3_target_distribution_comparison.png # Raw vs 3-tier vs binary target distribution comparison
+        ├── day3_baseline_model_comparison.png      # Baseline classifiers performance comparison bar chart
+        ├── day3_confusion_matrices.png             # Side-by-side annotated confusion matrix heatmaps
+        ├── day3_roc_curves.png                     # Receiver Operating Characteristic (ROC) curves
+        └── day3_precision_recall_curves.png        # Precision-Recall curves vs prevalence baseline
 ```
 
 ---
@@ -191,3 +197,104 @@ The wine dataset sensory target is derived from certified enological tasting pan
 - **Target Binning / Reformulation:** Formulating the task into binary classification ($\text{Quality} \ge 7 \implies \text{Good/Reserve}$ vs. $< 7 \implies \text{Normal/Table}$) provides a balanced commercial distinction ($\approx 13.6\%$ positive class).
 - **Cost-Sensitive Learning:** Utilizing `class_weight='balanced'` in Random Forest, Support Vector Classifiers, and SGD to weight loss penalties inversely proportional to class frequencies.
 - **Threshold Calibration:** Shifting operating classification thresholds ($\tau$) below the default $0.50$ (e.g., $\tau = 0.35$) to optimize minority recall for commercial cellar screening.
+
+---
+
+## 🧪 Day 3: Target Engineering, Preprocessing Pipelines & Baseline Models
+
+### 1. Target Formulation & Mathematical Justification
+Direct 6-class ordinal classification ($3–8$) is heavily impaired by extreme sample scarcity in the tails ($10$ samples for score $3$; $18$ samples for score $8$) and heavy feature distribution overlap between median scores $5$ and $6$. Two binning formulations were evaluated:
+
+| Formulation | Class Label | Sensory Definition | Sample Count | Class Share (%) | Evaluation & Decision |
+| :--- | :--- | :--- | :---: | :---: | :--- |
+| **Raw (6-Class)** | 3, 4, 5, 6, 7, 8 | Discrete judge scores | 10, 53, 681, 638, 199, 18 | 0.6%, 3.3%, 42.6%, 39.9%, 12.5%, 1.1% | Discarded: extreme sparsity in grades 3 and 8 causes total model failure |
+| **Three-Tier** | Low ($\le 4$)<br>Medium ($5–6$)<br>High ($\ge 7$) | Flawed / Defective<br>Commercial Everyday<br>Premium / Reserve | 63<br>1,319<br>217 | 3.94%<br>82.49%<br>13.57% | Discarded: Low class ($3.94\%$) remains too scarce for stable multi-class optimization |
+| **Binary (Selected)** | **Normal ($< 7$)**<br>**Good ($\ge 7$)** | **Standard Table Wine**<br>**Certified Reserve Wine** | **1,382**<br>**217** | **86.43%**<br>**13.57%** | **Selected:** Conforms to Cortez et al. (2009) benchmark and reflects commercial cellar sorting |
+
+**Enological & Operational Rationale:**
+In commercial viticulture and quality assurance, winemakers triage lots into high-value **Reserve / Grand Reserve** bottlings ($\ge 7$) commanding premium margins versus standard commercial table wines ($< 7$). The binary threshold at $\ge 7$ yields $217$ positive samples ($13.57\%$), providing sufficient statistical density for stable gradient convergence and stratified cross-validation.
+
+![Target Distribution Comparison](reports/figures/day3_target_distribution_comparison.png)
+
+---
+
+### 2. Domain-Specific Biochemical Feature Synthesis
+To provide the algorithms with direct indicators of enological balance, 5 domain interaction features were synthesized based on Day 2 EDA findings:
+
+| Synthesized Feature | Mathematical Formulation | Enological Chemical Rationale |
+| :--- | :---: | :--- |
+| **`total_acidity`** | $\text{fixed acidity} + \text{volatile acidity}$ | Quantifies the full acidic impact and sensory palate freshness ($g/dm^3$). |
+| **`bound_sulfur_dioxide`** | $\text{total SO}_2 - \text{free SO}_2$ | Measures sulfur bound to aldehydes and polyphenols; indicates cumulative oxidation exposure. |
+| **`free_to_total_so2_ratio`** | $\frac{\text{free SO}_2}{\text{total SO}_2 + 10^{-5}}$ | Active preservation efficiency; high ratios preserve aromatic esters without sulfur excess. |
+| **`alcohol_to_density_ratio`** | $\frac{\text{alcohol}}{\text{density}}$ | Index of fermentation completion and mouthfeel density balance (ethanol vs residual extract). |
+| **`sulphate_to_chloride_ratio`** | $\frac{\text{sulphates}}{\text{chlorides} + 10^{-5}}$ | Balances beneficial antioxidant potassium salts against unpleasant salty mineral taints. |
+
+---
+
+### 3. Stratified Partitioning & Leakage-Free Design
+The dataset was partitioned into 80% training ($N=1,279$) and 20% testing ($N=320$) using `stratify=y` with seed `random_state=42`. Stratification guarantees identical class ratios across partitions:
+
+| Partition | Total Samples | Normal Wines ($< 7$) | Good Wines ($\ge 7$) | Positive Class Share (%) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Full Dataset** | 1,599 | 1,382 | 217 | **13.57%** |
+| **Training Partition (80%)** | 1,279 | 1,105 | 174 | **13.60%** |
+| **Testing Partition (20%)** | 320 | 277 | 43 | **13.44%** |
+
+*Leakage Prevention:* All feature normalizations (`StandardScaler`) were embedded inside scikit-learn `Pipeline` architectures. Preprocessing statistics were strictly calculated on training folds and applied to test folds without prior exposure.
+
+---
+
+### 4. Baseline Supervised Classifier Benchmarks
+Three diverse supervised classification paradigms were evaluated under default configurations on the held-out test set ($N=320$):
+
+| Classifier Paradigm | Algorithm Class | 5-Fold CV Accuracy | Test Accuracy | Balanced Accuracy | Precision (Good) | Recall (Good) | F1-Score (Good) | Test ROC-AUC | Test PR-AUC |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Random Forest** | Non-Linear Bagged Trees | **90.07% ± 1.6%** | **93.44%** | **0.7951** | **86.67%** | **60.47%** | **0.7123** | **0.9318** | **0.8120** |
+| **Support Vector Classifier (SVC)** | RBF Kernel Margin Machine | 87.73% ± 1.1% | 90.31% | 0.6690 | 83.33% | 34.88% | 0.4918 | 0.8698 | 0.6540 |
+| **SGD Classifier** | Convex Log-Loss Optimization | 85.14% ± 2.4% | 85.00% | 0.5204 | 27.27% | 6.98% | 0.1111 | 0.7501 | 0.2840 |
+
+![Baseline Model Comparison](reports/figures/day3_baseline_model_comparison.png)
+
+---
+
+### 5. Confusion Matrix Diagnostics & Error Analysis
+Diagnostic error analysis on held-out test specimens ($43$ Good, $277$ Normal) reveals the behavioral trade-offs of each baseline architecture:
+
+![Confusion Matrices](reports/figures/day3_confusion_matrices.png)
+
+1. **Random Forest (Champion Baseline):**
+   - **True Negatives:** $273 / 277$ ($98.6\%$ specificity).
+   - **True Positives:** $26 / 43$ ($60.5\%$ sensitivity).
+   - **False Positives:** Only $4$ normal wines misclassified as good ($1.4\%$ false alarm rate).
+   - **False Negatives:** $17$ premium wines missed.
+   - *Assessment:* Strongest non-linear feature interaction modeling. Tree ensembles are inherently robust against feature scale differences and moderate outliers.
+
+2. **Support Vector Classifier (Conservative Margin):**
+   - **True Negatives:** $274 / 277$ ($98.9\%$ specificity).
+   - **True Positives:** $15 / 43$ ($34.9\%$ sensitivity).
+   - **False Negatives:** $28 / 43$ ($65.1\%$ missed).
+   - *Assessment:* Without class weighting, the default margin optimizer prioritizes majority class separability, heavily penalizing false positive boundaries and causing high false negative rates on premium wines.
+
+3. **SGD Classifier (Gradient Starvation):**
+   - **True Negatives:** $269 / 277$ ($97.1\%$).
+   - **True Positives:** $3 / 43$ ($7.0\%$).
+   - **False Positives:** $8$ false alarms.
+   - **False Negatives:** $40 / 43$ ($93.0\%$ missed).
+   - *Assessment:* In stochastic convex optimization without sample reweighting, $86.4\%$ of gradient steps originate from normal wines, causing the hyperplane to degenerate near the majority centroid.
+
+---
+
+### 6. Discrimination Power Analysis (ROC & PR Curves)
+
+![ROC Curves](reports/figures/day3_roc_curves.png)
+![PR Curves](reports/figures/day3_precision_recall_curves.png)
+
+- **ROC-AUC Diagnostics:** Random Forest achieves an exceptional **0.9318 ROC-AUC**, demonstrating strong separability across the continuous probability spectrum. SVC follows at **0.8698**, while SGD scores **0.7501**.
+- **Precision-Recall Performance:** Against the baseline prevalence of $13.44\%$ (no-skill rate), Random Forest maintains a high **PR-AUC of 0.8120**, retaining $>80\%$ precision up to $60\%$ recall.
+
+---
+
+### 7. Key Takeaways & Foundation for Day 4
+1. **The Class Imbalance Challenge:** While baseline overall accuracy appears high ($90–93\%$), unweighted margin and linear models (SVC and SGD) fail to identify the majority of premium wines.
+2. **Cost-Sensitive Learning Requirement:** To unlock higher minority recall without sacrificing precision, Day 4 will implement cost-sensitive learning (`class_weight='balanced'`) to penalize minority misclassifications inversely proportional to class frequencies.
+3. **Hyperparameter Tuning:** Systematic hyperparameter search (`GridSearchCV`) across tree depths, estimators, SVM regularizers ($C$, $\gamma$), and SGD learning rates will be conducted in Day 4.
