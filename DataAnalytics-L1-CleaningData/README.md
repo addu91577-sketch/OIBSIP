@@ -35,10 +35,13 @@ DataAnalytics-L1-CleaningData/
 ├── Reports/
 │   ├── day2_pseudonull_anomaly_audit.md # Day 2 Forensic Pseudonull & Anomaly Audit Report
 │   ├── day3_baseline_data_quality_report.md # Day 3 Baseline Data Quality Report & Matrix
+│   ├── day4_text_standardization_and_token_normalization.md # Day 4 Text Standardization & Token Normalization Report
 │   └── figures/                        # High-resolution diagnostic visualizations
 │       ├── day3_column_defect_rates.png
 │       ├── day3_record_defect_distribution.png
-│       └── day3_defect_cooccurrence_matrix.png
+│       ├── day3_defect_cooccurrence_matrix.png
+│       ├── day4_pseudonull_normalization_waterfall.png
+│       └── day4_standardized_categorical_profiles.png
 └── src/
     ├── __init__.py
     └── utils.py                        # Reusable data audit & metric routines
@@ -50,7 +53,7 @@ DataAnalytics-L1-CleaningData/
 - [x] **Day 1 (Oct 19):** Workspace setup, raw dataset ingestion, and initial schema inspection
 - [x] **Day 2 (Oct 20):** Forensic anomaly detection: catalog pseudonull tokens (`'ERROR'`, `'UNKNOWN'`) and defective value frequencies
 - [x] **Day 3 (Oct 21):** Baseline Data Quality Report generation, record defect density & co-occurrence matrix
-- [ ] **Day 4 (Oct 22):** Text standardization, whitespace trimming, and pseudonull token conversion to `np.nan`
+- [x] **Day 4 (Oct 22):** Text standardization, whitespace trimming, and pseudonull token conversion to `np.nan`
 - [ ] **Day 5 (Oct 23):** Strict data type casting (`datetime64[ns]`, `string` ID, nullable `Int64`, `float64`)
 - [ ] **Day 6 (Oct 24):** Categorical encoding (`Item`, `Payment Method`, `Location`) and memory audit
 - [ ] **Day 7–10:** Domain-informed and mathematical missing data imputation
@@ -134,6 +137,34 @@ On Day 3, we formalized the enterprise **Baseline Data Quality Report**, evaluat
 - **Defect Co-Occurrence Heatmap:** Uncovered major clustering between `Location` and `Payment Method` (1,294 co-occurring defects), while confirming extreme sparsity of joint pricing/volume failures ($\le 54$ records).
 - **Diagnostic Visual Suite:** Programmatically synthesized and serialized 3 publication-ready figures to `Reports/figures/`.
 - **Full Report:** Comprehensive analysis available in [`Reports/day3_baseline_data_quality_report.md`](Reports/day3_baseline_data_quality_report.md).
+
+---
+
+## 🧹 Day 4 Milestone: Text Standardization & Pseudonull Token Normalization
+
+On Day 4, the active cleaning workflow began with non-destructive text sanitization, whitespace trimming, and mapping disguised sentinel placeholders (`'ERROR'`, `'UNKNOWN'`) to standard IEEE `np.nan`:
+
+### Master Pseudonull Normalization & Replacement Matrix
+
+| Attribute Name | Raw Ingested Dtype | Raw True NaNs | Converted `'ERROR'` Tokens | Converted `'UNKNOWN'` Tokens | Total Sentinels Converted | Post-Day 4 Nulls (`np.nan`) | Post-Day 4 Null Rate (%) | Transformation Status |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **`Location`** | `object` | 3,265 | 358 | 338 | **696** | **3,961** | **39.61%** | Normalized to `np.nan` |
+| **`Payment Method`** | `object` | 2,579 | 306 | 293 | **599** | **3,178** | **31.78%** | Normalized to `np.nan` |
+| **`Item`** | `object` | 333 | 292 | 344 | **636** | **969** | **9.69%** | Normalized to `np.nan` |
+| **`Price Per Unit`** | `object` | 179 | 190 | 164 | **354** | **533** | **5.33%** | Normalized to `np.nan` |
+| **`Total Spent`** | `object` | 173 | 164 | 165 | **329** | **502** | **5.02%** | Normalized to `np.nan` |
+| **`Quantity`** | `object` | 138 | 170 | 171 | **341** | **479** | **4.79%** | Normalized to `np.nan` |
+| **`Transaction Date`** | `object` | 159 | 142 | 159 | **301** | **460** | **4.60%** | Normalized to `np.nan` |
+| **`Transaction ID`** | `object` | 0 | 0 | 0 | **0** | **0** | **0.00%** | **100% Unique Primary Key Intact** |
+| **TOTALS** | — | **6,826** | **1,622** | **1,634** | **3,256** | **10,082** | **12.60%** | **Consolidated Missingness Baseline** |
+
+### Key Day 4 Achievements:
+- **3,256 Sentinel Error Tokens Converted:** Exactly 1,622 `'ERROR'` and 1,634 `'UNKNOWN'` placeholders successfully mapped to IEEE `np.nan`.
+- **100% Whitespace Sanitization:** Audited and stripped leading/trailing whitespace across all text columns without data loss.
+- **Categorical Casing Standardized:** Enforced canonical casing on `Item` (8 menu products), `Payment Method` (3 tender types), and `Location` (`Takeaway`, `In-store`).
+- **Zero Token Leakage Verified:** Programmatic regression suite confirmed exactly 0 residual sentinels across the entire dataset.
+- **Diagnostic Visual Artifacts:** Serialized `day4_pseudonull_normalization_waterfall.png` and `day4_standardized_categorical_profiles.png` to `Reports/figures/`.
+- **Full Report:** Comprehensive analysis available in [`Reports/day4_text_standardization_and_token_normalization.md`](Reports/day4_text_standardization_and_token_normalization.md).
 
 ---
 

@@ -9,6 +9,10 @@ from .utils import (
     analyze_record_defect_counts,
     compute_defect_cooccurrence,
     plot_defect_distributions,
+    standardize_text_fields,
+    convert_pseudonulls_to_nan,
+    verify_pseudonull_elimination,
+    plot_day4_standardization_audit,
 )
 
 __all__ = [
@@ -18,4 +22,8 @@ __all__ = [
     'analyze_record_defect_counts',
     'compute_defect_cooccurrence',
     'plot_defect_distributions',
+    'standardize_text_fields',
+    'convert_pseudonulls_to_nan',
+    'verify_pseudonull_elimination',
+    'plot_day4_standardization_audit',
 ]

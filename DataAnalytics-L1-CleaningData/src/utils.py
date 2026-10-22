@@ -242,3 +242,240 @@ def plot_defect_distributions(df: pd.DataFrame, output_dir: str = None) -> dict:
     plt.close()
 
     return saved_paths
+
+
+def standardize_text_fields(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Day 4 Pipeline: Standardizes all text/string fields in the DataFrame.
+    - Strips leading and trailing whitespace across all string/object columns.
+    - Enforces canonical casing on categorical fields while preserving pseudonull tokens.
+    - Ensures primary key formatting consistency.
+    """
+    df_clean = df.copy()
+
+    # Strip whitespace across all object / string columns
+    for col in df_clean.columns:
+        if pd.api.types.is_string_dtype(df_clean[col]) or df_clean[col].dtype == 'object':
+            df_clean[col] = df_clean[col].apply(lambda x: x.strip() if isinstance(x, str) else x)
+
+    # Canonical casing maps (preserving uppercase ERROR/UNKNOWN)
+    item_map = {
+        'coffee': 'Coffee', 'tea': 'Tea', 'sandwich': 'Sandwich', 'salad': 'Salad',
+        'cake': 'Cake', 'juice': 'Juice', 'smoothie': 'Smoothie', 'cookie': 'Cookie'
+    }
+    payment_map = {
+        'cash': 'Cash', 'credit card': 'Credit Card', 'digital wallet': 'Digital Wallet'
+    }
+    location_map = {
+        'in-store': 'In-store', 'takeaway': 'Takeaway'
+    }
+
+    if 'Item' in df_clean.columns:
+        df_clean['Item'] = df_clean['Item'].apply(
+            lambda x: item_map.get(x.lower(), x.title()) if isinstance(x, str) and x.upper() not in ['ERROR', 'UNKNOWN'] else x
+        )
+
+    if 'Payment Method' in df_clean.columns:
+        df_clean['Payment Method'] = df_clean['Payment Method'].apply(
+            lambda x: payment_map.get(x.lower(), x.title()) if isinstance(x, str) and x.upper() not in ['ERROR', 'UNKNOWN'] else x
+        )
+
+    if 'Location' in df_clean.columns:
+        df_clean['Location'] = df_clean['Location'].apply(
+            lambda x: location_map.get(x.lower(), x.title()) if isinstance(x, str) and x.upper() not in ['ERROR', 'UNKNOWN'] else x
+        )
+
+    if 'Transaction ID' in df_clean.columns:
+        df_clean['Transaction ID'] = df_clean['Transaction ID'].apply(
+            lambda x: x.upper() if isinstance(x, str) else x
+        )
+
+    return df_clean
+
+
+def convert_pseudonulls_to_nan(df: pd.DataFrame, dirty_tokens=None) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Day 4 Pipeline: Replaces literal pseudonull sentinel tokens ('ERROR', 'UNKNOWN')
+    with standard IEEE np.nan across all attributes.
+    Returns:
+        (transformed_df, audit_summary_df)
+    """
+    if dirty_tokens is None:
+        dirty_tokens = ['ERROR', 'UNKNOWN']
+
+    upper_tokens = [t.upper() for t in dirty_tokens]
+    df_clean = df.copy()
+    audit_records = []
+    total_records = len(df_clean)
+
+    for col in df_clean.columns:
+        series = df_clean[col]
+        raw_nans = int(series.isnull().sum())
+
+        if pd.api.types.is_string_dtype(series) or series.dtype == 'object':
+            is_error = series.apply(lambda x: str(x).strip().upper() == 'ERROR' if pd.notnull(x) else False)
+            is_unknown = series.apply(lambda x: str(x).strip().upper() == 'UNKNOWN' if pd.notnull(x) else False)
+            is_sentinel = series.apply(lambda x: str(x).strip().upper() in upper_tokens if pd.notnull(x) else False)
+
+            c_error = int(is_error.sum())
+            c_unknown = int(is_unknown.sum())
+            c_total = int(is_sentinel.sum())
+
+            # Convert to np.nan
+            df_clean.loc[is_sentinel, col] = np.nan
+        else:
+            c_error = 0
+            c_unknown = 0
+            c_total = 0
+
+        post_nans = int(df_clean[col].isnull().sum())
+        null_rate = (post_nans / total_records) * 100 if total_records > 0 else 0.0
+
+        audit_records.append({
+            'Column': col,
+            'Raw NaNs': raw_nans,
+            'Converted ERROR': c_error,
+            'Converted UNKNOWN': c_unknown,
+            'Total Replaced': c_total,
+            'Post-Day 4 NaNs': post_nans,
+            'Post Null Rate (%)': round(null_rate, 2)
+        })
+
+    audit_df = pd.DataFrame(audit_records)
+    return df_clean, audit_df
+
+
+def verify_pseudonull_elimination(df: pd.DataFrame, dirty_tokens=None) -> dict:
+    """
+    Day 4 Pipeline: Verifies that no pseudonull tokens remain in any column
+    and that entity integrity is 100% intact.
+    """
+    if dirty_tokens is None:
+        dirty_tokens = ['ERROR', 'UNKNOWN']
+
+    upper_tokens = [t.upper() for t in dirty_tokens]
+    checks = {}
+    total_remaining_tokens = 0
+
+    for col in df.columns:
+        series = df[col]
+        if pd.api.types.is_string_dtype(series) or series.dtype == 'object':
+            found = int(series.apply(lambda x: str(x).strip().upper() in upper_tokens if pd.notnull(x) else False).sum())
+        else:
+            found = 0
+        checks[col] = found
+        total_remaining_tokens += found
+
+    key_unique = int(df['Transaction ID'].nunique()) if 'Transaction ID' in df.columns else None
+    key_nulls = int(df['Transaction ID'].isnull().sum()) if 'Transaction ID' in df.columns else None
+
+    is_clean = (total_remaining_tokens == 0) and (key_nulls == 0) and (key_unique == len(df))
+
+    return {
+        'status': 'PASSED' if is_clean else 'FAILED',
+        'total_remaining_sentinels': total_remaining_tokens,
+        'column_sentinel_counts': checks,
+        'primary_key_unique': key_unique,
+        'primary_key_nulls': key_nulls,
+        'total_null_cells': int(df.isnull().sum().sum()),
+        'all_assertions_passed': is_clean
+    }
+
+
+def plot_day4_standardization_audit(raw_df: pd.DataFrame, clean_df: pd.DataFrame, output_dir: str = None) -> dict:
+    """
+    Day 4 Pipeline: Generates diagnostic visual artifacts:
+    1. day4_pseudonull_normalization_waterfall.png: Stacked decomposition of raw NaNs vs converted tokens
+    2. day4_standardized_categorical_profiles.png: Clean categorical profiles after token elimination
+    """
+    if output_dir is not None:
+        os.makedirs(output_dir, exist_ok=True)
+
+    saved_paths = {}
+    total_rows = len(raw_df)
+
+    # 1. Figure 1: Pseudonull Normalization Waterfall / Decomposition
+    cols = [c for c in raw_df.columns if c != 'Transaction ID']
+    waterfall_data = []
+    for c in cols:
+        raw_n = int(raw_df[c].isnull().sum())
+        s = raw_df[c].dropna().astype(str).str.strip().str.upper()
+        err_c = int((s == 'ERROR').sum())
+        unk_c = int((s == 'UNKNOWN').sum())
+        tot_post = int(clean_df[c].isnull().sum())
+        waterfall_data.append({
+            'Column': c,
+            'Raw NaNs': raw_n,
+            'ERROR Tokens': err_c,
+            'UNKNOWN Tokens': unk_c,
+            'Total Post NaNs': tot_post,
+            'Post Rate': (tot_post / total_rows) * 100
+        })
+    wdf = pd.DataFrame(waterfall_data).sort_values(by='Total Post NaNs', ascending=True)
+
+    fig, ax = plt.subplots(figsize=(10.5, 6), dpi=300)
+    y_pos = np.arange(len(wdf))
+    bar_h = 0.55
+
+    ax.barh(y_pos, wdf['Raw NaNs'], bar_h, label='Raw Ingested NaNs', color='#3498db', alpha=0.9)
+    ax.barh(y_pos, wdf['ERROR Tokens'], bar_h, left=wdf['Raw NaNs'], label='Converted "ERROR" Tokens', color='#e74c3c', alpha=0.9)
+    ax.barh(y_pos, wdf['UNKNOWN Tokens'], bar_h, left=wdf['Raw NaNs'] + wdf['ERROR Tokens'], label='Converted "UNKNOWN" Tokens', color='#e67e22', alpha=0.9)
+
+    for idx, (tot, rate) in enumerate(zip(wdf['Total Post NaNs'], wdf['Post Rate'])):
+        ax.text(tot + 65, idx, f'{tot:,} ({rate:.1f}%)', va='center', ha='left', fontsize=9.5, fontweight='bold', color='#2c3e50')
+
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(wdf['Column'], fontsize=10, fontweight='bold')
+    ax.set_xlabel('Consolidated Missing Cells (Post-Normalization NaNs)', fontsize=11, fontweight='bold')
+    ax.set_title('Day 4: Pseudonull Token Normalization to IEEE NaN by Attribute', fontsize=13, fontweight='bold', pad=15)
+    ax.legend(loc='lower right', frameon=True, fontsize=9.5)
+    ax.set_xlim(0, 4700)
+    plt.tight_layout()
+
+    if output_dir:
+        p1 = os.path.join(output_dir, 'day4_pseudonull_normalization_waterfall.png')
+        plt.savefig(p1, dpi=300)
+        saved_paths['waterfall'] = p1
+    plt.close()
+
+    # 2. Figure 2: Standardized Categorical Distributions
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5), dpi=300)
+
+    # Item distribution (valid records only)
+    item_counts = clean_df['Item'].dropna().value_counts()
+    axes[0].barh(item_counts.index, item_counts.values, color='#1abc9c', edgecolor='black', alpha=0.88)
+    axes[0].set_title(f'Clean Item Frequencies (N={len(clean_df["Item"].dropna()):,})', fontsize=11, fontweight='bold')
+    axes[0].set_xlabel('Valid Transactions', fontsize=10, fontweight='bold')
+    for idx, val in enumerate(item_counts.values):
+        pct = (val / len(clean_df['Item'].dropna())) * 100
+        axes[0].text(val + 20, idx, f'{val:,} ({pct:.1f}%)', va='center', fontsize=8.5, fontweight='bold')
+    axes[0].set_xlim(0, max(item_counts.values) * 1.25)
+    axes[0].invert_yaxis()
+
+    # Payment Method distribution
+    pm_counts = clean_df['Payment Method'].dropna().value_counts()
+    axes[1].bar(pm_counts.index, pm_counts.values, color=['#9b59b6', '#3498db', '#f1c40f'], edgecolor='black', alpha=0.88, width=0.55)
+    axes[1].set_title(f'Clean Payment Methods (N={len(clean_df["Payment Method"].dropna()):,})', fontsize=11, fontweight='bold')
+    axes[1].set_ylabel('Valid Transactions', fontsize=10, fontweight='bold')
+    for idx, val in enumerate(pm_counts.values):
+        pct = (val / len(clean_df['Payment Method'].dropna())) * 100
+        axes[1].text(idx, val + 60, f'{val:,}\n({pct:.1f}%)', ha='center', va='bottom', fontsize=9, fontweight='bold')
+    axes[1].set_ylim(0, max(pm_counts.values) * 1.2)
+
+    # Location distribution
+    loc_counts = clean_df['Location'].dropna().value_counts()
+    axes[2].pie(loc_counts.values, labels=[f'{k}\n({v:,})' for k, v in loc_counts.items()],
+                colors=['#e67e22', '#2ecc71'], autopct='%1.1f%%', startangle=120, pctdistance=0.75,
+                explode=(0.04, 0), wedgeprops=dict(width=0.45, edgecolor='black'))
+    axes[2].set_title(f'Clean Location Shares (N={len(clean_df["Location"].dropna()):,})', fontsize=11, fontweight='bold')
+
+    plt.suptitle('Day 4: Post-Normalization Categorical Profiles (Excluding Pseudonulls)', fontsize=13, fontweight='bold', y=0.98)
+    plt.tight_layout()
+
+    if output_dir:
+        p2 = os.path.join(output_dir, 'day4_standardized_categorical_profiles.png')
+        plt.savefig(p2, dpi=300)
+        saved_paths['categorical_profiles'] = p2
+    plt.close()
+
+    return saved_paths
