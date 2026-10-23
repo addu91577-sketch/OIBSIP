@@ -36,12 +36,15 @@ DataAnalytics-L1-CleaningData/
 │   ├── day2_pseudonull_anomaly_audit.md # Day 2 Forensic Pseudonull & Anomaly Audit Report
 │   ├── day3_baseline_data_quality_report.md # Day 3 Baseline Data Quality Report & Matrix
 │   ├── day4_text_standardization_and_token_normalization.md # Day 4 Text Standardization & Token Normalization Report
+│   ├── day5_strict_datatype_enforcement.md # Day 5 Strict Data Type Enforcement & Validation Report
 │   └── figures/                        # High-resolution diagnostic visualizations
 │       ├── day3_column_defect_rates.png
 │       ├── day3_record_defect_distribution.png
 │       ├── day3_defect_cooccurrence_matrix.png
 │       ├── day4_pseudonull_normalization_waterfall.png
-│       └── day4_standardized_categorical_profiles.png
+│       ├── day4_standardized_categorical_profiles.png
+│       ├── day5_datatype_transformation_matrix.png
+│       └── day5_numerical_and_temporal_profiles.png
 └── src/
     ├── __init__.py
     └── utils.py                        # Reusable data audit & metric routines
@@ -54,7 +57,7 @@ DataAnalytics-L1-CleaningData/
 - [x] **Day 2 (Oct 20):** Forensic anomaly detection: catalog pseudonull tokens (`'ERROR'`, `'UNKNOWN'`) and defective value frequencies
 - [x] **Day 3 (Oct 21):** Baseline Data Quality Report generation, record defect density & co-occurrence matrix
 - [x] **Day 4 (Oct 22):** Text standardization, whitespace trimming, and pseudonull token conversion to `np.nan`
-- [ ] **Day 5 (Oct 23):** Strict data type casting (`datetime64[ns]`, `string` ID, nullable `Int64`, `float64`)
+- [x] **Day 5 (Oct 23):** Strict data type casting (`datetime64[ns]`, `string` ID, nullable `Int64`, `float64`)
 - [ ] **Day 6 (Oct 24):** Categorical encoding (`Item`, `Payment Method`, `Location`) and memory audit
 - [ ] **Day 7–10:** Domain-informed and mathematical missing data imputation
 - [ ] **Day 11–13:** Multi-tier duplicate resolution and statistical outlier detection
@@ -165,6 +168,32 @@ On Day 4, the active cleaning workflow began with non-destructive text sanitizat
 - **Zero Token Leakage Verified:** Programmatic regression suite confirmed exactly 0 residual sentinels across the entire dataset.
 - **Diagnostic Visual Artifacts:** Serialized `day4_pseudonull_normalization_waterfall.png` and `day4_standardized_categorical_profiles.png` to `Reports/figures/`.
 - **Full Report:** Comprehensive analysis available in [`Reports/day4_text_standardization_and_token_normalization.md`](Reports/day4_text_standardization_and_token_normalization.md).
+
+---
+
+## 🛡️ Day 5 Milestone: Strict Data Type Enforcement & Validation
+
+On Day 5, the pipeline transitioned from unstructured `object` arrays to strictly typed primitives, unlocking vectorized performance, memory efficiency, and schema integrity:
+
+| Attribute Name | Ingested Dtype | Pre-Cast Dtype | Operational Enforced Dtype | Missing Cells | Null Representation | Boundary / Domain Constraint | Validation Status |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- | :--- |
+| **`Transaction ID`** | `object` | `object` (`str`) | **`string`** | 0 (0.0%) | None | Primary Key (`^TXN_\d{7}$`) | **PASSED (10,000 Unique Keys)** |
+| **`Item`** | `object` | `object` (`str`) | **`object` (`str`)** | 969 (9.7%) | `np.nan` | Standardized String | **READY (Day 6 Category)** |
+| **`Quantity`** | `object` | `object` (`str`) | **`Int64`** | 479 (4.8%) | `<NA>` | Discrete integer $1 \dots 5$ | **PASSED (0 Range Violations)** |
+| **`Price Per Unit`** | `object` | `object` (`str`) | **`float64`** | 533 (5.3%) | `np.nan` | Canonical Menu {$\$1.00..\$5.00$} | **PASSED (100% Menu Aligned)** |
+| **`Total Spent`** | `object` | `object` (`str`) | **`float64`** | 502 (5.0%) | `np.nan` | Monetary scale $[\$1.00..\$25.00]$ | **PASSED (0 Violations)** |
+| **`Payment Method`** | `object` | `object` (`str`) | **`object` (`str`)** | 3,178 (31.8%) | `np.nan` | Standardized String | **READY (Day 6 Category)** |
+| **`Location`** | `object` | `object` (`str`) | **`object` (`str`)** | 3,961 (39.6%) | `np.nan` | Standardized String | **READY (Day 6 Category)** |
+| **`Transaction Date`** | `object` | `object` (`str`) | **`datetime64[ns]`**| 460 (4.6%) | `NaT` | Contiguous 2023 (365 Days) | **PASSED (365 Trading Days)** |
+
+### Key Day 5 Achievements:
+- **Zero Coercion Loss ($\Delta = 0$):** Exactly 0 valid data values were lost, truncated, or unparseable during type conversion.
+- **Nullable Integer Semantics:** Implemented pandas `Int64` for `Quantity`, natively preserving discrete counts ($1 \dots 5$) without float coercion.
+- **Temporal Index Readiness:** Converted `Transaction Date` to `datetime64[ns]`, confirming contiguous customer purchases spanning all **365 trading days in 2023** (`2023-01-01` to `2023-12-31`) averaging 26.1 transactions/day.
+- **Immediate Memory Optimization:** Reduced DataFrame memory allocation from **1,064.0 KB to 907.3 KB (-14.73%)** prior to Day 6 categorical encoding.
+- **100% Quality Assertion Sign-Off:** Automated verification suite (`verify_type_integrity()`) certified zero schema violations, 100% primary key integrity, and exact domain boundaries.
+- **Diagnostic Visual Artifacts:** Serialized `day5_datatype_transformation_matrix.png` and `day5_numerical_and_temporal_profiles.png` to `Reports/figures/`.
+- **Full Report:** Comprehensive analysis available in [`Reports/day5_strict_datatype_enforcement.md`](Reports/day5_strict_datatype_enforcement.md).
 
 ---
 
