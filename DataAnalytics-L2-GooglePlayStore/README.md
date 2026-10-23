@@ -34,11 +34,11 @@ Perform a comprehensive data analysis of the Google Play Store ecosystem — cle
 - [x] **Category analysis:** bar chart of app distribution across categories; identify most saturated and niche sectors
 - [x] **Ratings analysis:** distribution of app ratings; average rating by category; variance and skewness analysis
 - [x] **Size and installs analysis:** scatter plot of app size vs. number of installs; evaluate size-install correlation
-- [ ] **Pricing analysis:** paid vs. free app distribution; price distribution for paid apps; category revenue estimation
-- [ ] **Sentiment analysis on user reviews:** classify reviews as positive/negative/neutral using TextBlob / VADER
-- [ ] **Sentiment by category:** determine which app categories have the most positive and negative user sentiment
-- [ ] **Interactive visualization:** develop multidimensional interactive visualization using Plotly
-- [ ] **Conclusion:** 3 data-driven strategic insights for developers planning to launch a new app
+- [x] **Pricing analysis:** paid vs. free app distribution; price distribution for paid apps; category revenue estimation
+- [x] **Sentiment analysis on user reviews:** classify reviews as positive/negative/neutral using TextBlob / VADER
+- [x] **Sentiment by category:** determine which app categories have the most positive and negative user sentiment
+- [x] **Interactive visualization:** develop multidimensional interactive visualization using Plotly
+- [x] **Conclusion:** 3 data-driven strategic insights for developers planning to launch a new app
 - [ ] **Task 5 NLP Analytics:** implement and benchmark autocomplete and autocorrect algorithms on real text
 
 ---
@@ -46,7 +46,7 @@ Perform a comprehensive data analysis of the Google Play Store ecosystem — cle
 ## 📂 Repository Structure
 ```text
 DataAnalytics-L2-GooglePlayStore/
-├── .gitignore                              # Git ignore rules for Python, virtual environments, and Jupyter
+├── .gitignore                              # Git ignore rules for Python, virtual environments, and roadmaps
 ├── README.md                               # Project documentation, inspection findings, and architecture
 ├── requirements.txt                        # Project environment dependencies
 ├── Data/
@@ -58,27 +58,39 @@ DataAnalytics-L2-GooglePlayStore/
 ├── Notebooks/
 │   ├── 01_playstore_inspection_ingestion.ipynb # Day 1: Raw dataset ingestion & structural schema audit
 │   ├── 02_playstore_data_cleaning.ipynb    # Day 2: Production cleaning pipeline & data quality audit
-│   └── 03_playstore_category_ratings_size_analysis.ipynb # Day 3: Category, ratings & correlation analysis
+│   ├── 03_playstore_category_ratings_size_analysis.ipynb # Day 3: Category, ratings & correlation analysis
+│   └── 04_playstore_pricing_sentiment_dashboard.ipynb   # Day 4: Pricing, sentiment & interactive dashboard
 ├── reports/
 │   ├── category_distribution_summary.csv   # Day 3: App volume & percentage share by category
 │   ├── category_ratings_summary.csv        # Day 3: Rating metrics (mean, median, IQR) per category
+│   ├── category_revenue_summary.csv        # Day 4: Category revenue estimation & monetization metrics
+│   ├── category_sentiment_summary.csv      # Day 4: Category VADER/TextBlob sentiment benchmarks
 │   ├── data_cleaning_audit_summary.csv     # Day 2: Before vs. after transformation comparison metrics
+│   ├── market_opportunity_matrix.csv       # Day 4: Unified 33-category opportunity matrix & quadrants
 │   ├── stratified_correlations_summary.csv # Day 3: Size vs installs Spearman correlation per category
+│   ├── top_revenue_apps_summary.csv        # Day 4: Top grossing paid apps ranking
 │   └── figures/
 │       ├── 01_category_distribution.png    # Day 3: Saturated vs niche category distribution
 │       ├── 02_rating_distributions.png     # Day 3: Rating KDE, skewness & category boxplots
 │       ├── 03_size_vs_installs_scatter.png # Day 3: App size vs log10 installs scatter & trend
 │       ├── 04_category_size_installs_correlations.png # Day 3: Stratified category correlation ranking
+│       ├── 05_paid_vs_free_pricing.png     # Day 4: Paid vs free distribution & price curve
+│       ├── 06_category_revenue_estimation.png # Day 4: Category gross revenue & paid catalog share
+│       ├── 07_sentiment_distribution.png   # Day 4: Multi-engine sentiment & category polarity extremes
+│       ├── 08_market_bubble_dashboard.png  # Day 4: Publication strategic opportunity bubble chart
+│       ├── 08_market_opportunity_dashboard.html # Day 4: Interactive Plotly bubble chart dashboard
 │       ├── day2_data_cleaning_audit.png    # Day 2: Retention, install tiers, app types & sentiment
 │       └── day2_missing_data_profile.png   # Day 2: Missing value rates before vs. after cleaning
 ├── src/
-│   ├── __init__.py                         # Package initialization exposing cleaning and analysis APIs
+│   ├── __init__.py                         # Package initialization exposing all modular analytical APIs
 │   ├── category_ratings_analysis.py        # Day 3: Category, ratings & correlation analytical engine
-│   └── data_cleaning.py                    # Day 2: Modular production data cleaning pipeline
+│   ├── data_cleaning.py                    # Day 2: Modular production data cleaning pipeline
+│   └── pricing_sentiment_analysis.py       # Day 4: Pricing, revenue, sentiment & dashboard engine
 └── tests/
     ├── __init__.py                         # Test package initialization
     ├── test_category_ratings.py            # Day 3: Pytest suite for category & correlation calculations
-    └── test_cleaning.py                    # Day 2: Pytest validation suite for data transformations
+    ├── test_cleaning.py                    # Day 2: Pytest validation suite for data transformations
+    └── test_pricing_sentiment.py           # Day 4: Pytest validation suite for pricing & sentiment
 ```
 
 ---
@@ -254,7 +266,7 @@ The size-to-installs dependency varies substantially by application domain:
 
 ### 5. Automated Testing & Verification
 
-A dedicated unit and regression test suite is implemented across [`tests/test_cleaning.py`](tests/test_cleaning.py) and [`tests/test_category_ratings.py`](tests/test_category_ratings.py):
+A dedicated unit and regression test suite is implemented across [`tests/test_cleaning.py`](tests/test_cleaning.py), [`tests/test_category_ratings.py`](tests/test_category_ratings.py), and [`tests/test_pricing_sentiment.py`](tests/test_pricing_sentiment.py):
 - **`test_compute_category_distribution`:** Validates category aggregation across all 33 categories, 100% cumulative share bounds, and identifies top (`FAMILY`) and bottom (`BEAUTY`) sectors.
 - **`test_compute_rating_statistics`:** Verifies 8,196 rated vs 1,463 unrated counts, left-skewed rating inflation ($\text{skew} < -1.0$), median (4.30), and IQR bounds.
 - **`test_compute_category_ratings`:** Validates category-level mean rating sorting (`EVENTS` highest, `DATING` lowest < 4.0), and coverage percentage metrics.
@@ -262,25 +274,172 @@ A dedicated unit and regression test suite is implemented across [`tests/test_cl
 - **`test_compute_stratified_correlations`:** Validates domain stratification for categories with $n \ge 30$ and checks top correlation sectors (`SHOPPING`, `ART_AND_DESIGN`).
 - **`test_generate_category_ratings_reports`:** Confirms end-to-end report and figure serialization integrity using mock/temporary directories.
 
+---
+
+## 💰 Day 4: Pricing Strategy, Revenue Modeling, Sentiment Dynamics & Interactive Dashboard
+
+### 1. Pricing Structure & Paid vs. Free Market Dynamics
+
+- **Catalog Monetization Split ($n = 9,659$ apps)**:
+  - **Free Applications:** **8,905 apps** (**92.19%** market share)
+  - **Paid Applications:** **754 apps** (**7.81%** market share)
+  - *Market Reality:* Over 92% of the store relies on zero-barrier entry, making upfront paywalls an exceptional monetization strategy that requires strong brand loyalty or specialized functionality.
+
+- **Statistical Distribution of Paid App Prices ($n = 754$)**:
+  - **Minimum Price:** **$0.99** | **Median Price:** **$2.99** | **Mean Price:** **$14.06**
+  - **Interquartile Range (IQR):** $[1.49, 4.99]$ ($\text{IQR} = \$3.50$)
+  - **Standard Deviation:** **$58.82** (Extremely right-skewed due to luxury novelty outliers)
+
+- **Price Tier Segmentation**:
+  1. **Tier 1 — Micro / Sub-$2 ($0.99 – $1.99):** 269 apps (35.7% of paid catalog)
+  2. **Tier 2 — Mid-Tier Standard ($2.00 – $4.99):** 328 apps (43.5% of paid catalog)
+     - *Key Finding:* **79.2% of all paid apps cluster strictly under $5.00**, establishing $4.99 as the psychological resistance ceiling for mainstream Android consumers.
+  3. **Tier 3 — Premium Application ($5.00 – $9.99):** 83 apps (11.0%)
+  4. **Tier 4 — Professional / Enterprise ($10.00 – $29.99):** 58 apps (7.7%) — specialized medical, navigation, and technical utilities.
+  5. **Tier 5 — High-Ticket / Luxury Outliers ($30.00+):** 16 apps (2.1%) — includes notorious novelty status apps (`I am rich`, `I Am Rich Premium`) priced between **$379.99** and **$400.00** with minimal cumulative installs.
+
+#### Visual Distribution: Price Tier Breakdown & Paid Price Curve
+![Paid vs Free Pricing](reports/figures/05_paid_vs_free_pricing.png)
+
+---
+
+### 2. Category-Level Estimated Revenue Modeling
+
+To quantify commercial viability by domain, gross paid revenue was modeled using the empirical proxy formula:
+$$\text{Estimated Gross Revenue} = \text{Price} \times \text{Installs}$$
+
+- **Overall Paid Market Size:** **$291,142,408.00 (~$291.14 Million USD)** across 754 paid offerings.
+- **Top 5 Grossing Categories**:
+  1. **`FAMILY`:** **$115,673,500.00** (**39.73%** store paid revenue share, 185 paid apps, 31.0M paid installs)
+  2. **`GAME`:** **$40,688,600.00** (**13.98%** revenue share, 82 paid apps, 21.1M paid installs)
+  3. **`FINANCE`:** **$25,726,680.00** (**8.84%** revenue share, 17 paid apps, high unit price skew)
+  4. **`LIFESTYLE`:** **$19,615,500.00** (**6.74%** revenue share, 19 paid apps)
+  5. **`PERSONALIZATION`:** **$15,254,770.00** (**5.24%** revenue share, 81 paid apps)
+
+- **Top Grossing Paid Applications**:
+  - `Minecraft`: **$69,900,000.00** ($6.99 price × 10,000,000+ installs)
+  - `Hitman Sniper`: **$9,900,000.00** ($0.99 price × 10,000,000+ installs)
+  - `Grand Theft Auto: San Andreas`: **$6,990,000.00** ($6.99 price × 1,000,000+ installs)
+  - `Facetune - For Free Style Collages`: **$5,990,000.00** ($5.99 price × 1,000,000+ installs)
+
+#### Visual Ranking: Top 15 Categories by Revenue & Paid Catalog Ratio
+![Category Revenue Estimation](reports/figures/06_category_revenue_estimation.png)
+
+---
+
+### 3. Natural Language Processing Sentiment Analysis (VADER vs. TextBlob)
+
+User sentiment was evaluated across **29,692 cleaned customer reviews** using a dual-engine algorithmic architecture:
+- **TextBlob:** Lexicon-based pattern analyzer calculating polarity $[-1.0, +1.0]$ and subjectivity $[0.0, 1.0]$.
+- **VADER (Valence Aware Dictionary and sEntiment Reasoner):** Rule-based model specifically calibrated for microblog and mobile app feedback, interpreting emojis, slang, capitalization, and punctuation punctuation intensifiers (`!!!`).
+
+| Sentiment Class | TextBlob Count | TextBlob Share (%) | VADER Count | VADER Share (%) |
+| :--- | :---: | :---: | :---: | :---: |
+| **Positive** | 19,015 | 64.04% | 19,183 | 64.61% |
+| **Neutral** | 4,356 | 14.67% | 3,982 | 13.41% |
+| **Negative** | 6,321 | 21.29% | 6,527 | 21.98% |
+
+- **Multi-Engine Agreement:** **73.1%** classification agreement across all 29,692 reviews, confirming robust cross-algorithmic consensus.
+- **Mean Scores:** TextBlob Polarity mean **+0.183** (median: +0.150, std: 0.283); VADER Compound mean **+0.334** (median: +0.477, std: 0.528).
+
+#### Visual Comparison: Multi-Engine Breakdown & Polarity Extremes
+![Sentiment Distribution](reports/figures/07_sentiment_distribution.png)
+
+---
+
+### 4. Category Sentiment Polarity & Extremes
+
+Aggregating sentiment scores by app category uncovers stark emotional divides in user satisfaction:
+
+- **Top 5 Highest User Delight Categories**:
+  1. `EVENTS`: Mean VADER Compound **+0.473** (79.1% Positive, 10.1% Negative)
+  2. `EDUCATION`: Mean VADER Compound **+0.449** (76.3% Positive, 11.9% Negative)
+  3. `ART_AND_DESIGN`: Mean VADER Compound **+0.421** (73.6% Positive, 13.6% Negative)
+  4. `PARENTING`: Mean VADER Compound **+0.412** (71.9% Positive, 14.8% Negative)
+  5. `AUTO_AND_VEHICLES`: Mean VADER Compound **+0.405** (72.2% Positive, 15.0% Negative)
+
+- **Bottom 5 Lowest User Sentiment Categories**:
+  1. `DATING`: Mean VADER Compound **+0.142** (Only 48.9% Positive, **28.4% Negative** — *highest friction and complaint density in the store*)
+  2. `TOOLS`: Mean VADER Compound **+0.219** (56.8% Positive, 23.4% Negative — intrusive ad networks, permission fatigue)
+  3. `MAPS_AND_NAVIGATION`: Mean VADER Compound **+0.224** (57.1% Positive, 22.9% Negative — battery drain, routing bugs)
+  4. `VIDEO_PLAYERS`: Mean VADER Compound **+0.231** (58.3% Positive, 22.1% Negative — playback codecs, ad interruptions)
+  5. `GAME`: Mean VADER Compound **+0.264** (62.1% Positive, 24.3% Negative — passionate player base, microtransaction backlash)
+
+---
+
+### 5. Multidimensional Market Opportunity Matrix & Strategic Quadrants
+
+By synthesizing category catalog size, download volume, ratings, gross monetization, and NLP sentiment polarity, an empirical **Opportunity Score (0–100)** was calculated for all 33 categories:
+$$S_{\text{opp}} = \left(0.30 \cdot \hat{S}_{\text{sentiment}} + 0.25 \cdot \hat{R}_{\text{rating}} + 0.25 \cdot \hat{V}_{\text{revenue}} + 0.20 \cdot \hat{C}_{\text{niche}}\right) \times 100$$
+
+Where $\hat{S}$, $\hat{R}$, $\hat{V}$, and $\hat{C}$ represent min-max normalized metrics for sentiment, rating, $\log_{10}(\text{Revenue})$, and inverse catalog competition.
+
+#### Strategic Quadrant Taxonomy:
+- **Quadrant I: High Satisfaction / High Delight:** Top ratings & top review sentiment (`EDUCATION` 76.9, `PARENTING` 76.8, `ART_AND_DESIGN` 75.9, `EVENTS` 72.7). Prime strategic targets for premium, focused niche entries with minimal customer acquisition friction.
+- **Quadrant II: High Rating / Latent Review Friction:** Solid numeric ratings masked by simmering qualitative complaints in text reviews.
+- **Quadrant III: High Review Sentiment / Structural Gaps:** Vocal, passionate advocates despite lower average numerical ratings; indicates high potential if technical stability is solved.
+- **Quadrant IV: Red Ocean / High User Friction:** Heavy commercial competition, lower ratings, and high negative review sentiment (`DATING` 46.5, `TOOLS` 52.1, `GAME` 61.2).
+
+#### Visual Matrix: Publication Bubble Chart & Interactive Plotly Dashboard
+![Market Opportunity Matrix](reports/figures/08_market_bubble_dashboard.png)
+
+> **Interactive Visualization Available:** An interactive 3D/hover diagnostic dashboard has been generated at [`reports/figures/08_market_opportunity_dashboard.html`](reports/figures/08_market_opportunity_dashboard.html) with full category inspection tooltips.
+
+---
+
+### 6. Conclusion: 3 Data-Driven Strategic Developer Recommendations
+
+Based on our econometric and NLP empirical findings, prospective Android software founders and product teams should adopt the following strategic playbooks:
+
+1. **Recommendation 1: Monetization Strategy — Target Niche High-Delight Categories with Micro-Pricing ($1.99 – $3.99)**
+   - *Target Sectors:* `EDUCATION`, `ART_AND_DESIGN`, `PARENTING`, `EVENTS`.
+   - *Empirical Rationale:* These categories boast top-decile user sentiment (VADER $> +0.41$) and catalog sizes under 110 apps. Low organic competition drastically reduces App Store Optimization (ASO) acquisition costs. High willingness-to-pay enables sustainable unit economics without invasive ad networks.
+   - *Action Plan:* Launch single-purpose workflow tools with upfront paid pricing ($1.99–$3.99) or annual subscriptions ($9.99/yr), prioritizing pristine UI/UX.
+
+2. **Recommendation 2: Scale Strategy — Adopt Freemium-First Hybrid Monetization in Massive Scale Categories**
+   - *Target Sectors:* `GAME`, `FAMILY`, `PHOTOGRAPHY`, `TOOLS`.
+   - *Empirical Rationale:* 92.19% of apps are Free, capturing $>98\%$ of total install volume. Upfront paywalls in mass consumer entertainment face extreme friction unless backed by global intellectual property (e.g., *Minecraft*). Moreover, 79.2% of existing paid apps price strictly below $5.00.
+   - *Action Plan:* Deploy zero-barrier free downloads with hybrid monetization: core utility/gameplay free, monetized through rewarded opt-in ads and tiered In-App Purchases (IAP) at $0.99, $2.99, and $4.99.
+
+3. **Recommendation 3: Competitive Strategy — Disrupt Low-Sentiment Sectors by Eliminating Core User Friction**
+   - *Target Sectors:* `DATING`, `TOOLS`, `MAPS_AND_NAVIGATION`, `VIDEO_PLAYERS`.
+   - *Empirical Rationale:* `DATING` is the only category in the store with an average rating $< 4.0$ (3.98) and suffers 28.4% negative reviews. `TOOLS` exhibits rampant user resentment against aggressive ad SDKs, battery drain, and excessive permissions.
+   - *Action Plan:* Develop privacy-first, lightweight, transparent alternatives. Marketing explicitly against incumbent pain points ("Zero Tracking SDKs", "No intrusive full-screen ads") creates immediate organic differentiation and word-of-mouth growth.
+
+---
+
+### 7. Automated Testing & Verification
+
+A dedicated pytest test suite verifies all mathematical calculations, quantile bounds, and serialization routines across [`tests/test_cleaning.py`](tests/test_cleaning.py), [`tests/test_category_ratings.py`](tests/test_category_ratings.py), and [`tests/test_pricing_sentiment.py`](tests/test_pricing_sentiment.py):
+
 ```bash
 $ pytest tests/ -v
 ============================= test session starts =============================
 platform win32 -- Python 3.14.8, pytest-9.1.1, pluggy-1.6.0
 rootdir: C:\Users\Iba Zaidi\Desktop\OIBSIP\DataAnalytics-L2-GooglePlayStore
-collected 10 items
+collected 19 items
 
-tests/test_category_ratings.py::test_compute_category_distribution PASSED [ 10%]
-tests/test_category_ratings.py::test_compute_rating_statistics PASSED    [ 20%]
-tests/test_category_ratings.py::test_compute_category_ratings PASSED     [ 30%]
-tests/test_category_ratings.py::test_compute_size_installs_correlation PASSED [ 40%]
-tests/test_category_ratings.py::test_compute_stratified_correlations PASSED [ 50%]
-tests/test_category_ratings.py::test_generate_category_ratings_reports PASSED [ 60%]
-tests/test_cleaning.py::test_parse_size_to_mb PASSED                     [ 70%]
-tests/test_cleaning.py::test_clean_playstore_apps PASSED                 [ 80%]
-tests/test_cleaning.py::test_clean_user_reviews PASSED                   [ 90%]
-tests/test_cleaning.py::test_saved_cleaned_datasets_exist PASSED         [100%]
+tests/test_category_ratings.py::test_compute_category_distribution PASSED [  5%]
+tests/test_category_ratings.py::test_compute_rating_statistics PASSED    [ 10%]
+tests/test_category_ratings.py::test_compute_category_ratings PASSED     [ 15%]
+tests/test_category_ratings.py::test_compute_size_installs_correlation PASSED [ 21%]
+tests/test_category_ratings.py::test_compute_stratified_correlations PASSED [ 26%]
+tests/test_category_ratings.py::test_generate_category_ratings_reports PASSED [ 31%]
+tests/test_cleaning.py::test_parse_size_to_mb PASSED                     [ 36%]
+tests/test_cleaning.py::test_clean_playstore_apps PASSED                 [ 42%]
+tests/test_cleaning.py::test_clean_user_reviews PASSED                   [ 47%]
+tests/test_cleaning.py::test_saved_cleaned_datasets_exist PASSED         [ 52%]
+tests/test_pricing_sentiment.py::test_compute_pricing_distribution PASSED [ 57%]
+tests/test_pricing_sentiment.py::test_compute_category_monetization PASSED [ 63%]
+tests/test_pricing_sentiment.py::test_get_top_revenue_apps PASSED        [ 68%]
+tests/test_pricing_sentiment.py::test_compute_sentiment_scores PASSED    [ 73%]
+tests/test_pricing_sentiment.py::test_compute_sentiment_metrics PASSED   [ 78%]
+tests/test_pricing_sentiment.py::test_compute_category_sentiment_summary PASSED [ 84%]
+tests/test_pricing_sentiment.py::test_compute_market_opportunity_matrix PASSED [ 89%]
+tests/test_pricing_sentiment.py::test_generate_developer_recommendations PASSED [ 94%]
+tests/test_pricing_sentiment.py::test_generate_all_day4_reports PASSED   [100%]
 
-====================== 10 passed in 18.09s =======================
+====================== 19 passed in 49.88s =======================
 ```
 
 ---
@@ -302,14 +461,21 @@ python src/data_cleaning.py
 python src/category_ratings_analysis.py
 ```
 
-### 4. Run Automated Pytest Suite
+### 4. Execute Pricing, Revenue & Sentiment Analysis Pipeline (Day 4)
 ```bash
+python src/pricing_sentiment_analysis.py
+```
+
+### 5. Run Automated Pytest Suite
+```bash
+# Execute entire test suite (19 passed across Days 2, 3, and 4)
 pytest tests/ -v
 ```
 
-### 5. Launch Interactive Jupyter Notebooks
+### 6. Launch Interactive Jupyter Notebooks
 ```bash
 jupyter notebook Notebooks/01_playstore_inspection_ingestion.ipynb
 jupyter notebook Notebooks/02_playstore_data_cleaning.ipynb
 jupyter notebook Notebooks/03_playstore_category_ratings_size_analysis.ipynb
+jupyter notebook Notebooks/04_playstore_pricing_sentiment_dashboard.ipynb
 ```
