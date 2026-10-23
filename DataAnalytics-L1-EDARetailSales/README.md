@@ -28,7 +28,7 @@ Perform a rigorous Exploratory Data Analysis (EDA) on retail sales data to uncov
 - [x] **Load dataset and perform initial inspection:** shape, column dtypes, null value check (Day 1)
 - [x] **Descriptive statistics:** mean, median, mode, standard deviation for all numerical columns (Day 2)
 - [x] **Time series analysis:** plot monthly and quarterly sales trends using line charts (Day 3)
-- [ ] **Customer demographics analysis:** distribution of customer age groups, gender breakdown
+- [x] **Customer demographics analysis:** distribution of customer age groups, gender breakdown (Day 4)
 - [ ] **Product analysis:** top 10 best-selling products; revenue by product category (bar chart)
 - [ ] **Heatmap:** correlation matrix between numerical variables
 - [ ] **At least one additional visualisation:** reveals a non-obvious insight
@@ -48,13 +48,17 @@ DataAnalytics-L1-EDARetailSales/
 │   └── Sample - Superstore.csv         # Benchmark / reference sales dataset
 ├── Notebooks/
 │   └── 01_retail_sales_eda.ipynb       # Jupyter Notebook exploratory data analysis workflow
-└── screenshots/                        # Exported statistical distribution & time-series visualizations
+└── screenshots/                        # Exported statistical distribution & demographic visualizations
     ├── 01_numerical_distributions_hist_kde.png
     ├── 02_numerical_boxplots.png
     ├── 03_monthly_sales_trend.png
     ├── 04_quarterly_sales_trend.png
     ├── 05_monthly_category_sales_trend.png
-    └── 06_day_of_week_sales_velocity.png
+    ├── 06_day_of_week_sales_velocity.png
+    ├── 07_customer_age_distribution_and_cohorts.png
+    ├── 08_gender_demographics_and_spending.png
+    ├── 09_demographic_category_crosstab.png
+    └── 10_age_gender_spending_matrix.png
 ```
 
 ---
@@ -162,6 +166,53 @@ The primary dataset captures transactional point-of-sale retail records across m
 * [04_quarterly_sales_trend.png](screenshots/04_quarterly_sales_trend.png) — Quarterly sales performance and transaction count progression.
 * [05_monthly_category_sales_trend.png](screenshots/05_monthly_category_sales_trend.png) — Product category monthly revenue trajectories showing seasonal divergence and category hedging.
 * [06_day_of_week_sales_velocity.png](screenshots/06_day_of_week_sales_velocity.png) — Day-of-week revenue turnover and Average Order Value showing Saturday apex.
+
+---
+
+## 👥 Day 4: Customer Demographics & Spending Segmentation Analysis Findings
+
+### 🧑‍🤝‍🧑 Customer Age Cohort Profiling & Spend Capacity
+| Demographic Cohort | Transaction Orders | Customer Share (%) | Total Revenue | Revenue Share (%) | Avg Order Value (AOV) | Median Spend | Avg Units / Basket | Avg Unit Price |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`18–25 (Young Adult)`** ⚡ | 169 | 16.9% | $84,550.00 | 18.5% | **$500.30** *(+9.7%)* | $150.00 | 2.47 | $197.87 |
+| **`26–35 (Early Career)`** 📈 | 205 | 20.5% | $98,480.00 | 21.6% | **$480.39** *(+5.3%)* | $150.00 | 2.51 | $191.00 |
+| **`36–50 (Prime Earning)`** 🏛️ | **313** | **31.3%** | **$139,660.00** | **30.6%** | $446.20 *(-2.1%)* | $120.00 | 2.55 | $171.49 |
+| **`51–64 (Mature)`** 🛡️ | **313** | **31.3%** | $133,310.00 | 29.2% | $425.91 *(-6.6%)* | $120.00 | 2.51 | $166.02 |
+
+---
+
+### 🚻 Gender Breakdown & Commercial Purchasing Parity
+| Gender | Customer Orders | Customer Share (%) | Total Revenue | Revenue Share (%) | Avg Order Value (AOV) | Median Spend | Avg Units / Basket | Avg Unit Price | Avg Customer Age |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`Female`** | **510** | **51.0%** | **$232,840.00** | **51.06%** | **$456.55** | $140.00 | **2.55** | $180.07 | 41.35 yrs |
+| **`Male`** | 490 | 49.0% | $223,160.00 | 48.94% | $455.43 | $130.00 | 2.48 | $179.70 | 41.43 yrs |
+
+---
+
+### 🛍️ Cross-Demographic Category Revenue & AOV Dynamics
+| Demographic Segment | Beauty Revenue (AOV) | Clothing Revenue (AOV) | Electronics Revenue (AOV) | Segment Standout Insight |
+| :--- | :---: | :---: | :---: | :--- |
+| **`18–25 (Young Adult)`** | $31,280 ($521.33) | $26,510 ($519.80) | $26,760 ($461.38) | Premium AOV in Beauty and Apparel; emerging high-ticket consumers. |
+| **`26–35 (Early Career)`** | $31,240 ($466.27) | **$39,975 ($540.20)** 🏆 | $27,265 ($426.02) | **Highest category AOV storewide ($540.20)** in Clothing. |
+| **`36–50 (Prime Earning)`** | **$49,110 ($533.80)** | $42,975 ($380.31) | $47,575 ($440.51) | Heavy spend across all sectors; peaks in Beauty revenue & ticket value. |
+| **`51–64 (Mature)`** | $31,885 ($362.33) | $46,120 ($408.14) | **$55,305 ($493.79)** 👑 | **Largest single revenue pool ($55.3k)** anchored in Electronics. |
+| **`Female Shoppers`** | $74,830 ($450.78) | **$81,275 ($467.10)** | $76,735 ($451.38) | Leads total apparel volume & spending. |
+| **`Male Shoppers`** | $68,685 (**$487.13**) 🎁 | $74,305 ($419.80) | **$80,170 ($466.10)** | Leads tech spend; higher ticket value in Beauty (luxury gifting). |
+
+---
+
+### 📈 Key Day 4 Takeaways & Commercial Insights:
+* **The Youth Spending Premium:** Consumers under 35 represent 37.4% of total orders but deliver superior transaction value (**$500.30 AOV for 18–25** and **$480.39 AOV for 26–35**). Because units-per-basket are stable (~2.5 units), this premium is driven entirely by high-ticket item selection.
+* **Volume Anchors (36–64):** Middle-aged (36–50) and mature (51–64) shoppers represent the bedrock of recurring retail volume, generating **62.6% of orders (626 transactions)** and **$272,970 in total turnover**.
+* **Extraordinary Gender Symmetry:** The customer base is near-perfectly balanced (51.0% Female vs. 49.0% Male; 51.1% vs. 48.9% revenue share) with an AOV variance of merely $1.12 ($456.55 vs. $455.43), reflecting an inclusive catalog with gender-neutral commercial appeal.
+* **Electronics Boom in Mature Adults:** Shoppers aged 51–64 constitute the single largest revenue market for Electronics (**$55,305 across 112 orders, AOV $493.79**), dispelling the notion that consumer electronics appeal exclusively to younger cohorts.
+* **Luxury Gifting Pattern in Men's Beauty:** While female shoppers generate higher gross volume in Beauty, male shoppers spend +$36.35 more per Beauty transaction (**$487.13 vs. $450.78 AOV**), indicating premium gift purchases and luxury grooming choices.
+
+### 🖼️ Exported Visualizations:
+* [07_customer_age_distribution_and_cohorts.png](screenshots/07_customer_age_distribution_and_cohorts.png) — Age histogram/KDE with cohort demarcation, orders vs. revenue distribution, and cohort AOV vs. store benchmark.
+* [08_gender_demographics_and_spending.png](screenshots/08_gender_demographics_and_spending.png) — Gender distribution donuts for order volume and sales turnover, alongside basket metric comparisons.
+* [09_demographic_category_crosstab.png](screenshots/09_demographic_category_crosstab.png) — Product category revenue breakdowns across customer age cohorts and gender.
+* [10_age_gender_spending_matrix.png](screenshots/10_age_gender_spending_matrix.png) — Dual heatmap matrix profiling Total Spend and AOV across Age Cohort × Gender personas.
 
 ---
 
