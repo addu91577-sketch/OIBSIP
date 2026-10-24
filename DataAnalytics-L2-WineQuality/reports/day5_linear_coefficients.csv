@@ -1,0 +1,17 @@
+feature,standardized_coefficient,odds_ratio,directional_impact,rank
+alcohol,0.5151,1.6738,Positive (+),1
+alcohol_to_density_ratio,0.5073,1.6609,Positive (+),2
+sulphates,0.371,1.4491,Positive (+),3
+sulphate_to_chloride_ratio,0.3684,1.4454,Positive (+),4
+free_to_total_so2_ratio,0.3109,1.3646,Positive (+),5
+residual sugar,0.2111,1.235,Positive (+),6
+fixed acidity,0.1251,1.1333,Positive (+),7
+total_acidity,0.0913,1.0956,Positive (+),8
+citric acid,0.0009,1.0009,Positive (+),9
+density,-0.0359,0.9647,Negative (-),10
+chlorides,-0.0702,0.9322,Negative (-),11
+pH,-0.1005,0.9044,Negative (-),12
+free sulfur dioxide,-0.1256,0.882,Negative (-),13
+bound_sulfur_dioxide,-0.2037,0.8157,Negative (-),14
+total sulfur dioxide,-0.2074,0.8127,Negative (-),15
+volatile acidity,-0.3489,0.7054,Negative (-),16

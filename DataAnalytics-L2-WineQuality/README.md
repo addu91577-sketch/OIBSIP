@@ -50,14 +50,21 @@ DataAnalytics-L2-WineQuality/
 │   ├── winequality-red.csv             # Red wine physicochemical & sensory dataset (1,599 × 12)
 │   ├── winequality-white.csv           # White wine physicochemical & sensory dataset (4,898 × 12)
 │   └── winequality.names               # UCI dataset citation & attribute documentation
+├── models/
+│   ├── champion_rf_pipeline.joblib     # Serialized Champion Random Forest classification pipeline (2.48 MB)
+│   └── champion_rf_pipeline.json       # Production metadata, hyperparameter configuration & schema specs
 ├── Notebooks/
 │   ├── 01_wine_quality_inspection.ipynb # Day 1: Data ingestion, schema inspection & class distribution
 │   ├── 02_wine_quality_eda.ipynb       # Day 2: Exploratory data analysis, distributions, outliers & correlation
 │   ├── 03_target_engineering_and_baseline_models.ipynb # Day 3: Target binning, domain features & baseline models
-│   └── 04_hyperparameter_optimization_feature_importance_and_model_evaluation.ipynb # Day 4: Tuning, feature importance & evaluation
+│   ├── 04_hyperparameter_optimization_feature_importance_and_model_evaluation.ipynb # Day 4: Tuning, feature importance & evaluation
+│   └── 05_model_interpretation_feature_importance_and_champion_pipeline.ipynb # Day 5: Interpretability, PDP, serialization & live inference
 └── reports/
-    ├── day4_feature_importance_rf.csv          # Feature importance rankings (MDI & Permutation)
-    ├── day4_model_comparison_table.csv         # Side-by-side baseline vs tuned benchmark matrix
+    ├── day4_feature_importance_rf.csv          # Day 4 feature importance rankings
+    ├── day4_model_comparison_table.csv         # Day 4 benchmark matrix
+    ├── day5_rf_feature_importance.csv          # Day 5 Gini MDI & permutation importance rankings
+    ├── day5_linear_coefficients.csv            # Day 5 standardized linear weights & odds ratio multipliers
+    ├── day5_enological_decision_rules.csv      # Day 5 empirical chemical shifts & cellar rules
     └── figures/
         ├── day1_quality_distribution.png           # Annotated quality score frequency distribution plot
         ├── day2_univariate_distributions.png       # 11-panel histogram & KDE distributions
@@ -71,11 +78,17 @@ DataAnalytics-L2-WineQuality/
         ├── day3_roc_curves.png                     # Receiver Operating Characteristic (ROC) curves
         ├── day3_precision_recall_curves.png        # Precision-Recall curves vs prevalence baseline
         ├── day4_cv_performance_comparison.png     # Stratified 5-Fold CV metric comparison (Baseline vs Tuned)
-        ├── day4_feature_importance_rf.png          # Dual-panel Random Forest feature importance (MDI & Permutation)
+        ├── day4_feature_importance_rf.png          # Dual-panel Random Forest feature importance
         ├── day4_tuned_confusion_matrices.png       # Side-by-side tuned confusion matrix heatmaps
         ├── day4_precision_recall_curves.png        # Precision-Recall curves comparing tuned vs baseline models
         ├── day4_roc_curves.png                     # Receiver Operating Characteristic (ROC) curves
-        └── day4_side_by_side_comparison.png       # Comprehensive multi-metric benchmark comparison bar chart
+        ├── day4_side_by_side_comparison.png       # Comprehensive multi-metric benchmark comparison bar chart
+        ├── day5_rf_feature_importance.png          # Dual-panel MDI vs out-of-sample permutation importance
+        ├── day5_permutation_importance_comparison.png # Multi-model cross-architecture permutation comparison
+        ├── day5_linear_coefficients.png            # Diverging directional linear weights & odds ratio multipliers
+        ├── day5_partial_dependence_plots.png       # 6-panel 1D partial dependence profiles & tipping points
+        ├── day5_pdp_2d_interactions.png            # 2D bivariate partial dependence interaction contours
+        └── day5_champion_model_summary.png         # Champion model executive dashboard & chemical contrast
 ```
 
 ---
@@ -448,3 +461,165 @@ After exhaustive comparative benchmarking across Stratified 5-Fold Cross-Validat
 
 ### 📋 Full Oasis Infobyte Task Level 2 Sign-Off
 All 10 required features of the **Oasis Infobyte Data Analytics Task 2 (Wine Quality Prediction)** have been executed, statistically verified, visualized, documented, and delivered in full compliance with project specifications.
+
+
+---
+
+## 🔬 Day 5: Model Interpretation, Feature Importance, Partial Dependence & Champion Pipeline Serialization
+
+### 1. Tree-Based Feature Importance (MDI / Gini Reduction) with Inter-Tree Variance Bounds
+Mean Decrease in Impurity (MDI) was extracted across all $150$ constituent decision trees in the champion Random Forest pipeline. In addition to mean importance, inter-tree standard deviation ($\sigma$) and percentage contribution were computed across all $16$ input features:
+
+| Rank | Physicochemical Feature | MDI Importance (Mean) | Tree-to-Tree Std Dev ($\sigma$) | Relative Share (%) | Out-of-Sample Permutation (ROC-AUC Drop) | Permutation Std Dev | Enological Function & Role |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **1** | **`alcohol_to_density_ratio`** | **0.1687** | ±0.1153 | **16.87%** | **0.0150** | ±0.0108 | Primary indicator of yeast sugar attenuation and full-bodied mouthfeel. |
+| **2** | **`alcohol`** | **0.1457** | ±0.1192 | **14.57%** | 0.0022 | ±0.0098 | Key sensory structural driver; elevated ethanol carries aromatics and warmth. |
+| **3** | **`sulphates`** | **0.0917** | ±0.0620 | **9.17%** | **0.0358** | ±0.0081 | Highest permutation drop: potassium sulphate preserves wine against oxidation. |
+| **4** | **`volatile acidity`** | **0.0755** | ±0.0468 | **7.55%** | **0.0084** | ±0.0029 | Vinegar spoilage marker; acetic acid $>0.40	ext{ g/dm}^3$ destroys premium balance. |
+| **5** | **`sulphate_to_chloride_ratio`** | **0.0631** | ±0.0441 | **6.31%** | **0.0119** | ±0.0019 | Balances protective antioxidants against unpleasant mineral salinity. |
+| **6** | **`citric acid`** | **0.0592** | ±0.0393 | **5.92%** | -0.0003 | ±0.0054 | Natural acid providing freshness, crispness, and sensory liveliness. |
+| **7** | **`bound_sulfur_dioxide`** | **0.0536** | ±0.0333 | **5.36%** | 0.0018 | ±0.0025 | Sulfur bound to aldehydes and polyphenols; reflects total preservative load. |
+| **8** | **`free_to_total_so2_ratio`** | **0.0445** | ±0.0216 | **4.45%** | -0.0001 | ±0.0015 | Active unbound preservative fraction protecting against microbial contamination. |
+| **9** | **`pH`** | **0.0433** | ±0.0224 | **4.33%** | 0.0025 | ±0.0027 | Acidity buffer; stabilizes coloration, enzymatic activity, and antimicrobial power. |
+| **10** | **`total sulfur dioxide`** | **0.0425** | ±0.0234 | **4.25%** | 0.0069 | ±0.0052 | Total antioxidant reservoir; excessive levels impart pungent sulfur odors. |
+
+![Random Forest MDI vs Out-of-Sample Permutation](reports/figures/day5_rf_feature_importance.png)
+
+---
+
+### 2. Multi-Model Out-of-Sample Permutation Feature Importance Comparison
+To verify that the identified drivers are universal rather than artifacts of decision tree mechanics, **Permutation Feature Importance** (ROC-AUC scoring, 5 repeats) was evaluated on the held-out test set ($N=320$) across all three tuned architectures:
+
+![Cross-Model Permutation Comparison](reports/figures/day5_permutation_importance_comparison.png)
+
+- **Unanimous Agreement on Core Drivers:** `sulphates`, `alcohol_to_density_ratio`, `volatile acidity`, and `sulphate_to_chloride_ratio` consistently induce the highest ROC-AUC degradation across Random Forest, Support Vector Classifier (SVC), and regularized SGD Classifier.
+- **Cardianlity Bias Mitigation:** While raw `alcohol` exhibited high MDI importance due to continuous split frequency, `sulphates` proved to be the single most critical out-of-sample stabilizer for preventing misclassification (+0.0358 ROC-AUC degradation when shuffled).
+
+---
+
+### 3. Directional Decision Weights: Standardized Linear Coefficients (SGD)
+While ensemble trees provide non-linear partitions, the standardized logistic regression weights ($eta$) from the tuned SGD classifier reveal clear directional attribution: each unit shift in standardized feature alters the odds of being classified as Reserve Quality ($Quality \ge 7$) by factor $e^eta$:
+
+| Rank | Physicochemical Feature | Standardized Weight ($eta$) | Odds Ratio ($e^eta$) | Directional Impact | Practical Enological Translation |
+| :---: | :--- | :---: | :---: | :---: | :--- |
+| **1** | **`alcohol`** | **+0.5151** | **1.6738** | **Positive (+)** | +67.4% odds increase per +1 SD alcohol; physiological ripeness is vital. |
+| **2** | **`alcohol_to_density_ratio`** | **+0.5073** | **1.6609** | **Positive (+)** | +66.1% odds increase; confirms complete fermentation sugar attenuation. |
+| **3** | **`sulphates`** | **+0.3710** | **1.4491** | **Positive (+)** | +44.9% odds increase; potassium sulphate protects delicate aromatics. |
+| **4** | **`sulphate_to_chloride_ratio`** | **+0.3684** | **1.4454** | **Positive (+)** | +44.5% odds increase; antioxidant coverage without mineral salinity. |
+| **5** | **`free_to_total_so2_ratio`** | **+0.3109** | **1.3646** | **Positive (+)** | +36.5% odds increase; active unbound SO2 maintains freshness. |
+| **6** | **`residual sugar`** | **+0.2111** | **1.2350** | **Positive (+)** | +23.5% odds increase; balanced residual sweetness softens tannins. |
+| **7** | **`fixed acidity`** | **+0.1251** | **1.1333** | **Positive (+)** | +13.3% odds increase; tartaric acid backbone provides aging stability. |
+| **8** | **`total_acidity`** | **+0.0913** | **1.0956** | **Positive (+)** | +9.6% odds increase; overall acid structure. |
+| **9** | **`citric acid`** | **+0.0009** | **1.0009** | **Positive (+)** | +0.1% odds increase; neutral-to-slight freshness lift. |
+| **10** | **`density`** | **-0.0359** | **0.9647** | **Negative (-)** | -3.5% odds decrease; heavy watery must density suppresses quality. |
+| **11** | **`chlorides`** | **-0.0702** | **0.9322** | **Negative (-)** | -6.8% odds decrease; excessive mineral salinity causes brackish mouthfeel. |
+| **12** | **`pH`** | **-0.1005** | **0.9044** | **Negative (-)** | -9.6% odds decrease; elevated pH (>3.45) accelerates oxidation. |
+| **13** | **`free sulfur dioxide`** | **-0.1256** | **0.8820** | **Negative (-)** | -11.8% odds decrease; unbuffered excess free SO2 creates harshness. |
+| **14** | **`bound_sulfur_dioxide`** | **-0.2037** | **0.8157** | **Negative (-)** | -18.4% odds decrease; bound sulfur causes stale, reductive off-odors. |
+| **15** | **`total sulfur dioxide`** | **-0.2074** | **0.8127** | **Negative (-)** | -18.7% odds decrease; excessive total sulfur blunts berry fruit flavors. |
+| **16** | **`volatile acidity`** | **-0.3489** | **0.7054** | **Negative (-)** | **-29.5% odds decrease; chief defect marker; acetic spoilage.** |
+
+![Directional Linear Coefficients](reports/figures/day5_linear_coefficients.png)
+
+---
+
+### 4. Non-Linear Partial Dependence Profiling (1D PDP & Tipping Points)
+Partial Dependence Plots trace the marginal probability of a lot being classified as Reserve Quality ($Quality \ge 7$) as individual physicochemical measurements vary across their empirical ranges:
+
+![Partial Dependence Profiles](reports/figures/day5_partial_dependence_plots.png)
+
+1. **Alcohol Tipping Point ($10.5\% 	o 11.5\%$ vol):** Marginal probability remains flat ($<12\%$) for alcohol levels below $10.5\%$, inflects sharply upward between $10.5\%$ and $11.5\%$, and plateaus at $>45\%$ probability above $12.0\%$.
+2. **Volatile Acidity Spoilage Cliff ($>0.40	ext{ g/dm}^3$):** Rapid monotonic decline in reserve probability once acetic acid crosses $0.40	ext{ g/dm}^3$. At concentrations $>0.60	ext{ g/dm}^3$, probability approaches zero regardless of alcohol content.
+3. **Sulphate Saturation Plateau ($0.65 - 0.75	ext{ g/dm}^3$):** Sharp positive lift from $0.50$ to $0.70	ext{ g/dm}^3$, followed by plateauing saturation above $0.75	ext{ g/dm}^3$.
+4. **Free-to-Total $SO_2$ Ratio ($\ge 0.25$):** Low active free ratios ($<0.20$) yield baseline probability ($<14\%$), whereas ratios $\ge 0.25$ maximize microbial protection and reserve likelihood.
+
+---
+
+### 5. Bivariate 2D Interaction Contours (Enological Synergies)
+Evaluating 2D partial dependence surfaces illuminates the non-linear compensatory interactions between chemical properties:
+
+![2D Bivariate Interaction Contours](reports/figures/day5_pdp_2d_interactions.png)
+
+- **Alcohol vs. Volatile Acidity ("The Sweet Spot"):** A distinct high-probability island ($>50\%$ Reserve likelihood) is established only when **alcohol exceeds $11.5\%$ vol** AND **volatile acidity is contained below $0.45	ext{ g/dm}^3$**. High alcohol cannot rescue a wine afflicted with elevated acetic acid, and low volatile acidity cannot compensate for weak, watery alcohol body.
+- **Sulphates vs. Chlorides:** The optimal zone occurs when **sulphates exceed $0.70	ext{ g/dm}^3$** while **chlorides remain below $0.075	ext{ g/dm}^3$**, ensuring pristine antioxidant coverage without saline mineral contamination.
+
+---
+
+### 6. Quantitative Enological Decision Rules & Cellar Blending Blueprint
+Comparing empirical distributions between Normal ($Quality < 7$) and Reserve ($Quality \ge 7$) wines yields concrete cellar thresholds for harvest maturity, fermentation monitoring, and barrel selection:
+
+| Physicochemical Compound | Normal Median | Reserve Median | Percentage Shift | Enological Cellar Blending Guideline |
+| :--- | :---: | :---: | :---: | :--- |
+| **Citric Acid** | $0.24	ext{ g/dm}^3$ | $0.40	ext{ g/dm}^3$ | **+47.99%** | Target $\ge 0.35	ext{ g/dm}^3$; enhances freshness and microbial stability against spoilage. |
+| **Sulphate-to-Chloride Ratio** | $7.56$ | $10.20$ | **+34.93%** | Target $\ge 10.0$; balance antioxidant preservation against salty mineral taint. |
+| **Bound Sulfur Dioxide** | $23.0	ext{ mg/dm}^3$ | $14.0	ext{ mg/dm}^3$ | **-34.89%** | Keep bound $SO_2 \le 25.0	ext{ mg/dm}^3$ to avoid stale, sulfurous oxidation aromas. |
+| **Total Sulfur Dioxide** | $39.5	ext{ mg/dm}^3$ | $27.0	ext{ mg/dm}^3$ | **-27.74%** | Cap total $SO_2 \le 40.0	ext{ mg/dm}^3$; excessive sulfur blunts delicate berry aromatics. |
+| **Volatile Acidity** | $0.54	ext{ g/dm}^3$ | $0.37	ext{ g/dm}^3$ | **-25.87%** | Keep strictly $\le 0.40	ext{ g/dm}^3$ via cellar sanitation to prevent vinegar spoilage. |
+| **Free-to-Total $SO_2$ Ratio** | $0.36$ | $0.44$ | **+15.87%** | Maintain active free ratio $\ge 0.25$ to guarantee microbial protection without bound sulfur odor. |
+| **Sulphates** | $0.60	ext{ g/dm}^3$ | $0.74	ext{ g/dm}^3$ | **+15.31%** | Maintain $\ge 0.70	ext{ g/dm}^3$ potassium sulphate for antioxidant defense and $SO_2$ stability. |
+| **Chlorides** | $0.080	ext{ g/dm}^3$ | $0.073	ext{ g/dm}^3$ | **-14.97%** | Limit strictly $\le 0.075	ext{ g/dm}^3$; prevents brackish mouthfeel from excessive soil salinity. |
+| **Free Sulfur Dioxide** | $14.0	ext{ mg/dm}^3$ | $11.0	ext{ mg/dm}^3$ | **-13.55%** | Maintain $15.0 - 20.0	ext{ mg/dm}^3$ free $SO_2$ at bottling for long cellar longevity. |
+| **Alcohol-to-Density Ratio** | $10.02$ | $11.63$ | **+12.46%** | Target $\ge 11.60$; indicates high fermentation conversion and sugar attenuation. |
+| **Alcohol** | $10.0\%	ext{ vol}$ | $11.6\%	ext{ vol}$ | **+11.51%** | Target $\ge 11.5\%	ext{ vol}$ during harvest maturation for full body & phenolic ripeness. |
+
+---
+
+### 7. Champion Model Serialization & Production Artifact Packaging
+The champion Random Forest pipeline was packaged into a production-ready artifact and verified:
+- **Model Binary:** `models/champion_rf_pipeline.joblib` (2.48 MB)
+- **Metadata Specification:** `models/champion_rf_pipeline.json` recording full pipeline steps, hyperparameters, input schema, test benchmarks, and operating threshold calibrations.
+- **Deserialization Verification:** Pipeline reload confirmed seamless integrity with `StandardScaler` and `RandomForestClassifier(n_estimators=150, class_weight='balanced')`.
+
+---
+
+### 8. Live Production Single-Sample Inference Engine Demonstration
+A dedicated single-sample inference function was implemented with automated ratio feature synthesis and rule-based enological diagnostics:
+
+```python
+# Sample A: Candidate Reserve Lot (High ripeness, clean fermentation)
+sample_a = {
+    'fixed acidity': 8.5, 'volatile acidity': 0.32, 'citric acid': 0.45,
+    'residual sugar': 2.1, 'chlorides': 0.065, 'free sulfur dioxide': 18.0,
+    'total sulfur dioxide': 36.0, 'density': 0.9955, 'pH': 3.30,
+    'sulphates': 0.82, 'alcohol': 12.4
+}
+# Output:
+# -> Prediction:  Reserve (Good Quality >= 7)
+# -> Probability: 83.33% (Passes tau = 0.35)
+# -> Action:      PASS (Reserve Lot)
+# -> Diagnostics:
+#    ✓ Optimal alcohol concentration (12.4%), providing robust structural body.
+#    ✓ Pristine volatile acidity (0.32 g/dm3), excellent microbial hygiene.
+#    ✓ Strong antioxidant protection (0.82 g/dm3 potassium sulphate).
+
+# Sample B: Commercial Table Wine Lot (Spoilage markers present)
+sample_b = {
+    'fixed acidity': 7.8, 'volatile acidity': 0.68, 'citric acid': 0.12,
+    'residual sugar': 2.4, 'chlorides': 0.092, 'free sulfur dioxide': 8.0,
+    'total sulfur dioxide': 75.0, 'density': 0.9978, 'pH': 3.42,
+    'sulphates': 0.52, 'alcohol': 9.8
+}
+# Output:
+# -> Prediction:  Normal (< 7)
+# -> Probability: 13.33% (Fails tau = 0.35)
+# -> Action:      FLAG (Commercial Table Lot)
+# -> Diagnostics:
+#    ⚠ Low alcohol concentration (9.8% < 11.5%), risk of flabby mouthfeel.
+#    ⚠ Elevated volatile acidity (0.68 g/dm3 > 0.40), acetic spoilage risk.
+#    ⚠ Moderate to low sulphate preservation (0.52 g/dm3 < 0.70).
+```
+
+---
+
+### 9. Master Executive Champion Model Dashboard
+
+![Champion Model Executive Summary Dashboard](reports/figures/day5_champion_model_summary.png)
+
+#### Final Commercial Deployment Specifications:
+- **Recommended Industrial Screening Threshold:** $	au = 0.35$
+- **Industrial Screening Balanced Accuracy:** **85.20%**
+- **Industrial Screening Reserve Recall:** **79.07%** ($34$ out of $43$ true reserve lots captured)
+- **Single-Sample Inference Latency:** $< 95	ext{ ms}$
+- **Deployment Status:** **APPROVED FOR INDUSTRIAL CELLAR SCREENING**
+
+---

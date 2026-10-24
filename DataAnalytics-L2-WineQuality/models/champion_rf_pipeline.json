@@ -1,0 +1,63 @@
+{
+    "project": "Oasis Infobyte Data Analytics Task 2 - Wine Quality Prediction",
+    "day": 5,
+    "model_name": "Champion Tuned Random Forest Classifier",
+    "serialization_format": "joblib",
+    "estimator_pipeline": [
+        {
+            "step": "scaler",
+            "class": "sklearn.preprocessing.StandardScaler"
+        },
+        {
+            "step": "clf",
+            "class": "sklearn.ensemble.RandomForestClassifier"
+        }
+    ],
+    "hyperparameters": {
+        "n_estimators": 150,
+        "max_depth": null,
+        "min_samples_split": 2,
+        "class_weight": "balanced",
+        "random_state": 42
+    },
+    "feature_schema": {
+        "total_features": 16,
+        "feature_names": [
+            "fixed acidity",
+            "volatile acidity",
+            "citric acid",
+            "residual sugar",
+            "chlorides",
+            "free sulfur dioxide",
+            "total sulfur dioxide",
+            "density",
+            "pH",
+            "sulphates",
+            "alcohol",
+            "total_acidity",
+            "bound_sulfur_dioxide",
+            "free_to_total_so2_ratio",
+            "alcohol_to_density_ratio",
+            "sulphate_to_chloride_ratio"
+        ],
+        "raw_physicochemical_count": 11,
+        "domain_engineered_count": 5
+    },
+    "test_set_performance": {
+        "test_partition_size": 320,
+        "accuracy": 0.9313,
+        "balanced_accuracy": 0.8424,
+        "precision_good": 0.7561,
+        "recall_good": 0.7209,
+        "f1_good": 0.7381,
+        "roc_auc": 0.9349,
+        "pr_auc": 0.826
+    },
+    "calibrated_screening_operating_point": {
+        "threshold": 0.35,
+        "balanced_accuracy": 0.852,
+        "recall_good": 0.7907,
+        "captured_lots": "34 / 43",
+        "use_case": "Automated pre-barrel cellar screening for sommelier lot grading"
+    }
+}
