@@ -16,6 +16,10 @@ from .utils import (
     enforce_strict_dtypes,
     verify_type_integrity,
     plot_day5_type_casting_audit,
+    encode_categorical_features,
+    audit_memory_reduction,
+    verify_categorical_integrity,
+    plot_day6_categorical_and_memory_audit,
 )
 
 __all__ = [
@@ -32,4 +36,8 @@ __all__ = [
     'enforce_strict_dtypes',
     'verify_type_integrity',
     'plot_day5_type_casting_audit',
+    'encode_categorical_features',
+    'audit_memory_reduction',
+    'verify_categorical_integrity',
+    'plot_day6_categorical_and_memory_audit',
 ]

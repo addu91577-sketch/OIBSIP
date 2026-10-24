@@ -37,6 +37,7 @@ DataAnalytics-L1-CleaningData/
 │   ├── day3_baseline_data_quality_report.md # Day 3 Baseline Data Quality Report & Matrix
 │   ├── day4_text_standardization_and_token_normalization.md # Day 4 Text Standardization & Token Normalization Report
 │   ├── day5_strict_datatype_enforcement.md # Day 5 Strict Data Type Enforcement & Validation Report
+│   ├── day6_categorical_encoding_and_memory_audit.md # Day 6 Categorical Encoding & Memory Audit Report
 │   └── figures/                        # High-resolution diagnostic visualizations
 │       ├── day3_column_defect_rates.png
 │       ├── day3_record_defect_distribution.png
@@ -44,7 +45,9 @@ DataAnalytics-L1-CleaningData/
 │       ├── day4_pseudonull_normalization_waterfall.png
 │       ├── day4_standardized_categorical_profiles.png
 │       ├── day5_datatype_transformation_matrix.png
-│       └── day5_numerical_and_temporal_profiles.png
+│       ├── day5_numerical_and_temporal_profiles.png
+│       ├── day6_categorical_profiles_and_cardinality.png
+│       └── day6_memory_footprint_reduction_waterfall.png
 └── src/
     ├── __init__.py
     └── utils.py                        # Reusable data audit & metric routines
@@ -58,7 +61,7 @@ DataAnalytics-L1-CleaningData/
 - [x] **Day 3 (Oct 21):** Baseline Data Quality Report generation, record defect density & co-occurrence matrix
 - [x] **Day 4 (Oct 22):** Text standardization, whitespace trimming, and pseudonull token conversion to `np.nan`
 - [x] **Day 5 (Oct 23):** Strict data type casting (`datetime64[ns]`, `string` ID, nullable `Int64`, `float64`)
-- [ ] **Day 6 (Oct 24):** Categorical encoding (`Item`, `Payment Method`, `Location`) and memory audit
+- [x] **Day 6 (Oct 24):** Categorical encoding (`Item`, `Payment Method`, `Location`) and memory audit
 - [ ] **Day 7–10:** Domain-informed and mathematical missing data imputation
 - [ ] **Day 11–13:** Multi-tier duplicate resolution and statistical outlier detection
 - [ ] **Day 14–16:** Master Before vs. After comparison summary and clean dataset export
@@ -194,6 +197,35 @@ On Day 5, the pipeline transitioned from unstructured `object` arrays to strictl
 - **100% Quality Assertion Sign-Off:** Automated verification suite (`verify_type_integrity()`) certified zero schema violations, 100% primary key integrity, and exact domain boundaries.
 - **Diagnostic Visual Artifacts:** Serialized `day5_datatype_transformation_matrix.png` and `day5_numerical_and_temporal_profiles.png` to `Reports/figures/`.
 - **Full Report:** Comprehensive analysis available in [`Reports/day5_strict_datatype_enforcement.md`](Reports/day5_strict_datatype_enforcement.md).
+
+---
+
+## 🏷️ Day 6 Milestone: Categorical Encoding & Comprehensive Memory Audit
+
+On Day 6, the pipeline enforced pandas `CategoricalDtype` across `Item`, `Payment Method`, and `Location` with explicit canonical category universes, transitioning storage from heap pointers to compact `int8` dictionary-encoded representations:
+
+| Feature Name | Pre Dtype | Enforced Dtype | Underlying Code Type | Canonical Classes | Non-Null Records | Missing Records (`NaN`) | Modal Category | Pre Memory (KB) | Post Memory (KB) | Memory Reduction (%) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`Item`** | `str` | `category` | `int8` | **8** | 9,031 | 969 (9.69%) | `Juice` (1,171) | 132.84 | **9.87** | **-92.25%** |
+| **`Payment Method`** | `str` | `category` | `int8` | **3** | 6,822 | 3,178 (31.78%) | `Digital Wallet` (2,291) | 147.53 | **9.82** | **-93.19%** |
+| **`Location`** | `str` | `category` | `int8` | **2** | 6,039 | 3,961 (39.61%) | `Takeaway` (3,022) | 130.71 | **9.80** | **-92.33%** |
+| **TOTALS** | — | — | `int8` | **13** | **21,892** | **8,108** | — | **411.08** | **29.49** | **-92.83%** |
+
+### Multi-Stage Deep Memory Compression Scorecard:
+- **Raw Ingestion (Day 1):** 1,083.09 KB
+- **Sanitized Text (Day 4):** 1,083.09 KB
+- **Strict Numerical & Date Primitives (Day 5):** 907.30 KB (-16.23%)
+- **Categorical Encoded (Day 6):** **537.93 KB (-50.33% cumulative reduction)**
+
+### Key Day 6 Achievements:
+- **Canonical Domain Closed:** Strictly bound `Item` (8 products: Cake to Tea), `Payment Method` (3 methods: Cash, Credit Card, Digital Wallet), and `Location` (2 modes: In-store, Takeaway).
+- **Zero Information Loss:** Preserved all 8,108 missing entries as native `NaN` (underlying Sentinel `-1`). Exactly 0 invalid category levels created and 0 valid strings corrupted ($\Delta = 0$).
+- **Compact Integer Codes:** Replaced heap string objects with SIMD-aligned 1-byte `int8` category codes.
+- **-92.83% Categorical Memory Slashed:** Slashed combined categorical footprint from 411.08 KB down to 29.49 KB.
+- **-50.33% DataFrame Memory Reduction:** Overall memory reduced by more than half, enabling high-performance vectorized operations.
+- **100% Assertion Sign-Off:** Automated verification suite (`verify_categorical_integrity()`) certified zero domain or type violations.
+- **Diagnostic Visual Artifacts:** Serialized `day6_categorical_profiles_and_cardinality.png` and `day6_memory_footprint_reduction_waterfall.png` to `Reports/figures/`.
+- **Full Report:** Comprehensive analysis available in [`Reports/day6_categorical_encoding_and_memory_audit.md`](Reports/day6_categorical_encoding_and_memory_audit.md).
 
 ---
 

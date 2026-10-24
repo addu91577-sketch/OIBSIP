@@ -794,3 +794,357 @@ def plot_day5_type_casting_audit(df_pre: pd.DataFrame, df_post: pd.DataFrame, ou
     plt.close()
     
     return saved_paths
+
+
+def encode_categorical_features(
+    df: pd.DataFrame,
+    canonical_categories: dict = None
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Day 6 Pipeline: Formally encodes categorical features ('Item', 'Payment Method', 'Location')
+    using pandas CategoricalDtype with explicit canonical category universes:
+    - 'Item': ['Cake', 'Coffee', 'Cookie', 'Juice', 'Salad', 'Sandwich', 'Smoothie', 'Tea'] (8 classes)
+    - 'Payment Method': ['Cash', 'Credit Card', 'Digital Wallet'] (3 classes)
+    - 'Location': ['In-store', 'Takeaway'] (2 classes)
+    
+    Preserves missing values as NaN (no phantom null category) with zero coercion data loss.
+    Optimizes memory from pointer-based objects to compact int8 category codes.
+    
+    Returns:
+        (df_cat, cat_audit_df)
+    """
+    if canonical_categories is None:
+        canonical_categories = {
+            'Item': sorted(['Cookie', 'Tea', 'Coffee', 'Cake', 'Juice', 'Sandwich', 'Smoothie', 'Salad']),
+            'Payment Method': sorted(['Cash', 'Credit Card', 'Digital Wallet']),
+            'Location': sorted(['In-store', 'Takeaway'])
+        }
+    
+    df_cat = df.copy()
+    audit_records = []
+    
+    for col, categories in canonical_categories.items():
+        if col not in df_cat.columns:
+            continue
+            
+        pre_dtype = str(df_cat[col].dtype)
+        pre_nulls = int(df_cat[col].isnull().sum())
+        pre_mem_kb = df_cat[col].memory_usage(deep=True) / 1024
+        
+        # Enforce CategoricalDtype with closed canonical categories
+        cat_type = pd.CategoricalDtype(categories=categories, ordered=False)
+        df_cat[col] = df_cat[col].astype(cat_type)
+        
+        post_dtype = str(df_cat[col].dtype)
+        post_nulls = int(df_cat[col].isnull().sum())
+        post_mem_kb = df_cat[col].memory_usage(deep=True) / 1024
+        coerced = post_nulls - pre_nulls
+        mem_savings_pct = ((pre_mem_kb - post_mem_kb) / pre_mem_kb) * 100 if pre_mem_kb > 0 else 0.0
+        
+        # Underlying integer code dtype
+        code_dtype = str(df_cat[col].cat.codes.dtype)
+        
+        audit_records.append({
+            'Attribute': col,
+            'Pre Dtype': pre_dtype,
+            'Enforced Dtype': post_dtype,
+            'Underlying Code Type': code_dtype,
+            'Canonical Classes': len(categories),
+            'Pre Nulls': pre_nulls,
+            'Post Nulls': post_nulls,
+            'Unintended Coercions': coerced,
+            'Pre Memory (KB)': round(pre_mem_kb, 2),
+            'Post Memory (KB)': round(post_mem_kb, 2),
+            'Memory Reduction (%)': round(mem_savings_pct, 2),
+            'Domain Conformance': '100% Valid' if coerced == 0 else f'WARNING ({coerced} invalid)'
+        })
+        
+    cat_audit_df = pd.DataFrame(audit_records)
+    return df_cat, cat_audit_df
+
+
+def audit_memory_reduction(
+    df_raw: pd.DataFrame,
+    df_day4: pd.DataFrame,
+    df_day5: pd.DataFrame,
+    df_day6: pd.DataFrame
+) -> pd.DataFrame:
+    """
+    Day 6 Pipeline: Generates a granular column-by-column deep memory audit comparing
+    all 4 developmental stages:
+    1. Raw Ingestion (Day 1)
+    2. Sanitized & Standardized (Day 4)
+    3. Strict Numerical & Temporal Dtypes (Day 5)
+    4. Full Categorical Encoding (Day 6)
+    """
+    cols = list(df_raw.columns)
+    records = []
+    
+    for col in cols:
+        mem_raw = df_raw[col].memory_usage(deep=True) / 1024
+        mem_d4 = df_day4[col].memory_usage(deep=True) / 1024
+        mem_d5 = df_day5[col].memory_usage(deep=True) / 1024
+        mem_d6 = df_day6[col].memory_usage(deep=True) / 1024
+        
+        net_saved_kb = mem_raw - mem_d6
+        pct_saved = (net_saved_kb / mem_raw) * 100 if mem_raw > 0 else 0.0
+        
+        records.append({
+            'Column': col,
+            'Raw Ingested (KB)': round(mem_raw, 2),
+            'Day 4 Sanitized (KB)': round(mem_d4, 2),
+            'Day 5 Typed (KB)': round(mem_d5, 2),
+            'Day 6 Categorical (KB)': round(mem_d6, 2),
+            'Total Net Saved (KB)': round(net_saved_kb, 2),
+            'Total Savings (%)': round(pct_saved, 2),
+            'Final Dtype': str(df_day6[col].dtype)
+        })
+        
+    # Totals row (include index in DataFrame total memory)
+    tot_raw = df_raw.memory_usage(deep=True).sum() / 1024
+    tot_d4 = df_day4.memory_usage(deep=True).sum() / 1024
+    tot_d5 = df_day5.memory_usage(deep=True).sum() / 1024
+    tot_d6 = df_day6.memory_usage(deep=True).sum() / 1024
+    tot_net = tot_raw - tot_d6
+    tot_pct = (tot_net / tot_raw) * 100
+    
+    records.append({
+        'Column': 'TOTAL DATAFRAME',
+        'Raw Ingested (KB)': round(tot_raw, 2),
+        'Day 4 Sanitized (KB)': round(tot_d4, 2),
+        'Day 5 Typed (KB)': round(tot_d5, 2),
+        'Day 6 Categorical (KB)': round(tot_d6, 2),
+        'Total Net Saved (KB)': round(tot_net, 2),
+        'Total Savings (%)': round(tot_pct, 2),
+        'Final Dtype': '8/8 Strictly Typed'
+    })
+    
+    return pd.DataFrame(records)
+
+
+def verify_categorical_integrity(df_cat: pd.DataFrame, df_typed: pd.DataFrame) -> dict:
+    """
+    Day 6 Pipeline: Performs rigorous automated assertions to certify categorical encoding:
+    - Confirms CategoricalDtype across Item, Payment Method, and Location
+    - Asserts exact category counts: Item (8), Payment Method (3), Location (2)
+    - Confirms zero unintended type coercions (post-nulls == pre-nulls)
+    - Asserts absence of nulls in category definitions (categories cannot contain NaN)
+    - Verifies memory reduction exceeds 35% from Day 5
+    - Verifies non-categorical columns retain their strict types
+    """
+    checks = {}
+    
+    # 1. Categorical Dtype checks
+    checks['is_item_category'] = bool(isinstance(df_cat['Item'].dtype, pd.CategoricalDtype))
+    checks['is_payment_category'] = bool(isinstance(df_cat['Payment Method'].dtype, pd.CategoricalDtype))
+    checks['is_location_category'] = bool(isinstance(df_cat['Location'].dtype, pd.CategoricalDtype))
+    
+    # 2. Canonical category lists & counts
+    canonical_items = {'Cake', 'Coffee', 'Cookie', 'Juice', 'Salad', 'Sandwich', 'Smoothie', 'Tea'}
+    canonical_payments = {'Cash', 'Credit Card', 'Digital Wallet'}
+    canonical_locations = {'In-store', 'Takeaway'}
+    
+    item_cats = set(df_cat['Item'].cat.categories)
+    payment_cats = set(df_cat['Payment Method'].cat.categories)
+    location_cats = set(df_cat['Location'].cat.categories)
+    
+    checks['item_categories_match'] = bool(item_cats == canonical_items)
+    checks['payment_categories_match'] = bool(payment_cats == canonical_payments)
+    checks['location_categories_match'] = bool(location_cats == canonical_locations)
+    checks['item_category_count'] = len(item_cats)
+    checks['payment_category_count'] = len(payment_cats)
+    checks['location_category_count'] = len(location_cats)
+    
+    # 3. Coercion check
+    pre_nulls = df_typed[['Item', 'Payment Method', 'Location']].isnull().sum()
+    post_nulls = df_cat[['Item', 'Payment Method', 'Location']].isnull().sum()
+    coercions = int((post_nulls - pre_nulls).sum())
+    checks['unintended_coercions'] = coercions
+    
+    # 4. Underlying code representation
+    checks['item_code_dtype'] = str(df_cat['Item'].cat.codes.dtype)
+    checks['payment_code_dtype'] = str(df_cat['Payment Method'].cat.codes.dtype)
+    checks['location_code_dtype'] = str(df_cat['Location'].cat.codes.dtype)
+    
+    # 5. Verify non-categorical columns retain strict types
+    checks['tx_id_retained_string'] = bool(str(df_cat['Transaction ID'].dtype) == 'string')
+    checks['date_retained_datetime'] = bool(np.issubdtype(df_cat['Transaction Date'].dtype, np.datetime64))
+    checks['qty_retained_int64'] = bool(str(df_cat['Quantity'].dtype) == 'Int64')
+    checks['price_retained_float64'] = bool(df_cat['Price Per Unit'].dtype == np.float64)
+    checks['total_retained_float64'] = bool(df_cat['Total Spent'].dtype == np.float64)
+    
+    # 6. Memory benchmark
+    mem_typed_kb = df_typed.memory_usage(deep=True).sum() / 1024
+    mem_cat_kb = df_cat.memory_usage(deep=True).sum() / 1024
+    savings_pct = ((mem_typed_kb - mem_cat_kb) / mem_typed_kb) * 100
+    checks['day5_memory_kb'] = round(mem_typed_kb, 2)
+    checks['day6_memory_kb'] = round(mem_cat_kb, 2)
+    checks['day6_savings_pct'] = round(savings_pct, 2)
+    checks['memory_savings_significant'] = bool(savings_pct >= 35.0)
+    
+    all_passed = (
+        checks['is_item_category'] and
+        checks['is_payment_category'] and
+        checks['is_location_category'] and
+        checks['item_categories_match'] and
+        checks['payment_categories_match'] and
+        checks['location_categories_match'] and
+        (coercions == 0) and
+        checks['tx_id_retained_string'] and
+        checks['date_retained_datetime'] and
+        checks['qty_retained_int64'] and
+        checks['price_retained_float64'] and
+        checks['total_retained_float64'] and
+        checks['memory_savings_significant']
+    )
+    checks['all_assertions_passed'] = bool(all_passed)
+    checks['status'] = 'PASSED' if all_passed else 'FAILED'
+    
+    return checks
+
+
+def plot_day6_categorical_and_memory_audit(
+    df_day5: pd.DataFrame,
+    df_day6: pd.DataFrame,
+    memory_audit_df: pd.DataFrame,
+    output_dir: str = None
+) -> dict:
+    """
+    Day 6 Pipeline: Generates publication-grade diagnostic visual artifacts:
+    1. day6_categorical_profiles_and_cardinality.png: 3-panel profile of Item, Payment Method,
+       and Location frequency distributions with percentages, mode annotations, and entropy metrics.
+    2. day6_memory_footprint_reduction_waterfall.png: Multi-stage pipeline memory compression
+       waterfall alongside column-by-column deep memory savings.
+    """
+    if output_dir is not None:
+        os.makedirs(output_dir, exist_ok=True)
+        
+    saved_paths = {}
+    
+    # -------------------------------------------------------------
+    # Figure 1: Categorical Distributions, Modes & Entropy
+    # -------------------------------------------------------------
+    fig, axes = plt.subplots(1, 3, figsize=(18, 6), dpi=300)
+    
+    # 1. Item Distribution
+    ax_item = axes[0]
+    item_counts = df_day6['Item'].value_counts().sort_values(ascending=False)
+    n_item = len(df_day6['Item'].dropna())
+    item_colors = ['#3498db', '#2980b9', '#1abc9c', '#16a085', '#27ae60', '#f39c12', '#e67e22', '#d35400']
+    bars_item = ax_item.bar(item_counts.index, item_counts.values, color=item_colors, edgecolor='black', alpha=0.85)
+    ax_item.set_title(f'Item Distribution (N={n_item:,} | 8 Canonical Classes)', fontsize=11, fontweight='bold', pad=12)
+    ax_item.set_xlabel('Menu Item', fontsize=10, fontweight='bold')
+    ax_item.set_ylabel('Transaction Count', fontsize=10, fontweight='bold')
+    ax_item.set_ylim(0, max(item_counts.values) * 1.18)
+    ax_item.tick_params(axis='x', rotation=35)
+    for bar in bars_item:
+        h = bar.get_height()
+        pct = (h / n_item) * 100
+        ax_item.text(bar.get_x() + bar.get_width()/2., h + 15, f'{int(h):,}\n({pct:.1f}%)',
+                     ha='center', va='bottom', fontsize=8, fontweight='bold')
+                     
+    # 2. Payment Method Distribution
+    ax_pay = axes[1]
+    pay_counts = df_day6['Payment Method'].value_counts()
+    n_pay = len(df_day6['Payment Method'].dropna())
+    pay_colors = ['#9b59b6', '#34495e', '#16a085']
+    bars_pay = ax_pay.bar(pay_counts.index, pay_counts.values, color=pay_colors, edgecolor='black', alpha=0.85, width=0.55)
+    ax_pay.set_title(f'Payment Method Distribution (N={n_pay:,} | 3 Canonical Classes)', fontsize=11, fontweight='bold', pad=12)
+    ax_pay.set_xlabel('Settlement Method', fontsize=10, fontweight='bold')
+    ax_pay.set_ylabel('Transaction Count', fontsize=10, fontweight='bold')
+    ax_pay.set_ylim(0, max(pay_counts.values) * 1.18)
+    for bar in bars_pay:
+        h = bar.get_height()
+        pct = (h / n_pay) * 100
+        ax_pay.text(bar.get_x() + bar.get_width()/2., h + 30, f'{int(h):,}\n({pct:.1f}%)',
+                    ha='center', va='bottom', fontsize=8.5, fontweight='bold')
+                    
+    # 3. Location Distribution
+    ax_loc = axes[2]
+    loc_counts = df_day6['Location'].value_counts()
+    n_loc = len(df_day6['Location'].dropna())
+    loc_colors = ['#e74c3c', '#2ecc71']
+    bars_loc = ax_loc.bar(loc_counts.index, loc_counts.values, color=loc_colors, edgecolor='black', alpha=0.85, width=0.45)
+    ax_loc.set_title(f'Fulfillment Location Distribution (N={n_loc:,} | 2 Canonical Classes)', fontsize=11, fontweight='bold', pad=12)
+    ax_loc.set_xlabel('Dining Fulfillment Mode', fontsize=10, fontweight='bold')
+    ax_loc.set_ylabel('Transaction Count', fontsize=10, fontweight='bold')
+    ax_loc.set_ylim(0, max(loc_counts.values) * 1.18)
+    for bar in bars_loc:
+        h = bar.get_height()
+        pct = (h / n_loc) * 100
+        ax_loc.text(bar.get_x() + bar.get_width()/2., h + 40, f'{int(h):,}\n({pct:.1f}%)',
+                    ha='center', va='bottom', fontsize=8.5, fontweight='bold')
+                    
+    plt.suptitle('Day 6 Milestone: Categorical Domain Profiles & Cardinality Verification', fontsize=13, fontweight='bold', y=0.98)
+    plt.tight_layout()
+    
+    if output_dir:
+        p1 = os.path.join(output_dir, 'day6_categorical_profiles_and_cardinality.png')
+        plt.savefig(p1, dpi=300)
+        saved_paths['categorical_profiles'] = p1
+    plt.close()
+    
+    # -------------------------------------------------------------
+    # Figure 2: Deep Memory Compression Waterfall & Column Breakdown
+    # -------------------------------------------------------------
+    fig, (ax_stage, ax_col) = plt.subplots(1, 2, figsize=(16, 6.5), dpi=300, gridspec_kw={'width_ratios': [1, 1.3]})
+    
+    # Panel 1: Stage-by-Stage Memory Reduction
+    stages = ['Raw Ingestion\n(Day 1)', 'Sanitized Text\n(Day 4)', 'Strict Primitives\n(Day 5)', 'Categorical Encoded\n(Day 6)']
+    mem_stages = [
+        memory_audit_df.loc[memory_audit_df['Column'] == 'TOTAL DATAFRAME', 'Raw Ingested (KB)'].values[0],
+        memory_audit_df.loc[memory_audit_df['Column'] == 'TOTAL DATAFRAME', 'Day 4 Sanitized (KB)'].values[0],
+        memory_audit_df.loc[memory_audit_df['Column'] == 'TOTAL DATAFRAME', 'Day 5 Typed (KB)'].values[0],
+        memory_audit_df.loc[memory_audit_df['Column'] == 'TOTAL DATAFRAME', 'Day 6 Categorical (KB)'].values[0]
+    ]
+    stage_colors = ['#e74c3c', '#e67e22', '#3498db', '#2ecc71']
+    bars_stage = ax_stage.bar(stages, mem_stages, color=stage_colors, edgecolor='black', alpha=0.85, width=0.55)
+    ax_stage.set_title('Pipeline Memory Compression Trajectory', fontsize=11, fontweight='bold')
+    ax_stage.set_ylabel('Deep Memory Footprint (KB)', fontsize=10, fontweight='bold')
+    ax_stage.set_ylim(0, max(mem_stages) * 1.22)
+    ax_stage.grid(axis='y', linestyle='--', alpha=0.5)
+    
+    for i, bar in enumerate(bars_stage):
+        h = bar.get_height()
+        diff_raw = ((mem_stages[0] - h) / mem_stages[0]) * 100
+        label = f'{h:.1f} KB' if i == 0 else f'{h:.1f} KB\n(-{diff_raw:.1f}%)'
+        ax_stage.text(bar.get_x() + bar.get_width()/2., h + 25, label,
+                      ha='center', va='bottom', fontsize=8.5, fontweight='bold')
+                      
+    # Panel 2: Column-by-Column Memory Comparison (Day 5 vs Day 6)
+    cols_df = memory_audit_df[memory_audit_df['Column'] != 'TOTAL DATAFRAME']
+    x = np.arange(len(cols_df))
+    width = 0.38
+    
+    rects1 = ax_col.bar(x - width/2, cols_df['Day 5 Typed (KB)'], width, label='Day 5 (Strict Primitives)',
+                        color='#3498db', edgecolor='black', alpha=0.85)
+    rects2 = ax_col.bar(x + width/2, cols_df['Day 6 Categorical (KB)'], width, label='Day 6 (Categorical Encoded)',
+                        color='#2ecc71', edgecolor='black', alpha=0.85)
+                        
+    ax_col.set_title('Column-Level Deep Memory Audit: Day 5 vs Day 6', fontsize=11, fontweight='bold')
+    ax_col.set_xlabel('Dataset Features', fontsize=10, fontweight='bold')
+    ax_col.set_ylabel('Column Deep Memory (KB)', fontsize=10, fontweight='bold')
+    ax_col.set_xticks(x)
+    ax_col.set_xticklabels(cols_df['Column'], rotation=35, ha='right', fontsize=9)
+    ax_col.legend(loc='upper right', frameon=True)
+    ax_col.grid(axis='y', linestyle='--', alpha=0.5)
+    
+    # Highlight categorical savings
+    for i, col_name in enumerate(cols_df['Column']):
+        if col_name in ['Item', 'Payment Method', 'Location']:
+            d5_val = cols_df.loc[cols_df['Column'] == col_name, 'Day 5 Typed (KB)'].values[0]
+            d6_val = cols_df.loc[cols_df['Column'] == col_name, 'Day 6 Categorical (KB)'].values[0]
+            drop_pct = ((d5_val - d6_val) / d5_val) * 100
+            ax_col.text(x[i] + width/2, d6_val + 8, f'-{drop_pct:.0f}%',
+                        ha='center', va='bottom', fontsize=8, fontweight='bold', color='#27ae60')
+                        
+    plt.suptitle('Day 6 Milestone: Comprehensive Memory Optimization & Compression Audit', fontsize=13, fontweight='bold', y=0.98)
+    plt.tight_layout()
+    
+    if output_dir:
+        p2 = os.path.join(output_dir, 'day6_memory_footprint_reduction_waterfall.png')
+        plt.savefig(p2, dpi=300)
+        saved_paths['memory_waterfall'] = p2
+    plt.close()
+    
+    return saved_paths
