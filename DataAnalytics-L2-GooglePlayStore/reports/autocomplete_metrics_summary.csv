@@ -1,0 +1,7 @@
+Model_Configuration,Order_n,Strategy,Top_1_Accuracy_Pct,Top_3_Recall_Pct,Precision@3_Pct,MRR,Test_Perplexity
+Unigram (Order 1),1,mle,3.27,5.6,1.87,0.0418,1006.85
+"Bigram (Order 2, MLE)",2,mle,8.63,15.6,5.2,0.1163,1027.17
+"Trigram (Order 3, MLE)",3,mle,6.77,11.43,3.81,0.0881,4239.07
+Trigram (Add-k Laplace),3,laplace,6.77,11.43,3.81,0.0881,4239.07
+Trigram (Jelinek-Mercer Interp),3,interpolated,9.63,16.73,5.58,0.1267,1429.75
+Trigram (Stupid Backoff),3,stupid_backoff,9.1,16.17,5.39,0.1218,923.21

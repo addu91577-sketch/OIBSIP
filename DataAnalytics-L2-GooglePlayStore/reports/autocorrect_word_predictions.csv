@@ -1,0 +1,166 @@
+Engine,Misspelled,Target,Error_Type,Distance,Predicted_Top1,Candidates_Top3,Is_Top1_Correct,Is_Top3_Hit,Rank,Reciprocal_Rank,Classification,Latency_ms
+Classical Levenshtein,amazzing,amazing,Insertion,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.35639997804537416
+Classical Levenshtein,upddate,update,Insertion,1,update,['update'],True,True,1,1.0,True Positive,0.24480000138282776
+Classical Levenshtein,graphiics,graphics,Insertion,1,graphics,['graphics'],True,True,1,1.0,True Positive,0.30640000477433205
+Classical Levenshtein,unplayyable,unplayable,Insertion,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,0.45440002577379346
+Classical Levenshtein,downloadd,download,Insertion,1,downloaded,"['downloaded', 'download', 'downloads']",False,True,2,0.5,False Negative,0.44760003220289946
+Classical Levenshtein,reviiew,review,Insertion,1,review,['review'],True,True,1,1.0,True Positive,0.2550000208429992
+Classical Levenshtein,amzing,amazing,Deletion,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.23070001043379307
+Classical Levenshtein,grphics,graphics,Deletion,1,graphics,['graphics'],True,True,1,1.0,True Positive,0.2893999917432666
+Classical Levenshtein,updat,update,Deletion,1,update,['update'],True,True,1,1.0,True Positive,0.20650000078603625
+Classical Levenshtein,notifcation,notification,Deletion,1,notification,['notification'],True,True,1,1.0,True Positive,0.4560999805107713
+Classical Levenshtein,connetion,connection,Deletion,1,connection,['connection'],True,True,1,1.0,True Positive,0.31179998768493533
+Classical Levenshtein,downlod,download,Deletion,1,download,"['download', 'downloud', 'downlaod']",True,True,1,1.0,True Positive,0.33949996577575803
+Classical Levenshtein,amazung,amazing,Substitution,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.2709999680519104
+Classical Levenshtein,updste,update,Substitution,1,update,['update'],True,True,1,1.0,True Positive,0.2009000163525343
+Classical Levenshtein,battrry,battery,Substitution,1,battery,['battery'],True,True,1,1.0,True Positive,0.23289996897801757
+Classical Levenshtein,grafics,graphics,Substitution,1,grafics,['grafics'],False,False,999,0.0,False Negative,0.001300009898841381
+Classical Levenshtein,unpkayable,unplayable,Substitution,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,0.360800011549145
+Classical Levenshtein,gake,game,Substitution,1,game,"['game', 'make', 'take']",True,True,1,1.0,True Positive,0.3426999901421368
+Classical Levenshtein,amzaing,amazing,Transposition,1,amazing,"['amazing', 'amusing', 'ameging']",True,True,1,1.0,True Positive,116.1327000008896
+Classical Levenshtein,udpate,update,Transposition,1,update,"['update', 'date', 'upsate']",True,True,1,1.0,True Positive,75.03380003618076
+Classical Levenshtein,recieve,receive,Transposition,1,recieve,['recieve'],False,False,999,0.0,False Negative,0.003300025127828121
+Classical Levenshtein,featrue,feature,Transposition,1,feature,['feature'],True,True,1,1.0,True Positive,113.26689994893968
+Classical Levenshtein,teh,the,Transposition,1,tech,"['tech', 'ten', 'meh']",False,False,999,0.0,False Negative,0.30290003633126616
+Classical Levenshtein,palystore,playstore,Transposition,1,playstore,['playstore'],True,True,1,1.0,True Positive,170.9270999999717
+Classical Levenshtein,graffix,graphics,Multi-Edit,2,traffic,['traffic'],False,False,999,0.0,False Negative,270.6874999566935
+Classical Levenshtein,amzingg,amazing,Multi-Edit,2,amazing,['amazing'],True,True,1,1.0,True Positive,248.35920002078637
+Classical Levenshtein,updaetd,updated,Multi-Edit,2,update,"['update', 'updated', 'updatet']",False,True,2,0.5,False Negative,271.5621999814175
+Classical Levenshtein,conectionn,connection,Multi-Edit,2,connection,"['connection', 'connections']",True,True,1,1.0,True Positive,384.9956999765709
+Classical Levenshtein,game,game,Control (Clean),0,game,['game'],True,True,1,1.0,True Negative,0.005200039595365524
+Classical Levenshtein,update,update,Control (Clean),0,update,['update'],True,True,1,1.0,True Negative,0.001900014467537403
+Classical Levenshtein,screen,screen,Control (Clean),0,screen,['screen'],True,True,1,1.0,True Negative,0.002500019036233425
+Classical Levenshtein,free,free,Control (Clean),0,free,['free'],True,True,1,1.0,True Negative,0.001800013706088066
+Classical Levenshtein,mobile,mobile,Control (Clean),0,mobile,['mobile'],True,True,1,1.0,True Negative,0.001500011421740055
+Damerau-Levenshtein,amazzing,amazing,Insertion,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.6441000150516629
+Damerau-Levenshtein,upddate,update,Insertion,1,update,['update'],True,True,1,1.0,True Positive,0.49489998491480947
+Damerau-Levenshtein,graphiics,graphics,Insertion,1,graphics,['graphics'],True,True,1,1.0,True Positive,0.3795999800786376
+Damerau-Levenshtein,unplayyable,unplayable,Insertion,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,0.4437000025063753
+Damerau-Levenshtein,downloadd,download,Insertion,1,downloaded,"['downloaded', 'download', 'downloads']",False,True,2,0.5,False Negative,0.5465999711304903
+Damerau-Levenshtein,reviiew,review,Insertion,1,review,['review'],True,True,1,1.0,True Positive,0.2590000513009727
+Damerau-Levenshtein,amzing,amazing,Deletion,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.22899999748915434
+Damerau-Levenshtein,grphics,graphics,Deletion,1,graphics,['graphics'],True,True,1,1.0,True Positive,0.250800047069788
+Damerau-Levenshtein,updat,update,Deletion,1,update,['update'],True,True,1,1.0,True Positive,0.11680001625791192
+Damerau-Levenshtein,notifcation,notification,Deletion,1,notification,['notification'],True,True,1,1.0,True Positive,0.2873000339604914
+Damerau-Levenshtein,connetion,connection,Deletion,1,connection,['connection'],True,True,1,1.0,True Positive,0.23439998039975762
+Damerau-Levenshtein,downlod,download,Deletion,1,download,"['download', 'downloud', 'downlaod']",True,True,1,1.0,True Positive,0.24019996635615826
+Damerau-Levenshtein,amazung,amazing,Substitution,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.17750001279637218
+Damerau-Levenshtein,updste,update,Substitution,1,update,['update'],True,True,1,1.0,True Positive,0.1453000004403293
+Damerau-Levenshtein,battrry,battery,Substitution,1,battery,['battery'],True,True,1,1.0,True Positive,0.17149996710941195
+Damerau-Levenshtein,grafics,graphics,Substitution,1,grafics,['grafics'],False,False,999,0.0,False Negative,0.001200009137392044
+Damerau-Levenshtein,unpkayable,unplayable,Substitution,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,0.25400001322850585
+Damerau-Levenshtein,gake,game,Substitution,1,game,"['game', 'make', 'take']",True,True,1,1.0,True Positive,0.21770002786070108
+Damerau-Levenshtein,amzaing,amazing,Transposition,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.2188000362366438
+Damerau-Levenshtein,udpate,update,Transposition,1,update,['update'],True,True,1,1.0,True Positive,0.21819997346028686
+Damerau-Levenshtein,recieve,receive,Transposition,1,recieve,['recieve'],False,False,999,0.0,False Negative,0.001200009137392044
+Damerau-Levenshtein,featrue,feature,Transposition,1,feature,['feature'],True,True,1,1.0,True Positive,0.2612000098451972
+Damerau-Levenshtein,teh,the,Transposition,1,the,"['the', 'tech', 'ten']",True,True,1,1.0,True Positive,0.318799982778728
+Damerau-Levenshtein,palystore,playstore,Transposition,1,playstore,['playstore'],True,True,1,1.0,True Positive,0.235699990298599
+Damerau-Levenshtein,graffix,graphics,Multi-Edit,2,traffic,['traffic'],False,False,999,0.0,False Negative,167.2275000018999
+Damerau-Levenshtein,amzingg,amazing,Multi-Edit,2,amazing,['amazing'],True,True,1,1.0,True Positive,108.3006999688223
+Damerau-Levenshtein,updaetd,updated,Multi-Edit,2,updated,['updated'],True,True,1,1.0,True Positive,0.2991999499499798
+Damerau-Levenshtein,conectionn,connection,Multi-Edit,2,connection,"['connection', 'connections']",True,True,1,1.0,True Positive,241.35819997172803
+Damerau-Levenshtein,game,game,Control (Clean),0,game,['game'],True,True,1,1.0,True Negative,0.004299974534660578
+Damerau-Levenshtein,update,update,Control (Clean),0,update,['update'],True,True,1,1.0,True Negative,0.001200009137392044
+Damerau-Levenshtein,screen,screen,Control (Clean),0,screen,['screen'],True,True,1,1.0,True Negative,0.001100008375942707
+Damerau-Levenshtein,free,free,Control (Clean),0,free,['free'],True,True,1,1.0,True Negative,0.001100008375942707
+Damerau-Levenshtein,mobile,mobile,Control (Clean),0,mobile,['mobile'],True,True,1,1.0,True Negative,0.000900006853044033
+Bayesian Frequency-Weighted,amazzing,amazing,Insertion,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.3423999878577888
+Bayesian Frequency-Weighted,upddate,update,Insertion,1,update,['update'],True,True,1,1.0,True Positive,0.26290002278983593
+Bayesian Frequency-Weighted,graphiics,graphics,Insertion,1,graphics,['graphics'],True,True,1,1.0,True Positive,0.38350000977516174
+Bayesian Frequency-Weighted,unplayyable,unplayable,Insertion,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,0.5186999915167689
+Bayesian Frequency-Weighted,downloadd,download,Insertion,1,downloaded,"['downloaded', 'download', 'downloads']",False,True,2,0.5,False Negative,1.0061000357382
+Bayesian Frequency-Weighted,reviiew,review,Insertion,1,review,['review'],True,True,1,1.0,True Positive,0.48889999743551016
+Bayesian Frequency-Weighted,amzing,amazing,Deletion,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.23099995451048017
+Bayesian Frequency-Weighted,grphics,graphics,Deletion,1,graphics,['graphics'],True,True,1,1.0,True Positive,0.21799997193738818
+Bayesian Frequency-Weighted,updat,update,Deletion,1,update,['update'],True,True,1,1.0,True Positive,0.12469995999708772
+Bayesian Frequency-Weighted,notifcation,notification,Deletion,1,notification,['notification'],True,True,1,1.0,True Positive,0.3266999847255647
+Bayesian Frequency-Weighted,connetion,connection,Deletion,1,connection,['connection'],True,True,1,1.0,True Positive,0.2272999845445156
+Bayesian Frequency-Weighted,downlod,download,Deletion,1,download,"['download', 'downloud', 'downlaod']",True,True,1,1.0,True Positive,0.2451999462209642
+Bayesian Frequency-Weighted,amazung,amazing,Substitution,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.1669999910518527
+Bayesian Frequency-Weighted,updste,update,Substitution,1,update,['update'],True,True,1,1.0,True Positive,0.23669999791309237
+Bayesian Frequency-Weighted,battrry,battery,Substitution,1,battery,['battery'],True,True,1,1.0,True Positive,0.25539996568113565
+Bayesian Frequency-Weighted,grafics,graphics,Substitution,1,grafics,['grafics'],False,False,999,0.0,False Negative,0.001300009898841381
+Bayesian Frequency-Weighted,unpkayable,unplayable,Substitution,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,0.39090000791475177
+Bayesian Frequency-Weighted,gake,game,Substitution,1,game,"['game', 'make', 'take']",True,True,1,1.0,True Positive,0.4241999704390764
+Bayesian Frequency-Weighted,amzaing,amazing,Transposition,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.27459999546408653
+Bayesian Frequency-Weighted,udpate,update,Transposition,1,update,['update'],True,True,1,1.0,True Positive,0.21570001263171434
+Bayesian Frequency-Weighted,recieve,receive,Transposition,1,recieve,['recieve'],False,False,999,0.0,False Negative,0.001300009898841381
+Bayesian Frequency-Weighted,featrue,feature,Transposition,1,feature,['feature'],True,True,1,1.0,True Positive,0.28929999098181725
+Bayesian Frequency-Weighted,teh,the,Transposition,1,the,"['the', 'tech', 'ten']",True,True,1,1.0,True Positive,0.3627000260166824
+Bayesian Frequency-Weighted,palystore,playstore,Transposition,1,playstore,['playstore'],True,True,1,1.0,True Positive,0.34520000917837024
+Bayesian Frequency-Weighted,graffix,graphics,Multi-Edit,2,traffic,['traffic'],False,False,999,0.0,False Negative,112.21949994796887
+Bayesian Frequency-Weighted,amzingg,amazing,Multi-Edit,2,amazing,['amazing'],True,True,1,1.0,True Positive,195.131600019522
+Bayesian Frequency-Weighted,updaetd,updated,Multi-Edit,2,updated,['updated'],True,True,1,1.0,True Positive,0.46980002662166953
+Bayesian Frequency-Weighted,conectionn,connection,Multi-Edit,2,connection,"['connection', 'connections']",True,True,1,1.0,True Positive,308.94429999170825
+Bayesian Frequency-Weighted,game,game,Control (Clean),0,game,['game'],True,True,1,1.0,True Negative,0.0025999615900218487
+Bayesian Frequency-Weighted,update,update,Control (Clean),0,update,['update'],True,True,1,1.0,True Negative,0.001200009137392044
+Bayesian Frequency-Weighted,screen,screen,Control (Clean),0,screen,['screen'],True,True,1,1.0,True Negative,0.00100000761449337
+Bayesian Frequency-Weighted,free,free,Control (Clean),0,free,['free'],True,True,1,1.0,True Negative,0.0009999494068324566
+Bayesian Frequency-Weighted,mobile,mobile,Control (Clean),0,mobile,['mobile'],True,True,1,1.0,True Negative,0.000900006853044033
+pyspellchecker (Baseline),amazzing,amazing,Insertion,1,amazing,['amazing'],True,True,1,1.0,True Positive,1.159599982202053
+pyspellchecker (Baseline),upddate,update,Insertion,1,update,['update'],True,True,1,1.0,True Positive,1.1229999945499003
+pyspellchecker (Baseline),graphiics,graphics,Insertion,1,graphics,['graphics'],True,True,1,1.0,True Positive,1.5557999722659588
+pyspellchecker (Baseline),unplayyable,unplayable,Insertion,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,1.6909000114537776
+pyspellchecker (Baseline),downloadd,download,Insertion,1,download,"['download', 'downloaded', 'downloads']",True,True,1,1.0,True Positive,1.4666999923065305
+pyspellchecker (Baseline),reviiew,review,Insertion,1,review,['review'],True,True,1,1.0,True Positive,1.089800032787025
+pyspellchecker (Baseline),amzing,amazing,Deletion,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.9238999919034541
+pyspellchecker (Baseline),grphics,graphics,Deletion,1,graphics,['graphics'],True,True,1,1.0,True Positive,1.218399964272976
+pyspellchecker (Baseline),updat,update,Deletion,1,update,['update'],True,True,1,1.0,True Positive,1.7983000143431127
+pyspellchecker (Baseline),notifcation,notification,Deletion,1,notification,['notification'],True,True,1,1.0,True Positive,2.5946000241674483
+pyspellchecker (Baseline),connetion,connection,Deletion,1,connection,['connection'],True,True,1,1.0,True Positive,2.8315000236034393
+pyspellchecker (Baseline),downlod,download,Deletion,1,download,"['download', 'downloud', 'downlaod']",True,True,1,1.0,True Positive,1.1716000153683126
+pyspellchecker (Baseline),amazung,amazing,Substitution,1,amazing,['amazing'],True,True,1,1.0,True Positive,1.2030000216327608
+pyspellchecker (Baseline),updste,update,Substitution,1,update,['update'],True,True,1,1.0,True Positive,1.1329999542795122
+pyspellchecker (Baseline),battrry,battery,Substitution,1,battery,['battery'],True,True,1,1.0,True Positive,0.813300022855401
+pyspellchecker (Baseline),grafics,graphics,Substitution,1,grafics,['grafics'],False,False,999,0.0,False Negative,0.003300025127828121
+pyspellchecker (Baseline),unpkayable,unplayable,Substitution,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,1.0783000034280121
+pyspellchecker (Baseline),gake,game,Substitution,1,take,"['take', 'make', 'gave']",False,False,4,0.25,False Negative,0.4980000085197389
+pyspellchecker (Baseline),amzaing,amazing,Transposition,1,amazing,['amazing'],True,True,1,1.0,True Positive,1.0859000030905008
+pyspellchecker (Baseline),udpate,update,Transposition,1,update,['update'],True,True,1,1.0,True Positive,0.9325999999418855
+pyspellchecker (Baseline),recieve,receive,Transposition,1,recieve,['recieve'],False,False,999,0.0,False Negative,0.003400025889277458
+pyspellchecker (Baseline),featrue,feature,Transposition,1,feature,['feature'],True,True,1,1.0,True Positive,1.0873000137507915
+pyspellchecker (Baseline),teh,the,Transposition,1,the,"['the', 'ten', 'tea']",True,True,1,1.0,True Positive,1.442899985704571
+pyspellchecker (Baseline),palystore,playstore,Transposition,1,playstore,['playstore'],True,True,1,1.0,True Positive,2.9295000131241977
+pyspellchecker (Baseline),graffix,graphics,Multi-Edit,2,traffic,"['traffic', 'graffiti', 'griffin']",False,False,999,0.0,False Negative,801.0324000497349
+pyspellchecker (Baseline),amzingg,amazing,Multi-Edit,2,amazing,['amazing'],True,True,1,1.0,True Positive,758.3634000038728
+pyspellchecker (Baseline),updaetd,updated,Multi-Edit,2,updated,['updated'],True,True,1,1.0,True Positive,1.174099976196885
+pyspellchecker (Baseline),conectionn,connection,Multi-Edit,2,connection,"['connection', 'connections', 'convection']",True,True,1,1.0,True Positive,1635.7572000124492
+pyspellchecker (Baseline),game,game,Control (Clean),0,game,['game'],True,True,1,1.0,True Negative,0.0048999791033566
+pyspellchecker (Baseline),update,update,Control (Clean),0,update,['update'],True,True,1,1.0,True Negative,0.0020999577827751637
+pyspellchecker (Baseline),screen,screen,Control (Clean),0,screen,['screen'],True,True,1,1.0,True Negative,0.00200001522898674
+pyspellchecker (Baseline),free,free,Control (Clean),0,free,['free'],True,True,1,1.0,True Negative,0.001600012183189392
+pyspellchecker (Baseline),mobile,mobile,Control (Clean),0,mobile,['mobile'],True,True,1,1.0,True Negative,0.001700012944638729
+Gboard Reference (Simulated),amazzing,amazing,Insertion,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.31729997135698795
+Gboard Reference (Simulated),upddate,update,Insertion,1,update,['update'],True,True,1,1.0,True Positive,0.19079999765381217
+Gboard Reference (Simulated),graphiics,graphics,Insertion,1,graphics,['graphics'],True,True,1,1.0,True Positive,0.23250002413988113
+Gboard Reference (Simulated),unplayyable,unplayable,Insertion,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,0.2801999798975885
+Gboard Reference (Simulated),downloadd,download,Insertion,1,downloaded,"['downloaded', 'download', 'downloads']",False,True,2,0.5,False Negative,0.4993000184185803
+Gboard Reference (Simulated),reviiew,review,Insertion,1,review,['review'],True,True,1,1.0,True Positive,0.3771000192500651
+Gboard Reference (Simulated),amzing,amazing,Deletion,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.23100001271814108
+Gboard Reference (Simulated),grphics,graphics,Deletion,1,graphics,['graphics'],True,True,1,1.0,True Positive,0.32299995655193925
+Gboard Reference (Simulated),updat,update,Deletion,1,update,['update'],True,True,1,1.0,True Positive,0.1776000135578215
+Gboard Reference (Simulated),notifcation,notification,Deletion,1,notification,['notification'],True,True,1,1.0,True Positive,0.45440002577379346
+Gboard Reference (Simulated),connetion,connection,Deletion,1,connection,['connection'],True,True,1,1.0,True Positive,0.4623999702744186
+Gboard Reference (Simulated),downlod,download,Deletion,1,download,"['download', 'downloud', 'downlaod']",True,True,1,1.0,True Positive,0.5317999748513103
+Gboard Reference (Simulated),amazung,amazing,Substitution,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.33850001636892557
+Gboard Reference (Simulated),updste,update,Substitution,1,update,['update'],True,True,1,1.0,True Positive,0.22630003513768315
+Gboard Reference (Simulated),battrry,battery,Substitution,1,battery,['battery'],True,True,1,1.0,True Positive,0.2610000083222985
+Gboard Reference (Simulated),grafics,graphics,Substitution,1,grafics,['grafics'],False,False,999,0.0,False Negative,0.0012999516911804676
+Gboard Reference (Simulated),unpkayable,unplayable,Substitution,1,unplayable,['unplayable'],True,True,1,1.0,True Positive,0.4333999822847545
+Gboard Reference (Simulated),gake,game,Substitution,1,game,"['game', 'take', 'make']",True,True,1,1.0,True Positive,0.42939995182678103
+Gboard Reference (Simulated),amzaing,amazing,Transposition,1,amazing,['amazing'],True,True,1,1.0,True Positive,0.2595999976620078
+Gboard Reference (Simulated),udpate,update,Transposition,1,update,['update'],True,True,1,1.0,True Positive,0.2422000397928059
+Gboard Reference (Simulated),recieve,receive,Transposition,1,recieve,['recieve'],False,False,999,0.0,False Negative,0.0032999669201672077
+Gboard Reference (Simulated),featrue,feature,Transposition,1,feature,['feature'],True,True,1,1.0,True Positive,0.3142000059597194
+Gboard Reference (Simulated),teh,the,Transposition,1,the,"['the', 'ten', 'tech']",True,True,1,1.0,True Positive,0.3522000042721629
+Gboard Reference (Simulated),palystore,playstore,Transposition,1,playstore,['playstore'],True,True,1,1.0,True Positive,0.35099999513477087
+Gboard Reference (Simulated),graffix,graphics,Multi-Edit,2,traffic,['traffic'],False,False,999,0.0,False Negative,115.86150003131479
+Gboard Reference (Simulated),amzingg,amazing,Multi-Edit,2,amazing,['amazing'],True,True,1,1.0,True Positive,106.63220001151785
+Gboard Reference (Simulated),updaetd,updated,Multi-Edit,2,updated,['updated'],True,True,1,1.0,True Positive,0.30800001695752144
+Gboard Reference (Simulated),conectionn,connection,Multi-Edit,2,connection,"['connection', 'connections']",True,True,1,1.0,True Positive,227.50340000493452
+Gboard Reference (Simulated),game,game,Control (Clean),0,game,['game'],True,True,1,1.0,True Negative,0.002900022082030773
+Gboard Reference (Simulated),update,update,Control (Clean),0,update,['update'],True,True,1,1.0,True Negative,0.001300009898841381
+Gboard Reference (Simulated),screen,screen,Control (Clean),0,screen,['screen'],True,True,1,1.0,True Negative,0.001200009137392044
+Gboard Reference (Simulated),free,free,Control (Clean),0,free,['free'],True,True,1,1.0,True Negative,0.001100008375942707
+Gboard Reference (Simulated),mobile,mobile,Control (Clean),0,mobile,['mobile'],True,True,1,1.0,True Negative,0.00100000761449337

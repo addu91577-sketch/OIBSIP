@@ -1,0 +1,31 @@
+Engine,Error_Type,Total_Cases,Top1_Correct,Top1_Accuracy_Pct,Top3_Hits,Top3_Recall_Pct,Mean_Latency_ms
+Bayesian Frequency-Weighted,Control (Clean),5,5,100.0,5,100.0,0.0013399869203567505
+Bayesian Frequency-Weighted,Deletion,6,6,100.0,6,100.0,0.2288166336560001
+Bayesian Frequency-Weighted,Insertion,6,5,83.33333333333334,6,100.0,0.5004166741855443
+Bayesian Frequency-Weighted,Multi-Edit,4,3,75.0,3,75.0,154.1912999964552
+Bayesian Frequency-Weighted,Substitution,6,5,83.33333333333334,5,83.33333333333334,0.24591665714979172
+Bayesian Frequency-Weighted,Transposition,6,5,83.33333333333334,5,83.33333333333334,0.24813334069525203
+Classical Levenshtein,Control (Clean),5,5,100.0,5,100.0,0.0025800196453928947
+Classical Levenshtein,Deletion,6,6,100.0,6,100.0,0.3056666561557601
+Classical Levenshtein,Insertion,6,5,83.33333333333334,6,100.0,0.34410001050370437
+Classical Levenshtein,Multi-Edit,4,2,50.0,3,75.0,293.90114998386707
+Classical Levenshtein,Substitution,6,5,83.33333333333334,5,83.33333333333334,0.23493332749543092
+Classical Levenshtein,Transposition,6,4,66.66666666666666,4,66.66666666666666,79.27778334124014
+Damerau-Levenshtein,Control (Clean),5,5,100.0,5,100.0,0.0017200014553964138
+Damerau-Levenshtein,Deletion,6,6,100.0,6,100.0,0.22641667358887693
+Damerau-Levenshtein,Insertion,6,5,83.33333333333334,6,100.0,0.46131666749715805
+Damerau-Levenshtein,Multi-Edit,4,3,75.0,3,75.0,129.29639997310005
+Damerau-Levenshtein,Substitution,6,5,83.33333333333334,5,83.33333333333334,0.16120000509545207
+Damerau-Levenshtein,Transposition,6,5,83.33333333333334,5,83.33333333333334,0.20898333362614116
+Gboard Reference (Simulated),Control (Clean),5,5,100.0,5,100.0,0.001500011421740055
+Gboard Reference (Simulated),Deletion,6,6,100.0,6,100.0,0.3633666589545707
+Gboard Reference (Simulated),Insertion,6,5,83.33333333333334,6,100.0,0.31620000178615254
+Gboard Reference (Simulated),Multi-Edit,4,3,75.0,3,75.0,112.57627501618117
+Gboard Reference (Simulated),Substitution,6,5,83.33333333333334,5,83.33333333333334,0.2816499909386039
+Gboard Reference (Simulated),Transposition,6,5,83.33333333333334,5,83.33333333333334,0.25375000162360567
+pyspellchecker (Baseline),Control (Clean),5,5,100.0,5,100.0,0.002459995448589325
+pyspellchecker (Baseline),Deletion,6,6,100.0,6,100.0,1.7563833389431238
+pyspellchecker (Baseline),Insertion,6,6,100.0,6,100.0,1.3476333309275408
+pyspellchecker (Baseline),Multi-Edit,4,3,75.0,3,75.0,799.0817750105634
+pyspellchecker (Baseline),Substitution,6,4,66.66666666666666,4,66.66666666666666,0.7881500059738755
+pyspellchecker (Baseline),Transposition,6,5,83.33333333333334,5,83.33333333333334,1.246933340250204

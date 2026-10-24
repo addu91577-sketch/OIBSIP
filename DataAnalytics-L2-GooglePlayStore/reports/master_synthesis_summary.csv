@@ -1,0 +1,19 @@
+Domain,Metric,Value
+Market Intelligence (Task 4),Total Unique Apps Catalog,"9,659"
+Market Intelligence (Task 4),Unique App Categories,33
+Market Intelligence (Task 4),Cumulative Catalog Downloads,"75,322,526,427"
+Market Intelligence (Task 4),Total Estimated Paid Revenue,$291.14 Million
+Market Intelligence (Task 4),Overall Free App Dominance,92.19%
+Market Intelligence (Task 4),App Store Mean Star Rating,4.173 / 5.0
+NLP Review Corpus (Task 5),Cleaned User Reviews,"29,692"
+NLP Review Corpus (Task 5),Total Review Tokens,"506,418 words"
+NLP Review Corpus (Task 5),Unique Vocabulary Types (|V|),"20,344 words"
+NLP Autocomplete (Task 5),Top Model Configuration,Trigram (Jelinek-Mercer Interp)
+NLP Autocomplete (Task 5),Top-1 Prediction Accuracy,9.63%
+NLP Autocomplete (Task 5),Top-3 Hit Rate / Recall@3,16.73%
+NLP Autocomplete (Task 5),Mean Reciprocal Rank (MRR),0.1267
+NLP Autocorrect (Task 5),Top Engine Architecture,Damerau-Levenshtein + Bayesian Prior
+NLP Autocorrect (Task 5),Top-1 Correction Accuracy,87.88%
+NLP Autocorrect (Task 5),Precision (Control Preservation),100.0%
+NLP Autocorrect (Task 5),Recall on Typographical Errors,85.71%
+Unified Typing API (Day 6),Integrated Smart Typing Latency,< 18.5 ms / keystroke

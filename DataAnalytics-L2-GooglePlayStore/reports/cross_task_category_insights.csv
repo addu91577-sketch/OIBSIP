@@ -1,0 +1,34 @@
+Category,Total_Apps,Market_Share_Pct,Mean_Rating,Total_Installs,Estimated_Revenue_USD,Reviews_Analyzed,Mean_Review_Words,Mean_VADER_Compound,Positive_Review_Pct,Negative_Review_Pct,Lexical_Diversity_TTR,Slang_Or_Typo_Pct,Top_Review_Collocation,Strategic_Quadrant,Opportunity_Score
+EDUCATION,107,1.11,4.355,189952000,408980.0,519,14.39,0.449,76.3,11.9,0.2739,0.03,i love,Quadrant I: High Satisfaction / High Delight,76.9
+PARENTING,60,0.62,4.3,31521110,249959.0,256,14.09,0.453,73.0,10.9,0.3631,0.2,i love,Quadrant I: High Satisfaction / High Delight,76.8
+ART_AND_DESIGN,61,0.63,4.359,113238100,31840.0,334,12.26,0.437,75.7,12.3,0.3215,0.1,i love,Quadrant I: High Satisfaction / High Delight,75.9
+EVENTS,64,0.66,4.436,15973161,109.99,156,7.33,0.443,79.5,12.2,0.4644,0.0,love it,Quadrant I: High Satisfaction / High Delight,72.7
+AUTO_AND_VEHICLES,85,0.88,4.19,53130211,100148.5,283,14.98,0.51,82.0,4.9,0.3302,0.02,great app,Quadrant I: High Satisfaction / High Delight,72.3
+HEALTH_AND_FITNESS,288,2.98,4.243,1144022512,1426068.9,1621,18.47,0.479,77.9,13.6,0.1388,0.04,i love,Quadrant I: High Satisfaction / High Delight,69.4
+FOOD_AND_DRINK,112,1.16,4.171,211798751,284400.0,583,16.47,0.431,74.3,14.8,0.2321,0.03,i love,Quadrant III: High Review Sentiment / Structural Gaps,64.6
+PERSONALIZATION,376,3.89,4.332,1532494782,6796947.56,961,14.14,0.352,69.4,17.6,0.201,0.15,i love,Quadrant I: High Satisfaction / High Delight,64.5
+BOOKS_AND_REFERENCE,222,2.3,4.345,1665969576,90226.74,617,14.25,0.377,72.3,15.9,0.2438,0.05,i love,Quadrant I: High Satisfaction / High Delight,64.4
+WEATHER,79,0.82,4.243,361100520,4181380.0,194,11.08,0.305,70.1,18.6,0.4203,0.05,i like,Quadrant II: High Rating / Latent Review Friction,63.9
+COMICS,56,0.58,4.181,44981150,0.0,45,7.0,0.536,86.7,2.2,0.5783,0.0,comic book,Quadrant I: High Satisfaction / High Delight,60.7
+GAME,946,9.79,4.245,13457924415,40688636.85,3954,23.8,0.39,73.1,21.1,0.0817,0.26,game i,Quadrant I: High Satisfaction / High Delight,60.0
+MEDICAL,395,4.09,4.166,38293077,5956236.67,1156,17.43,0.38,68.6,16.1,0.1876,0.05,i love,Quadrant III: High Review Sentiment / Structural Gaps,57.2
+PRODUCTIVITY,374,3.87,4.183,5793091369,4313374.95,1135,21.45,0.362,68.7,19.6,0.158,0.03,i love,Quadrant I: High Satisfaction / High Delight,56.6
+PHOTOGRAPHY,281,2.91,4.156,4658147655,8547767.7,906,15.66,0.348,68.4,18.1,0.1999,0.09,i love,Quadrant III: High Review Sentiment / Structural Gaps,56.4
+SPORTS,325,3.36,4.216,1096474498,4706211.95,1216,16.7,0.301,65.8,22.6,0.1701,0.12,i love,Quadrant II: High Rating / Latent Review Friction,54.3
+FAMILY,1874,19.4,4.183,6221541505,115674845.36,2463,16.13,0.39,72.4,17.3,0.1288,0.24,i love,Quadrant I: High Satisfaction / High Delight,54.2
+SHOPPING,202,2.09,4.231,1400348785,30149.0,649,17.29,0.332,67.0,22.0,0.2181,0.05,i love,Quadrant II: High Rating / Latent Review Friction,53.5
+LIFESTYLE,369,3.82,4.093,503823539,57583939.4,834,14.33,0.338,66.7,17.1,0.2083,0.12,i love,Quadrant III: High Review Sentiment / Structural Gaps,53.2
+FINANCE,345,3.57,4.116,455348734,25726678.98,1336,20.49,0.294,66.0,24.0,0.141,0.05,i love,Quadrant IV: Red Ocean / High User Friction,50.2
+LIBRARIES_AND_DEMO,84,0.87,4.178,52995910,99.0,332,14.2,0.359,69.3,19.0,0.3315,0.0,i love,Quadrant III: High Review Sentiment / Structural Gaps,50.0
+ENTERTAINMENT,87,0.9,4.13,989660000,798000.0,701,19.13,0.232,57.9,27.1,0.1939,0.09,i love,Quadrant IV: Red Ocean / High User Friction,48.9
+MAPS_AND_NAVIGATION,131,1.36,4.036,503281890,1240789.0,189,13.94,0.314,66.7,14.3,0.3743,0.0,it is,Quadrant IV: Red Ocean / High User Friction,48.8
+TRAVEL_AND_LOCAL,219,2.27,4.07,2894887146,1151504.4,1331,15.1,0.283,63.8,21.9,0.1776,0.05,i love,Quadrant IV: Red Ocean / High User Friction,45.1
+COMMUNICATION,315,3.26,4.121,11038276251,4247364.5,855,20.22,0.248,61.6,25.0,0.1784,0.09,i can't,Quadrant IV: Red Ocean / High User Friction,44.8
+BUSINESS,420,4.35,4.098,697164865,1050543.25,657,12.95,0.291,63.5,16.6,0.27,0.11,i love,Quadrant IV: Red Ocean / High User Friction,43.6
+BEAUTY,53,0.55,4.279,27197050,0.0,317,5.78,0.247,60.6,19.9,0.375,0.33,i like,Quadrant II: High Rating / Latent Review Friction,42.8
+SOCIAL,239,2.47,4.247,5487867902,5940.0,661,22.49,0.168,54.9,31.6,0.1942,0.04,i can't,Quadrant II: High Rating / Latent Review Friction,37.9
+TOOLS,829,8.58,4.04,8102771915,5464820.59,1398,14.18,0.278,63.3,19.7,0.1812,0.08,i like,Quadrant IV: Red Ocean / High User Friction,37.7
+HOUSE_AND_HOME,73,0.76,4.141,97202461,0.0,445,9.77,0.286,60.9,18.7,0.3266,0.12,i love,Quadrant IV: Red Ocean / High User Friction,36.6
+DATING,170,1.76,3.98,140925107,41471.5,1087,15.96,0.272,62.8,22.4,0.1795,0.05,i think,Quadrant IV: Red Ocean / High User Friction,36.3
+VIDEO_PLAYERS,164,1.7,4.045,3931902720,335290.0,326,18.4,0.185,55.8,31.6,0.2723,0.14,i can't,Quadrant IV: Red Ocean / High User Friction,35.7
+NEWS_AND_MAGAZINES,254,2.63,4.122,2369217760,6445.0,733,18.95,0.205,57.6,25.5,0.2134,0.06,full review,Quadrant IV: Red Ocean / High User Friction,33.8

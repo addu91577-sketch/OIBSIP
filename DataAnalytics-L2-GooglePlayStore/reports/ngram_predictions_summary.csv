@@ -1,0 +1,13 @@
+Prefix,Clean_Tokens,Strategy,Top_1,Prob_1,Top_2,Prob_2,Top_3,Prob_3
+this app,this app,stupid_backoff,is,0.5714,has,0.2857,staff,0.1429
+easy to,easy to,stupid_backoff,use,0.9259,obtain,0.037,buy,0.037
+very good,very good,stupid_backoff,app,0.5135,game,0.2432,application,0.2432
+thank you,thank you,stupid_backoff,very,0.5799,can't,0.2211,need,0.199
+i love,i love,stupid_backoff,game,0.4159,it,0.2942,app,0.2898
+please add,please add,stupid_backoff,feature,0.375,ability,0.3125,option,0.3125
+customer service,customer service,stupid_backoff,i,0.5,could,0.25,extremely,0.25
+waste of,waste of,stupid_backoff,time,0.5,app,0.25,my,0.25
+great,great,stupid_backoff,app,0.4527,game,0.4148,i,0.1325
+best app,best app,stupid_backoff,amount,0.3333,for,0.3333,ever,0.3333
+too many,too many,stupid_backoff,ads,0.9062,problems,0.0469,pop,0.0469
+after the update,after the update,stupid_backoff,terrible,0.5,android,0.25,icon,0.25

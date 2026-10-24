@@ -43,6 +43,26 @@ from src.pricing_sentiment_analysis import (
     generate_all_day4_reports
 )
 
+from src.nlp_autocomplete_engine import (
+    CorpusPreprocessor,
+    NGramLanguageModel,
+    AutocompleteEngine,
+    AutocompleteEvaluator,
+    generate_all_day4_reports as generate_autocomplete_reports
+)
+
+from src.nlp_autocorrect_engine import (
+    DistanceMetrics,
+    NorvigCandidateGenerator,
+    LevenshteinAutocorrectEngine,
+    DamerauLevenshteinAutocorrectEngine,
+    BayesianFrequencyAutocorrectEngine,
+    AutocorrectEvaluator,
+    generate_all_day5_reports as generate_autocorrect_reports
+)
+
+from src.master_pipeline import GooglePlaystoreMasterEngine
+
 __all__ = [
     # Data Cleaning (Day 2)
     "clean_playstore_apps",
@@ -77,4 +97,20 @@ __all__ = [
     "plot_market_opportunity_bubble",
     "create_interactive_plotly_dashboard",
     "generate_all_day4_reports",
+    # NLP Autocomplete & Language Modeling (Day 5 / Task 5)
+    "CorpusPreprocessor",
+    "NGramLanguageModel",
+    "AutocompleteEngine",
+    "AutocompleteEvaluator",
+    "generate_autocomplete_reports",
+    # NLP Autocorrect & Benchmarks (Day 5 / Task 5)
+    "DistanceMetrics",
+    "NorvigCandidateGenerator",
+    "LevenshteinAutocorrectEngine",
+    "DamerauLevenshteinAutocorrectEngine",
+    "BayesianFrequencyAutocorrectEngine",
+    "AutocorrectEvaluator",
+    "generate_autocorrect_reports",
+    # Master Pipeline & Unified Inference Engine (Day 5 / Task 5)
+    "GooglePlaystoreMasterEngine",
 ]

@@ -1,0 +1,34 @@
+Misspelled,Target,Error_Type,Distance,Notes
+amazzing,amazing,Insertion,1,Repeated z
+upddate,update,Insertion,1,Double d key hit
+graphiics,graphics,Insertion,1,Double i vowel
+unplayyable,unplayable,Insertion,1,Repeated y
+downloadd,download,Insertion,1,Trailing double d
+reviiew,review,Insertion,1,Repeated i vowel
+amzing,amazing,Deletion,1,Omitted second a
+grphics,graphics,Deletion,1,Omitted a vowel
+updat,update,Deletion,1,Omitted terminal e
+notifcation,notification,Deletion,1,Omitted internal i
+connetion,connection,Deletion,1,Omitted c in double-c
+downlod,download,Deletion,1,Omitted terminal a
+amazung,amazing,Substitution,1,Vowel u for i
+updste,update,Substitution,1,s adjacent to a on QWERTY
+battrry,battery,Substitution,1,r substitution for e
+grafics,graphics,Substitution,1,f phonetic for ph
+unpkayable,unplayable,Substitution,1,k adjacent to l on QWERTY
+gake,game,Substitution,1,k adjacent to m
+amzaing,amazing,Transposition,1,za swapped with az
+udpate,update,Transposition,1,dp swapped with pd
+recieve,receive,Transposition,1,ie swapped with ei
+featrue,feature,Transposition,1,ru swapped with ur
+teh,the,Transposition,1,eh swapped with he
+palystore,playstore,Transposition,1,al swapped with la
+graffix,graphics,Multi-Edit,2,Phonetic double ff and x
+amzingg,amazing,Multi-Edit,2,Deletion a + Insertion g
+updaetd,updated,Multi-Edit,2,Transposition et + Insertion
+conectionn,connection,Multi-Edit,2,Deletion c + Insertion n
+game,game,Control (Clean),0,Standard valid word
+update,update,Control (Clean),0,Standard valid word
+screen,screen,Control (Clean),0,Standard valid word
+free,free,Control (Clean),0,Standard valid word
+mobile,mobile,Control (Clean),0,Standard valid word
