@@ -29,8 +29,8 @@ Perform a rigorous Exploratory Data Analysis (EDA) on retail sales data to uncov
 - [x] **Descriptive statistics:** mean, median, mode, standard deviation for all numerical columns (Day 2)
 - [x] **Time series analysis:** plot monthly and quarterly sales trends using line charts (Day 3)
 - [x] **Customer demographics analysis:** distribution of customer age groups, gender breakdown (Day 4)
-- [ ] **Product analysis:** top 10 best-selling products; revenue by product category (bar chart)
-- [ ] **Heatmap:** correlation matrix between numerical variables
+- [x] **Product analysis:** top 10 best-selling products; revenue by product category (bar chart) (Day 5)
+- [x] **Heatmap:** correlation matrix between numerical variables (Day 5)
 - [ ] **At least one additional visualisation:** reveals a non-obvious insight
 - [ ] **Markdown cells throughout notebook:** written observations after each chart
 - [ ] **Conclusion section:** at least 3 specific, actionable business recommendations based on findings
@@ -48,7 +48,7 @@ DataAnalytics-L1-EDARetailSales/
 │   └── Sample - Superstore.csv         # Benchmark / reference sales dataset
 ├── Notebooks/
 │   └── 01_retail_sales_eda.ipynb       # Jupyter Notebook exploratory data analysis workflow
-└── screenshots/                        # Exported statistical distribution & demographic visualizations
+└── screenshots/                        # Exported statistical distribution, demographic & product visualizations
     ├── 01_numerical_distributions_hist_kde.png
     ├── 02_numerical_boxplots.png
     ├── 03_monthly_sales_trend.png
@@ -58,7 +58,10 @@ DataAnalytics-L1-EDARetailSales/
     ├── 07_customer_age_distribution_and_cohorts.png
     ├── 08_gender_demographics_and_spending.png
     ├── 09_demographic_category_crosstab.png
-    └── 10_age_gender_spending_matrix.png
+    ├── 10_age_gender_spending_matrix.png
+    ├── 11_product_category_performance.png
+    ├── 12_top_selling_products_and_price_tiers.png
+    └── 13_numerical_correlation_heatmaps.png
 ```
 
 ---
@@ -213,6 +216,77 @@ The primary dataset captures transactional point-of-sale retail records across m
 * [08_gender_demographics_and_spending.png](screenshots/08_gender_demographics_and_spending.png) — Gender distribution donuts for order volume and sales turnover, alongside basket metric comparisons.
 * [09_demographic_category_crosstab.png](screenshots/09_demographic_category_crosstab.png) — Product category revenue breakdowns across customer age cohorts and gender.
 * [10_age_gender_spending_matrix.png](screenshots/10_age_gender_spending_matrix.png) — Dual heatmap matrix profiling Total Spend and AOV across Age Cohort × Gender personas.
+
+---
+
+## 🏷️ Day 5: Product Category Analysis, Sales Performance & Correlation Profiling Findings
+
+### 🛍️ Product Category Sales & Revenue Breakdown
+| Product Category | Orders | Order Share (%) | Units Sold | Units Share (%) | Avg Units / Order | Total Revenue | Revenue Share (%) | Avg Order Value (AOV) | Median Spend | Avg Unit Price |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **`Electronics`** ⚡ | 342 | 34.20% | 849 | 33.77% | 2.48 | **$156,905.00** | **34.41%** | $458.79 | **$150.00** | $181.90 |
+| **`Clothing`** 👗 | **351** | **35.10%** | **894** | **35.56%** | **2.55** | $155,580.00 | 34.12% | $443.25 | $120.00 | $174.29 |
+| **`Beauty`** 💄 | 307 | 30.70% | 771 | 30.67% | 2.51 | $143,515.00 | 31.47% | **$467.48** | $120.00 | **$184.06** |
+| **Total / Storewide** | **1,000** | **100.0%** | **2,514** | **100.0%** | **2.51** | **$456,000.00** | **100.0%** | **$456.00** | **$135.00** | **$179.89** |
+
+---
+
+### 🏆 Top 10 Best-Selling Product Offerings (By Revenue Generated)
+| Rank | Product Offering / Tier | Department | Price / Unit | Orders | Units Sold | Total Revenue | Revenue Share (%) | Avg Order Value (AOV) |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **#1** 🥇 | **`Beauty ($500)`** | Beauty | $500 | 68 | 169 | **$84,500.00** | 18.53% | $1,242.65 |
+| **#2** 🥈 | **`Electronics ($500)`** | Electronics | $500 | 67 | 169 | **$84,500.00** | 18.53% | **$1,261.19** |
+| **#3** 🥉 | **`Clothing ($500)`** | Clothing | $500 | 64 | 157 | **$78,500.00** | 17.21% | $1,226.56 |
+| **#4** | **`Clothing ($300)`** | Clothing | $300 | **72** | **193** | $57,900.00 | 12.70% | $804.17 |
+| **#5** | **`Electronics ($300)`** | Electronics | $300 | **72** | 183 | $54,900.00 | 12.04% | $762.50 |
+| **#6** | **`Beauty ($300)`** | Beauty | $300 | 53 | 142 | $42,600.00 | 9.34% | $803.77 |
+| **#7** | **`Clothing ($50)`** | Clothing | $50 | 75 | 189 | $9,450.00 | 2.07% | $126.00 |
+| **#8** | **`Electronics ($50)`** | Electronics | $50 | 69 | 175 | $8,750.00 | 1.92% | $126.81 |
+| **#9** | **`Beauty ($50)`** | Beauty | $50 | 67 | 170 | $8,500.00 | 1.86% | $126.87 |
+| **#10** | **`Clothing ($30)`** | Clothing | $30 | 65 | 171 | $5,130.00 | 1.13% | $78.92 |
+
+---
+
+### 📦 Top 10 Best-Selling Product Offerings (By Unit Volume Sold)
+| Rank | Product Offering / Tier | Department | Price / Unit | Units Sold | Orders | Total Revenue | Avg Units / Order | Catalog Role |
+| :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **#1** 🥇 | **`Clothing ($300)`** | Clothing | $300 | **193** | 72 | $57,900.00 | 2.68 | High-Margin Core Apparel |
+| **#2** 🥈 | **`Clothing ($50)`** | Clothing | $50 | **189** | 75 | $9,450.00 | 2.52 | Mid-Tier Everyday Fashion |
+| **#3** 🥉 | **`Clothing ($25)`** | Clothing | $25 | **184** | 75 | $4,600.00 | 2.45 | Volume Entry Driver |
+| **#4** | **`Electronics ($300)`** | Electronics | $300 | **183** | 72 | $54,900.00 | 2.54 | Mid-Tier Consumer Tech |
+| **#5** | **`Electronics ($25)`** | Electronics | $25 | **181** | 72 | $4,525.00 | 2.51 | Tech Accessories Volume |
+| **#6** | **`Electronics ($50)`** | Electronics | $50 | **175** | 69 | $8,750.00 | 2.54 | Essential Tech Hardware |
+| **#7** | **`Clothing ($30)`** | Clothing | $30 | **171** | 65 | $5,130.00 | 2.63 | Budget Seasonal Apparel |
+| **#8** | **`Beauty ($50)`** | Beauty | $50 | **170** | 67 | $8,500.00 | 2.54 | Daily Skincare & Cosmetics |
+| **#9** | **`Beauty ($500)`** | Beauty | $500 | **169** | 68 | $84,500.00 | 2.49 | Luxury Cosmetics & Fragrance |
+| **#10** | **`Electronics ($500)`** | Electronics | $500 | **169** | 67 | $84,500.00 | 2.52 | Flagship Tech Devices |
+
+---
+
+### 🔬 Numerical Correlation Matrix & Statistical Hypothesis Testing
+| Variable Pair | Pearson Linear ($r$) | Pearson $p$-value | Spearman Rank ($\rho$) | Relationship Strength | Statistical & Commercial Interpretation |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **`Price per Unit` × `Total Amount`** | **+0.8519** | $1.22 \times 10^{-282}$ | **+0.8574** | Extremely Strong Positive | Unit price is the primary determinant of basket spend ($R^2 \approx 72.6\%$). |
+| **`Quantity` × `Total Amount`** | **+0.3737** | $1.69 \times 10^{-34}$ | **+0.4741** | Moderate Positive | Quantity scales transaction size within price tiers. |
+| **`Price per Unit` × `Quantity`** | **+0.0175** | $0.5804$ *(NS)* | **+0.0240** | Zero Correlation | **Inelastic basket size:** Buyers purchase ~2.5 items regardless of item price. |
+| **`Age` × `Total Amount`** | **-0.0606** | $0.0555$ *(NS)* | **-0.0379** | Zero Correlation | Shopper age has no significant linear bearing on basket spend. |
+| **`Age` × `Price per Unit`** | **-0.0384** | $0.2248$ *(NS)* | **-0.0380** | Zero Correlation | Catalog price tiers attract all age cohorts equally. |
+| **`Age` × `Quantity`** | **-0.0237** | $0.4534$ *(NS)* | **-0.0235** | Zero Correlation | Basket unit volume is uniform across customer lifecycle stages. |
+
+*(NS = Not Statistically Significant at $\alpha = 0.05$)*
+
+---
+
+### 📈 Key Day 5 Takeaways & Commercial Insights:
+* **Equilibrium in Merchandise Contribution:** The store displays an exceptionally balanced product revenue architecture: **Electronics ($156,905, 34.41%)**, **Clothing ($155,580, 34.12%)**, and **Beauty ($143,515, 31.47%)**. No individual department monopolizes cash flow, offering robust natural hedge against sector-specific slowdowns.
+* **The 88.4% Luxury Revenue Concentration:** While budget essentials ($25–$50) generate **60.4% of total order transactions (604 orders)**, high-ticket luxury tiers ($300–$500) generate **88.36% of all revenue ($402,900.00)**. Specifically, the $500 tier alone drives **54.28% of total revenue ($247,500.00)** from just 19.9% of transactions.
+* **Zero Price Sensitivity on Basket Units ($r = 0.017, p = 0.580$):** Customers purchase virtually identical unit quantities (~2.5 units) whether purchasing $25 accessories or $500 flagship items. This indicates high disposable income among patrons and highlights an opportunity to deploy cross-category bundle discounts to drive units above 3.0.
+* **Demographic Neutrality in Pricing ($r = -0.038$):** Shopper age is uncorrelated with both item pricing and total expenditure, verifying that high-ticket merchandise resonates across young adults, mid-career professionals, and mature cohorts alike.
+
+### 🖼️ Exported Visualizations:
+* [11_product_category_performance.png](screenshots/11_product_category_performance.png) — Departmental revenue bar charts, volume vs. unit comparisons, AOV vs. median benchmarks, and revenue share donut chart.
+* [12_top_selling_products_and_price_tiers.png](screenshots/12_top_selling_products_and_price_tiers.png) — Top 10 best-selling product offerings by revenue and unit volume, alongside catalog price-tier distributions.
+* [13_numerical_correlation_heatmaps.png](screenshots/13_numerical_correlation_heatmaps.png) — Pearson linear ($r$) and Spearman rank ($\rho$) correlation heatmaps with annotated coefficients and bivariate regression plot.
 
 ---
 
