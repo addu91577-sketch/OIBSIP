@@ -1,0 +1,9 @@
+Endpoint,Requests,Mean_Latency_ms,Median_Latency_ms,P95_Latency_ms,P99_Latency_ms,Min_Latency_ms,Max_Latency_ms
+GET /health,40,21.331,14.347,52.646,125.443,6.856,129.093
+GET /api/v1/categories,40,28.208,21.44,50.742,75.346,16.43,79.288
+GET /api/v1/category/EDUCATION,40,24.596,19.108,40.986,65.807,14.112,80.72
+POST /api/v1/feasibility,40,53.646,45.766,105.754,151.111,18.087,162.088
+POST /api/v1/smart-type (Typo),40,18.776,16.15,33.395,34.694,11.893,35.298
+POST /api/v1/smart-type (Clean),40,40.845,33.191,83.739,132.932,21.197,163.625
+POST /api/v1/autocomplete,40,23.333,19.496,35.595,36.946,15.463,37.51
+POST /api/v1/autocorrect,40,17.537,14.798,30.531,43.332,8.755,49.961

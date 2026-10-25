@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # --------------------------------------------------------------------------
+  # 1. FastAPI REST Microservice (Port 8000)
+  # --------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: playstore_api_service
+    command: uvicorn src.production_api:app --host 0.0.0.0 --port 8000 --workers 2
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=production
+      - LOG_LEVEL=info
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+
+  # --------------------------------------------------------------------------
+  # 2. Streamlit Interactive Web Application Dashboard (Port 8501)
+  # --------------------------------------------------------------------------
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: playstore_streamlit_dashboard
+    command: streamlit run src/interactive_dashboard.py --server.port 8501 --server.address 0.0.0.0 --browser.serverAddress localhost
+    ports:
+      - "8501:8501"
+    environment:
+      - ENVIRONMENT=production
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped

@@ -1,0 +1,16 @@
+.git
+.gitignore
+.dockerignore
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.log
+venv/
+env/
+.venv/
+.ipynb_checkpoints/
+scratch/
+*roadmap*
+*ROADMAP*

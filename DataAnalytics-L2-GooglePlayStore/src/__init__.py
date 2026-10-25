@@ -62,6 +62,7 @@ from src.nlp_autocorrect_engine import (
 )
 
 from src.master_pipeline import GooglePlaystoreMasterEngine
+from src.production_api import app, create_app
 
 __all__ = [
     # Data Cleaning (Day 2)
@@ -113,4 +114,7 @@ __all__ = [
     "generate_autocorrect_reports",
     # Master Pipeline & Unified Inference Engine (Day 5 / Task 5)
     "GooglePlaystoreMasterEngine",
+    # Production REST API Service (Day 7)
+    "app",
+    "create_app",
 ]
