@@ -1,0 +1,4 @@
+Architecture,Predictive_Power_30pct,Minority_Sensitivity_25pct,Inference_Speed_20pct,Resource_Footprint_15pct,Interpretability_10pct,Composite_Weighted_Score,Deployment_Verdict
+Random Forest (Tuned Champion),94.5,91.0,82.0,74.0,88.0,87.9,DESIGNATED PRODUCTION CHAMPION
+SGD Classifier (Tuned),76.0,84.0,98.0,99.0,95.0,86.8,EDGE / ULTRA-LOW RESOURCE RUNNER-UP
+SVC (Tuned),82.0,78.0,65.0,80.0,45.0,73.0,NOT RECOMMENDED (Scaling Bottleneck)

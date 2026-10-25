@@ -1,0 +1,4 @@
+Architecture,Latency_P50_ms,Latency_P90_ms,Latency_P95_ms,Latency_P99_ms,Throughput_Batch100_samples_sec,Throughput_Batch500_samples_sec,Artifact_Disk_Footprint_KB,Computational_Complexity
+Random Forest (Tuned Champion),55.64,65.67,66.7,74.87,1681,7585,585.9,O(N_trees * Depth)
+SVC (Tuned),1.88,2.18,2.27,2.67,11258,14183,40.0,O(N_sv * D)
+SGD Classifier (Tuned),1.91,2.12,2.24,2.86,50863,240741,1.7,O(D)
