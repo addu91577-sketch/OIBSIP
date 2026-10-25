@@ -38,6 +38,7 @@ DataAnalytics-L1-CleaningData/
 │   ├── day4_text_standardization_and_token_normalization.md # Day 4 Text Standardization & Token Normalization Report
 │   ├── day5_strict_datatype_enforcement.md # Day 5 Strict Data Type Enforcement & Validation Report
 │   ├── day6_categorical_encoding_and_memory_audit.md # Day 6 Categorical Encoding & Memory Audit Report
+│   ├── day7_deterministic_pricing_and_item_imputation.md # Day 7 Deterministic Pricing & Item Imputation Report
 │   └── figures/                        # High-resolution diagnostic visualizations
 │       ├── day3_column_defect_rates.png
 │       ├── day3_record_defect_distribution.png
@@ -47,7 +48,9 @@ DataAnalytics-L1-CleaningData/
 │       ├── day5_datatype_transformation_matrix.png
 │       ├── day5_numerical_and_temporal_profiles.png
 │       ├── day6_categorical_profiles_and_cardinality.png
-│       └── day6_memory_footprint_reduction_waterfall.png
+│       ├── day6_memory_footprint_reduction_waterfall.png
+│       ├── day7_price_recovery_stages_waterfall.png
+│       └── day7_price_and_item_distributions.png
 └── src/
     ├── __init__.py
     └── utils.py                        # Reusable data audit & metric routines
@@ -62,7 +65,10 @@ DataAnalytics-L1-CleaningData/
 - [x] **Day 4 (Oct 22):** Text standardization, whitespace trimming, and pseudonull token conversion to `np.nan`
 - [x] **Day 5 (Oct 23):** Strict data type casting (`datetime64[ns]`, `string` ID, nullable `Int64`, `float64`)
 - [x] **Day 6 (Oct 24):** Categorical encoding (`Item`, `Payment Method`, `Location`) and memory audit
-- [ ] **Day 7–10:** Domain-informed and mathematical missing data imputation
+- [x] **Day 7 (Oct 25):** Deterministic menu pricing invariant recovery & reverse item mapping (PPU 100% resolved, 492 items recovered)
+- [ ] **Day 8 (Oct 26):** Mathematical accounting invariant recovery for Quantity & Total Spent ($\text{Total} = \text{Qty} \times \text{Price}$) + ambiguous item mode resolution
+- [ ] **Day 9 (Oct 27):** Categorical mode imputation & distribution preservation for Payment Method & Location
+- [ ] **Day 10 (Oct 28):** Chronological temporal fill for Transaction Date & full 80,000-cell dataset completion audit
 - [ ] **Day 11–13:** Multi-tier duplicate resolution and statistical outlier detection
 - [ ] **Day 14–16:** Master Before vs. After comparison summary and clean dataset export
 - [ ] **Day 17–18:** Automated regression testing (`pytest`), CI workflow, and final delivery certification
@@ -226,6 +232,34 @@ On Day 6, the pipeline enforced pandas `CategoricalDtype` across `Item`, `Paymen
 - **100% Assertion Sign-Off:** Automated verification suite (`verify_categorical_integrity()`) certified zero domain or type violations.
 - **Diagnostic Visual Artifacts:** Serialized `day6_categorical_profiles_and_cardinality.png` and `day6_memory_footprint_reduction_waterfall.png` to `Reports/figures/`.
 - **Full Report:** Comprehensive analysis available in [`Reports/day6_categorical_encoding_and_memory_audit.md`](Reports/day6_categorical_encoding_and_memory_audit.md).
+
+---
+
+## 🍽️ Day 7 Milestone: Deterministic Menu Pricing & Item Imputation
+
+On Day 7, the pipeline initiated the multi-stage missing data imputation phase, deploying deterministic POS menu pricing invariants and mathematical accounting derivations to recover missing `Price Per Unit` and `Item` attributes:
+
+### Stage-by-Stage Forensic Recovery Audit Trail
+
+| Stage # | Imputation Operation | Target Feature | Applied Method | Records Recovered | Remaining PPU Nulls | Remaining Item Nulls | Resolution Rate (%) |
+| :---: | :--- | :--- | :--- | :---: | :---: | :---: | :---: |
+| **0** | Baseline State (Day 6) | `Price` & `Item` | Categorical & Typed Ingestion | 0 | 533 | 969 | 0.00% |
+| **1** | Forward Menu Invariant | `Price Per Unit` | Deterministic Lookup (Known `Item` $\rightarrow$ Menu Price) | **479** | 54 | 969 | 89.87% (PPU) |
+| **2** | Mathematical Derivation | `Price Per Unit` | Formula Derivation ($\text{Total Spent} / \text{Quantity}$) | **48** | 6 | 969 | 9.01% (PPU) |
+| **3** | Boundary Deduction | `Price`, `Item`, `Qty`| Extreme Combinatorial Constraints ($25 \rightarrow 5 \times \$5$ Salad) | **3** | 3 | 966 | 0.56% (PPU) |
+| **4** | Residual Median Fill | `Price Per Unit` | Empirical Menu Median ($\$3.00$) | **3** | **0** | 966 | 0.56% (PPU) |
+| **5** | Reverse Unique Mapping | `Item` | Bijective Price Invariant ($\$1.0, \$1.5, \$2.0, \$5.0$) | **489** | 0 | **477** | 50.46% (Item) |
+| **Net** | **Day 7 Milestone State** | **`Price` & `Item`** | **Multi-Stage Invariant Pipeline** | **1,022** | **0 (100% Clean)** | **477 (50.8% Clean)**| — |
+
+### Key Day 7 Achievements:
+- **Price Per Unit 100% Resolved:** All 533 missing values in `Price Per Unit` eliminated with zero residual missingness ($10,000 / 10,000$ non-null cells).
+- **Zero Pricing Invariant Violations:** 100% of non-null menu items strictly conform to canonical POS menu prices ($1.00 Cookie, $1.50 Tea, $2.00 Coffee, $3.00 Cake/Juice, $4.00 Sandwich/Smoothie, $5.00 Salad).
+- **Exact Accounting Factorization:** Derived 48 unit prices directly from the accounting identity ($\text{Price} = \text{Total} / \text{Qty}$) and 3 extreme boundary baskets ($25.00 spend uniquely factoring into $5.00 Salad).
+- **Bijective Item Recovery (489 Records):** Exploited unique 1:1 price points to recover 489 missing item records with **0.0% error rate**.
+- **Ambiguity Isolation (477 Records):** Isolated remaining item missingness exclusively into closed multi-product price tiers ($3.00 tier: 250 records; $4.00 tier: 227 records), establishing clean inputs for Day 8 tier-conditional mode imputation.
+- **100% Quality Assertion Sign-Off:** Automated verification suite (`verify_day7_pricing_integrity()`) certified all 8 schema, domain, and invariant criteria.
+- **Diagnostic Visual Artifacts:** Serialized `day7_price_recovery_stages_waterfall.png` and `day7_price_and_item_distributions.png` to `Reports/figures/`.
+- **Full Report:** Comprehensive analysis available in [`Reports/day7_deterministic_pricing_and_item_imputation.md`](Reports/day7_deterministic_pricing_and_item_imputation.md).
 
 ---
 

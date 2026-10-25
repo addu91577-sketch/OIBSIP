@@ -20,6 +20,9 @@ from .utils import (
     audit_memory_reduction,
     verify_categorical_integrity,
     plot_day6_categorical_and_memory_audit,
+    impute_menu_pricing_and_items,
+    verify_day7_pricing_integrity,
+    plot_day7_pricing_and_item_imputation,
 )
 
 __all__ = [
@@ -40,4 +43,7 @@ __all__ = [
     'audit_memory_reduction',
     'verify_categorical_integrity',
     'plot_day6_categorical_and_memory_audit',
+    'impute_menu_pricing_and_items',
+    'verify_day7_pricing_integrity',
+    'plot_day7_pricing_and_item_imputation',
 ]
