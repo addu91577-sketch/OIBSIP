@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retail Sales EDA - Executive Presentation Deck</title>
+  <style>
+    :root {
+      --bg-primary: #0f172a;
+      --bg-secondary: #1e293b;
+      --bg-card: #334155;
+      --accent-blue: #38bdf8;
+      --accent-purple: #a855f7;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-rose: #f43f5e;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: #475569;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      width: 100vw;
+      user-select: none;
+    }
+
+    /* Container & Slide Deck */
+    .deck-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--border-color);
+      z-index: 100;
+    }
+
+    .header-title {
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--accent-blue);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      font-weight: 600;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    button.btn {
+      background: var(--bg-secondary);
+      color: var(--text-main);
+      border: 1px solid var(--border-color);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    button.btn:hover {
+      background: var(--bg-card);
+      border-color: var(--accent-blue);
+      color: var(--accent-blue);
+    }
+
+    button.btn-primary {
+      background: var(--accent-blue);
+      color: #0f172a;
+      border: none;
+      font-weight: 700;
+    }
+
+    button.btn-primary:hover {
+      background: #7dd3fc;
+      color: #0f172a;
+    }
+
+    /* Main Slide Viewport */
+    .slide-viewport {
+      flex: 1;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px 32px;
+      overflow-y: auto;
+    }
+
+    .slide {
+      display: none;
+      width: 100%;
+      max-width: 1300px;
+      height: 100%;
+      max-height: 820px;
+      background: var(--bg-secondary);
+      border-radius: 16px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      padding: 32px 40px;
+      flex-direction: column;
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .slide.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.99);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Slide Typography & Layout */
+    .slide-header {
+      margin-bottom: 20px;
+    }
+
+    .slide-eyebrow {
+      text-transform: uppercase;
+      font-size: 0.8rem;
+      letter-spacing: 1.5px;
+      font-weight: 700;
+      color: var(--accent-blue);
+      margin-bottom: 6px;
+    }
+
+    .slide-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.2;
+    }
+
+    .slide-subtitle {
+      font-size: 1rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    .slide-body {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .slide-body.full-width {
+      grid-template-columns: 1fr;
+    }
+
+    .slide-image-card {
+      background: #000;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      padding: 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      max-height: 520px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+
+    .slide-image-card img {
+      max-width: 100%;
+      max-height: 480px;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
+    .slide-content-card {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 530px;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .metric-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 12px 14px;
+      border-radius: 10px;
+      text-align: left;
+    }
+
+    .metric-value {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+    }
+
+    .metric-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .bullet-points {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .bullet-points li {
+      position: relative;
+      padding-left: 24px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+      color: #e2e8f0;
+    }
+
+    .bullet-points li::before {
+      content: "▪";
+      position: absolute;
+      left: 6px;
+      top: -2px;
+      font-size: 1.2rem;
+      color: var(--accent-blue);
+    }
+
+    .bullet-points li strong {
+      color: #fff;
+    }
+
+    /* Speaker Notes Modal / Bar */
+    .speaker-notes-panel {
+      display: none;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(15, 23, 42, 0.95);
+      border-top: 2px solid var(--accent-purple);
+      padding: 16px 28px;
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
+      animation: slideUp 0.25s ease-out;
+    }
+
+    .speaker-notes-panel.visible {
+      display: block;
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    .notes-title {
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--accent-purple);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .notes-body {
+      font-size: 0.95rem;
+      line-height: 1.6;
+      color: #f1f5f9;
+    }
+
+    /* Bottom Control Bar */
+    footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 24px;
+      background: rgba(15, 23, 42, 0.85);
+      border-top: 1px solid var(--border-color);
+      z-index: 100;
+    }
+
+    .progress-track {
+      flex: 1;
+      height: 4px;
+      background: var(--bg-card);
+      margin: 0 24px;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      width: 8.33%;
+      transition: width 0.3s ease;
+    }
+
+    .slide-counter {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      min-width: 60px;
+      text-align: center;
+    }
+
+    /* Title Slide Custom Style */
+    .title-slide {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 100%;
+      gap: 20px;
+    }
+
+    .hero-badge {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      padding: 6px 18px;
+      border-radius: 999px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-size: 3.2rem;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #ffffff 40%, var(--accent-blue) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      max-width: 900px;
+    }
+
+    .hero-sub {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 750px;
+      line-height: 1.6;
+    }
+
+    .hero-stats {
+      display: flex;
+      gap: 30px;
+      margin-top: 15px;
+    }
+
+    .hero-stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      padding: 16px 28px;
+      border-radius: 12px;
+      text-align: center;
+    }
+
+    .hero-stat-card .val {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--accent-blue);
+    }
+
+    .hero-stat-card .lbl {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    /* Recommendations Table / Grid */
+    .rec-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 8px;
+    }
+
+    .rec-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-left: 4px solid var(--accent-blue);
+      padding: 14px 16px;
+      border-radius: 8px;
+    }
+
+    .rec-card.p-emerald { border-left-color: var(--accent-emerald); }
+    .rec-card.p-amber { border-left-color: var(--accent-amber); }
+    .rec-card.p-purple { border-left-color: var(--accent-purple); }
+    .rec-card.p-rose { border-left-color: var(--accent-rose); }
+
+    .rec-card h4 {
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+
+    .rec-card p {
+      font-size: 0.82rem;
+      line-height: 1.45;
+      color: #cbd5e1;
+    }
+
+    .rec-card .lift {
+      margin-top: 6px;
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--accent-emerald);
+      background: rgba(16, 185, 129, 0.15);
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="deck-container">
+    <!-- Top Header -->
+    <header>
+      <div class="header-title">
+        <span>Retail Sales Exploratory Data Analysis</span>
+        <span class="badge">Oasis Infobyte · Level 1 EDA</span>
+      </div>
+      <div class="header-controls">
+        <button class="btn" id="notesToggleBtn" onclick="toggleNotes()">
+          🎙️ Speaker Notes (Press 'N')
+        </button>
+        <button class="btn" onclick="toggleFullScreen()">
+          ⛶ Fullscreen (F)
+        </button>
+      </div>
+    </header>
+
+    <!-- Slide Viewport -->
+    <main class="slide-viewport">
+
+      <!-- SLIDE 1: Title Slide -->
+      <section class="slide active" data-slide="1">
+        <div class="title-slide">
+          <div class="hero-badge">Executive Analytics Briefing</div>
+          <h1 class="hero-title">Retail Sales Exploratory Data Analysis</h1>
+          <p class="hero-sub">
+            Uncovering purchasing patterns, customer demographic parity, temporal rhythms, and strategic business growth levers across 1,000 transactions.
+          </p>
+          <div class="hero-stats">
+            <div class="hero-stat-card">
+              <div class="val">$456,000</div>
+              <div class="lbl">Gross Turnover</div>
+            </div>
+            <div class="hero-stat-card">
+              <div class="val">1,000</div>
+              <div class="lbl">Transactions</div>
+            </div>
+            <div class="hero-stat-card">
+              <div class="val">100%</div>
+              <div class="lbl">Data Integrity</div>
+            </div>
+            <div class="hero-stat-card">
+              <div class="val">0.6091</div>
+              <div class="lbl">Gini Inequality</div>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "Hello and welcome. Today, I am excited to present our comprehensive Exploratory Data Analysis on retail sales performance. Our objective is to look beyond surface-level figures to understand who our customers are, when and what they buy, and where the greatest revenue growth opportunities lie. Over the next five minutes, I will guide you through our end-to-end analytical lifecycle—from baseline data profiling and seasonality to non-obvious behavioral paradoxes and concrete, high-ROI business recommendations."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 2: Dataset Architecture & Hygiene -->
+      <section class="slide" data-slide="2">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 1 · Data Foundation</div>
+          <h2 class="slide-title">Dataset Architecture & Data Hygiene</h2>
+          <div class="slide-subtitle">Audit of data integrity, attribute types, and hygiene before downstream exploratory modeling</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <div class="metric-grid">
+              <div class="metric-box">
+                <div class="metric-value">1,000</div>
+                <div class="metric-label">Total Records</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">9</div>
+                <div class="metric-label">Feature Columns</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">0</div>
+                <div class="metric-label">Missing Values</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">0</div>
+                <div class="metric-label">Duplicate Rows</div>
+              </div>
+            </div>
+            <ul class="bullet-points">
+              <li><strong>Flawless Data Hygiene:</strong> Zero null, NaN, or corrupted records across all 9 schema attributes. Primary key <code>Transaction ID</code> is 100% unique.</li>
+              <li><strong>Temporal Coverage:</strong> Complete 12-month calendar year spanning from <code>2023-01-01</code> to <code>2024-01-01</code>.</li>
+              <li><strong>Three Core Departments:</strong> Merchandise is classified into <code>Clothing</code>, <code>Electronics</code>, and <code>Beauty</code>.</li>
+              <li><strong>Demographic Boundaries:</strong> Customer ages range from 18 to 64 years old with balanced representation across genders.</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/01_numerical_distributions_hist_kde.png" alt="Numerical Distributions">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "We began Day 1 with a rigorous inspection of our dataset foundation. The dataset captures 1,000 retail transactions across 9 distinct features. What is immediately evident is the data hygiene: there are zero missing values, zero duplicates, and a completely unique transaction log. The data spans a full calendar year from January 2023 into January 2024, providing a clean, reliable baseline without requiring aggressive data imputation."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 3: Descriptive Statistics & Revenue Skewness -->
+      <section class="slide" data-slide="3">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 2 · Numerical Profiling</div>
+          <h2 class="slide-title">Descriptive Statistics & Revenue Skewness</h2>
+          <div class="slide-subtitle">Central tendency breakdown, dispersion analysis, and distribution shape evaluation</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <div class="metric-grid">
+              <div class="metric-box">
+                <div class="metric-value">$456.00</div>
+                <div class="metric-label">Mean Spend</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$135.00</div>
+                <div class="metric-label">Median Spend</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">+1.376</div>
+                <div class="metric-label">Spend Skewness</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">41.4 yrs</div>
+                <div class="metric-label">Mean Age</div>
+              </div>
+            </div>
+            <ul class="bullet-points">
+              <li><strong>Severe Right-Skewed Revenue:</strong> While the median transaction spend is only <strong>$135.00</strong>, the mean is pulled up to <strong>$456.00</strong> by high-ticket premium purchases scaling up to $2,000.</li>
+              <li><strong>Discrete Catalog Pricing:</strong> Catalog unit prices are strictly distributed across 5 discrete tiers: $25, $30, $50, $300, and $500.</li>
+              <li><strong>Symmetrical Demographics & Basket Sizes:</strong> Age skewness is <code>-0.049</code> and quantity skewness is <code>-0.014</code>, confirming uniformly distributed shopper ages and basket sizes.</li>
+              <li><strong>Zero Outliers:</strong> Tukey's 1.5×IQR formula confirmed zero anomalies outside legitimate domain limits.</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/02_numerical_boxplots.png" alt="Numerical Boxplots">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "Moving to our descriptive statistics on Day 2, we uncover a crucial structural dynamic: revenue distribution is heavily right-skewed with a skewness coefficient of +1.38. While 50% of orders are under $135, the mathematical average is $456. Why? Because catalog prices are tiered into low-ticket items at $25 to $50 and high-ticket items at $300 to $500. Conversely, customer age and quantity purchased are almost perfectly symmetrical across the population."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 4: Temporal Seasonality & Monthly Velocity -->
+      <section class="slide" data-slide="4">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 3 · Time Series Analysis</div>
+          <h2 class="slide-title">Temporal Velocity & Seasonal Trajectory</h2>
+          <div class="slide-subtitle">Monthly and quarterly sales trends revealing seasonality peaks and late-summer troughs</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <div class="metric-grid">
+              <div class="metric-box">
+                <div class="metric-value">$53,150</div>
+                <div class="metric-label">Peak Month (May)</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$23,620</div>
+                <div class="metric-label">Trough (Sept)</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$126,190</div>
+                <div class="metric-label">Q4 Holiday Total</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">+97.2%</div>
+                <div class="metric-label">Oct Rebound</div>
+              </div>
+            </div>
+            <ul class="bullet-points">
+              <li><strong>Bimodal Annual Cycle:</strong> Revenue exhibits two pronounced cycles: a late-spring surge in <strong>May ($53,150 across 105 orders)</strong> and a sustained <strong>Q4 holiday acceleration ($126,190)</strong>.</li>
+              <li><strong>Late-Summer Slump:</strong> September represents the lowest performing month ($23,620) before a dramatic +97.2% rebound in October.</li>
+              <li><strong>AOV Stability:</strong> Despite volume swings, Average Order Value remains remarkably stable around $430–$518 throughout the entire year.</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/03_monthly_sales_trend.png" alt="Monthly Sales Trend">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "In our Day 3 time series analysis, we mapped monthly and quarterly revenue velocity. We observed a clear bimodal annual rhythm. First, sales surge in May to reach our annual peak of $53,150 and 105 orders. We then see a predictable late-summer lull in September at $23,620, followed by a violent 97% rebound in October leading into a powerful $126,000 fourth-quarter holiday finish."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 5: Day-of-Week Shopping Dynamics -->
+      <section class="slide" data-slide="5">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 3 · Weekly Micro-Rhythms</div>
+          <h2 class="slide-title">Day-of-Week Velocity & Weekend Shifts</h2>
+          <div class="slide-subtitle">Analyzing daily store turnover, order transaction traffic, and department shifts</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <div class="metric-grid">
+              <div class="metric-box">
+                <div class="metric-value">$78,815</div>
+                <div class="metric-label">Saturday Sales</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">150</div>
+                <div class="metric-label">Saturday Orders</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$53,835</div>
+                <div class="metric-label">Thursday Trough</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">+46.4%</div>
+                <div class="metric-label">Weekend Over Trough</div>
+              </div>
+            </div>
+            <ul class="bullet-points">
+              <li><strong>Weekend Acceleration:</strong> Saturday is the undisputed commercial champion, driving $78,815 across 150 transactions.</li>
+              <li><strong>Midweek Quiet Zone:</strong> Wednesday and Thursday experience the lowest turnover ($53,835 to $57,000) and order counts (~124–125).</li>
+              <li><strong>Department Decoupling:</strong> As we will see, customer departmental preferences decouple significantly between weekdays and weekends.</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/06_day_of_week_sales_velocity.png" alt="Day of Week Sales Velocity">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "When we break down sales velocity by day of the week, Saturday generates the highest turnover at over $78,800 across 150 transactions—outperforming midweek lows on Thursdays by more than 46%. This gives our retail operations team a clear mandate for labor scheduling, floor staffing, and dayparted digital advertising."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 6: Customer Demographics & Parity -->
+      <section class="slide" data-slide="6">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 4 · Demographics & Cohorts</div>
+          <h2 class="slide-title">Customer Demographics & Spending Parity</h2>
+          <div class="slide-subtitle">Evaluating customer age distributions, cohort revenue contributions, and gender equity</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <div class="metric-grid">
+              <div class="metric-box">
+                <div class="metric-value">51.0%</div>
+                <div class="metric-label">Female Spenders</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">49.0%</div>
+                <div class="metric-label">Male Spenders</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$456.55</div>
+                <div class="metric-label">Female AOV</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$455.43</div>
+                <div class="metric-label">Male AOV</div>
+              </div>
+            </div>
+            <ul class="bullet-points">
+              <li><strong>Near-Perfect Gender Symmetry:</strong> Female customers account for $232,840 (51.06%) while male patrons account for $223,160 (48.94%).</li>
+              <li><strong>Zero Spending Disparity:</strong> Female AOV ($456.55) and Male AOV ($455.43) are virtually identical (difference < $1.12, p = 0.975).</li>
+              <li><strong>Uniform Age Cohort Power:</strong> Revenue is evenly distributed across cohorts: Young Adults (18–25: $92.5k), Young Professionals (26–35: $97.7k), Middle Age (36–50: $146.5k), and Seniors (51–64: $119.3k).</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/08_gender_demographics_and_spending.png" alt="Gender Demographics and Spending">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "On Day 4, we analyzed customer demographics. We found remarkable commercial parity. Female customers represent 51% of sales and males represent 49%. Even more fascinating is that their Average Order Value is virtually identical at $456.55 versus $455.43. Furthermore, shopper age cohorts demonstrate broad purchasing power across all stages of life, invalidating any assumption that our catalog appeals only to one specific demographic."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 7: Product Category Performance -->
+      <section class="slide" data-slide="7">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 5 · Product Category Analysis</div>
+          <h2 class="slide-title">Product Category Revenue & Balanced Demand</h2>
+          <div class="slide-subtitle">Comparing revenue turnover, order quantities, and average basket value across departments</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <div class="metric-grid">
+              <div class="metric-box">
+                <div class="metric-value">$156,600</div>
+                <div class="metric-label">Electronics Rev</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$155,580</div>
+                <div class="metric-label">Clothing Rev</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$143,820</div>
+                <div class="metric-label">Beauty Rev</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$460.59</div>
+                <div class="metric-label">Electronics AOV</div>
+              </div>
+            </div>
+            <ul class="bullet-points">
+              <li><strong>Balanced Portfolio:</strong> Electronics accounts for 34.34% ($156.6k), Clothing for 34.12% ($155.6k), and Beauty for 31.54% ($143.8k).</li>
+              <li><strong>Minimal Revenue Divergence:</strong> The spread between the top category and lowest category is less than 2.8%, showcasing a resilient product mix.</li>
+              <li><strong>Consistent Units Per Transaction:</strong> All three departments average ~2.5 units per order.</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/11_product_category_performance.png" alt="Product Category Performance">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "Day 5 evaluated departmental performance across Electronics, Clothing, and Beauty. What stands out is portfolio balance. Electronics and Clothing each generate approximately 34% of enterprise turnover, with Beauty close behind at 31.5%. Because no single category dominates the top line, the business enjoys natural portfolio diversification against industry-specific headwinds."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 8: Catalog Pricing Structure & High-Ticket Dominance -->
+      <section class="slide" data-slide="8">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 5 · Catalog Offerings</div>
+          <h2 class="slide-title">Catalog Price Tiers & Revenue Domination</h2>
+          <div class="slide-subtitle">Analyzing best-selling offerings, price point distribution, and basket value impact</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <div class="metric-grid">
+              <div class="metric-box">
+                <div class="metric-value">88.4%</div>
+                <div class="metric-label">Premium Rev Share</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">39.6%</div>
+                <div class="metric-label">Premium Unit Share</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$500 & $300</div>
+                <div class="metric-label">Top Price Tiers</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$25-$50</div>
+                <div class="metric-label">Everyday Tiers</div>
+              </div>
+            </div>
+            <ul class="bullet-points">
+              <li><strong>Top 10 Offerings Generate Over Half of Sales:</strong> Products priced at $500 and $300 capture the highest total transaction revenue.</li>
+              <li><strong>The 88/40 Rule:</strong> Items priced at $300 or $500 account for only 39.6% of transaction volume, but deliver <strong>88.4% of total revenue ($403,050)</strong>.</li>
+              <li><strong>Budget Essentials Volume Drivers:</strong> Everyday low-priced items ($25 to $50) drive 60.4% of unit volume but contribute only 11.6% of store revenue.</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/12_top_selling_products_and_price_tiers.png" alt="Top Selling Products">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "When we dissect individual product price points, we uncover an 88/40 dynamic: premium catalog items priced at $300 and $500 represent under 40% of units sold, yet they generate an astounding 88.4% of our entire revenue. Everyday budget essentials at $25 to $50 drive transactional foot traffic, but our financial engine is overwhelmingly powered by high-ticket conversions."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 9: Correlation & Basket Inelasticity -->
+      <section class="slide" data-slide="9">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 5 · Correlation Matrix</div>
+          <h2 class="slide-title">Correlation Dynamics & Basket Inelasticity</h2>
+          <div class="slide-subtitle">Pearson and Spearman correlation matrices revealing statistical independence</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <div class="metric-grid">
+              <div class="metric-box">
+                <div class="metric-value">r = +0.85</div>
+                <div class="metric-label">Price vs Total Spend</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">r = +0.37</div>
+                <div class="metric-label">Qty vs Total Spend</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">r = +0.017</div>
+                <div class="metric-label">Price vs Quantity</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">r = -0.001</div>
+                <div class="metric-label">Age vs Spend</div>
+              </div>
+            </div>
+            <ul class="bullet-points">
+              <li><strong>Price per Unit Dictates Revenue:</strong> Total basket spend is overwhelmingly driven by Unit Price (<code>r = +0.852</code>) rather than quantity (<code>r = +0.373</code>).</li>
+              <li><strong>Rigid Unit Inelasticity:</strong> The correlation between Price and Quantity is virtually zero (<code>r = +0.017, p = 0.580</code>). Shoppers purchase ~2.5 items regardless of whether the product is $25 or $500!</li>
+              <li><strong>Age Independence:</strong> Customer age has no linear correlation with spending (<code>r = -0.001</code>).</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/13_numerical_correlation_heatmaps.png" alt="Correlation Heatmaps">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "Examining our correlation heatmaps reveals two critical statistical insights: first, unit price is the dominant predictor of revenue at r = 0.85. Second, and most importantly, the correlation between price and quantity is practically zero at +0.017. Shoppers do not reduce unit counts when buying expensive items; they consistently purchase between two and three items regardless of price tag. This points directly to huge cross-selling and bundling potential."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 10: Non-Obvious Insight 1 - The Pareto Whale Economy -->
+      <section class="slide" data-slide="10">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 6 · Advanced Behavioral Intelligence</div>
+          <h2 class="slide-title">The Pareto Whale Economy (Gini = 0.6091)</h2>
+          <div class="slide-subtitle">Lorenz curve and spending inequality proving revenue concentration among top tiers</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <div class="metric-grid">
+              <div class="metric-box">
+                <div class="metric-value">62.89%</div>
+                <div class="metric-label">Top 20% Revenue</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">0.6091</div>
+                <div class="metric-label">Gini Coefficient</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">$1,419.80</div>
+                <div class="metric-label">VIP Order AOV</div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-value">6.9%</div>
+                <div class="metric-label">Bottom 40% Share</div>
+              </div>
+            </div>
+            <ul class="bullet-points">
+              <li><strong>Severe Revenue Concentration:</strong> The top 20.2% of transactions drive <strong>62.89% of enterprise revenue ($286,800.00)</strong> with an average ticket of $1,419.80.</li>
+              <li><strong>High Gini Coefficient:</strong> A Gini inequality index of <strong>0.6091</strong> confirms high spending polarization.</li>
+              <li><strong>The Bottom Decile Squeeze:</strong> The bottom 40% of orders contribute less than 7% of total revenue.</li>
+              <li><strong>Retention Imperative:</strong> Maintaining the top-quintile shopper cohort is critical for enterprise solvency.</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/14_pareto_lorenz_spending_concentration.png" alt="Pareto Concentration">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "Now for our advanced, non-obvious discoveries from Day 6. By modeling the Lorenz curve and calculating the empirical Gini coefficient, we quantified an extreme Pareto concentration: our Gini score is 0.6091. The top 20% of orders generate 62.9% of our entire enterprise turnover. These high-ticket VIP orders average over $1,400 each. Retaining and serving this top quintile is the single most important lever for safeguarding our cash flow."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 11: Non-Obvious Insights 2 & 3 -->
+      <section class="slide" data-slide="11">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 6 · Persona Paradoxes</div>
+          <h2 class="slide-title">Temporal Micro-Rhythms & Demographic Paradoxes</h2>
+          <div class="slide-subtitle">Uncovering departmental weekend lifts and counter-intuitive buyer archetypes</div>
+        </div>
+        <div class="slide-body">
+          <div class="slide-content-card">
+            <ul class="bullet-points">
+              <li><strong>Weekend Electronics Lift (+23.0%):</strong> Electronics average order value surges on weekends ($526.40 vs $428.00 weekday), peaking on Saturday ($563.68).</li>
+              <li><strong>Beauty's Monday & Friday Peaks:</strong> Beauty spikes on Mondays ($623.59) and Fridays ($577.16)—aligning with self-care planning and weekend preparations.</li>
+              <li><strong>Young Adult VIP Paradox (25.4%):</strong> 18–25 shoppers deliver the highest VIP conversion rate in the entire business (25.44%), over-indexing on $500 luxury items.</li>
+              <li><strong>Male Luxury Gifting:</strong> Young adult males buying Beauty generate an AOV of <strong>$637.32 (+51.8% over females)</strong>, identifying a lucrative luxury gifting archetype.</li>
+            </ul>
+          </div>
+          <div class="slide-image-card">
+            <img src="../screenshots/16_demographic_persona_archetypes_and_vip_propensity.png" alt="Demographic Personas">
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "We also discovered two behavioral paradoxes that challenge standard retail assumptions. First, temporal micro-rhythms: Beauty purchases peak on Mondays and Fridays, whereas Electronics basket size explodes by 23% on weekends. Second, our persona analysis revealed that Gen Z and young adults have the highest VIP conversion rate in the company at over 25%, driven by aspirational luxury purchases. Furthermore, young men buying beauty products spend an astonishing $637 on average—over 50% more than females—representing a prime luxury gifting archetype."
+          </div>
+        </div>
+      </section>
+
+      <!-- SLIDE 12: Strategic Recommendations -->
+      <section class="slide" data-slide="12">
+        <div class="slide-header">
+          <div class="slide-eyebrow">Milestone 6 · Executive Strategy</div>
+          <h2 class="slide-title">Actionable Recommendations & Financial Lift</h2>
+          <div class="slide-subtitle">Five data-backed strategic initiatives to accelerate top-line revenue and operational efficiency</div>
+        </div>
+        <div class="slide-body full-width">
+          <div class="rec-grid">
+            <div class="rec-card p-emerald">
+              <h4>1. VIP Concierge & Whale Retention Engine</h4>
+              <p>Enroll $\ge \$1,000$ spenders into a "Black Tier" loyalty club with white-glove clienteling and automated 90-day previews.</p>
+              <div class="lift">+$14,300 Annual Protected Margin</div>
+            </div>
+            <div class="rec-card p-amber">
+              <h4>2. Dayparted Marketing & Staffing Alignment</h4>
+              <p>Concentrate Beauty ad spend on Sun/Mon and Thu/Fri; shift tech marketing and floor staff to weekend peaks.</p>
+              <div class="lift">12-18% Reduction in CAC</div>
+            </div>
+            <div class="rec-card p-purple">
+              <h4>3. Cross-Department Bundles & Tiered Discounts</h4>
+              <p>Pair high-margin tech and fashion items; offer multi-item tiers (10% off 3 items) to push baskets from 2.5 to 3.0 units.</p>
+              <div class="lift">+$89,000 Potential Annual Revenue</div>
+            </div>
+            <div class="rec-card p-rose">
+              <h4>4. Male Luxury Gifting & BNPL Financing</h4>
+              <p>Launch targeted "Gifts for Her" campaigns and integrate Buy Now Pay Later (Klarna/Affirm) to unlock young adult liquidity.</p>
+              <div class="lift">10-15% Cart Completion Increase</div>
+            </div>
+          </div>
+        </div>
+        <div class="speaker-notes-panel">
+          <div class="notes-title">🎙️ What to Speak:</div>
+          <div class="notes-body">
+            "To translate these insights into bottom-line impact, we propose five key initiatives: First, establish a VIP Concierge program for our top 20% spenders. Second, synchronize marketing and floor staffing to day-of-week demand patterns. Third, introduce cross-department bundles to break through the 2.5 unit cap, unlocking an estimated $89,000 in incremental revenue. Fourth, capitalize on young adult aspirational spending with Buy Now Pay Later and luxury gifting guides. And fifth, hedge against the September slump with pre-Q4 working capital buffers. Thank you, and I look forward to your questions!"
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Footer Controls -->
+    <footer>
+      <button class="btn" id="prevBtn" onclick="prevSlide()">◀ Previous</button>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+      <span class="slide-counter" id="slideCounter">Slide 1 / 12</span>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextSlide()">Next ▶</button>
+    </footer>
+  </div>
+
+  <script>
+    let currentSlide = 1;
+    const totalSlides = 12;
+
+    function showSlide(index) {
+      if (index < 1) index = 1;
+      if (index > totalSlides) index = totalSlides;
+      currentSlide = index;
+
+      document.querySelectorAll('.slide').forEach((slide, i) => {
+        slide.classList.toggle('active', (i + 1) === currentSlide);
+      });
+
+      document.getElementById('slideCounter').textContent = `Slide ${currentSlide} / ${totalSlides}`;
+      document.getElementById('progressFill').style.width = `${(currentSlide / totalSlides) * 100}%`;
+
+      document.getElementById('prevBtn').disabled = currentSlide === 1;
+      document.getElementById('nextBtn').textContent = currentSlide === totalSlides ? "Finish ✔" : "Next ▶";
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        showSlide(currentSlide + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        showSlide(currentSlide - 1);
+      }
+    }
+
+    function toggleNotes() {
+      const activeSlide = document.querySelector('.slide.active');
+      if (activeSlide) {
+        const notes = activeSlide.querySelector('.speaker-notes-panel');
+        if (notes) {
+          notes.classList.toggle('visible');
+        }
+      }
+    }
+
+    function toggleFullScreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          alert(`Error entering fullscreen: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'n' || e.key === 'N') {
+        toggleNotes();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullScreen();
+      } else if (e.key === 'Home') {
+        showSlide(1);
+      } else if (e.key === 'End') {
+        showSlide(totalSlides);
+      }
+    });
+
+    // Initialize
+    showSlide(1);
+  </script>
+</body>
+</html>

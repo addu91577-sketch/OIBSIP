@@ -34,6 +34,9 @@ Perform a rigorous Exploratory Data Analysis (EDA) on retail sales data to uncov
 - [x] **At least one additional visualisation:** reveals a non-obvious insight (Day 6)
 - [x] **Markdown cells throughout notebook:** written observations after each chart (Day 6)
 - [x] **Conclusion section:** at least 3 specific, actionable business recommendations based on findings (Day 6)
+- [x] **Reproducible environment:** version-pinned dependencies (`requirements.txt`) (Day 7)
+- [x] **Interactive presentation slide deck:** executive 12-slide HTML presentation (`presentation/index.html`) (Day 7)
+- [x] **Video presentation guide & script:** screen cues, spoken narration, and AI generation prompts (`PRESENTATION_GUIDE.md`) (Day 7)
 
 ---
 
@@ -41,13 +44,16 @@ Perform a rigorous Exploratory Data Analysis (EDA) on retail sales data to uncov
 ```text
 DataAnalytics-L1-EDARetailSales/
 ├── .gitignore                          # Git ignore rules for Python, Jupyter, and temporary files
+├── PRESENTATION_GUIDE.md               # Master presentation guide, screen cues & video narration script
 ├── README.md                           # Project documentation and inspection highlights
-├── requirements.txt                    # Project dependencies
+├── requirements.txt                    # Pinned project dependencies
 ├── Data/
 │   ├── retail_sales_dataset.csv        # Primary retail dataset (1,000 transactions × 9 attributes)
 │   └── Sample - Superstore.csv         # Benchmark / reference sales dataset
 ├── Notebooks/
 │   └── 01_retail_sales_eda.ipynb       # Jupyter Notebook exploratory data analysis workflow
+├── presentation/
+│   └── index.html                      # Interactive 12-slide executive presentation deck
 └── screenshots/                        # Exported statistical distribution, demographic & product visualizations
     ├── 01_numerical_distributions_hist_kde.png
     ├── 02_numerical_boxplots.png
@@ -61,7 +67,10 @@ DataAnalytics-L1-EDARetailSales/
     ├── 10_age_gender_spending_matrix.png
     ├── 11_product_category_performance.png
     ├── 12_top_selling_products_and_price_tiers.png
-    └── 13_numerical_correlation_heatmaps.png
+    ├── 13_numerical_correlation_heatmaps.png
+    ├── 14_pareto_lorenz_spending_concentration.png
+    ├── 15_day_of_week_category_dynamics_and_weekend_lift.png
+    └── 16_demographic_persona_archetypes_and_vip_propensity.png
 ```
 
 ---
@@ -399,6 +408,27 @@ Over the 6-day analytical lifecycle across 1,000 transactions and $456,000 in gr
   - **Late-Summer Cash Flow Hedging:** Run targeted Beauty and mid-tier summer promotional sales across August and September to stabilize revenues during the apparel and tech slowdown.
   - **Supply Chain Financing:** Secure inventory financing and submit vendor purchase orders for high-margin $300 and $500 items by late August to guarantee warehouse availability ahead of the Q4 surge.
 * **Projected Financial Lift:** Protects against holiday stockouts, safeguarding **~$20,000–$35,000** in high-margin Q4 revenue.
+
+---
+
+## 🎬 Day 7: Presentation Deck & Video Delivery
+
+* 🖥️ **Interactive Slide Deck:** [`presentation/index.html`](presentation/index.html) — Standalone 12-slide executive presentation deck with dark modern styling, embedded high-resolution figures, slide counter, and speaker notes toggle (`N` key).
+* 🎙️ **Video Narration Script & Storyboard:** [`PRESENTATION_GUIDE.md`](PRESENTATION_GUIDE.md) — Turn-key presentation guide detailing slide-by-slide cues (*What to Show* and *What to Speak* word-for-word), video duration targets, and copy-paste AI prompts for slide generation (Gamma, Canva), voiceover (ElevenLabs), and avatar video tools (HeyGen).
+
+### Quick Presentation Launch:
+Double-click `presentation/index.html` or run:
+```bash
+# Windows
+start presentation/index.html
+
+# macOS
+open presentation/index.html
+
+# Linux
+xdg-open presentation/index.html
+```
+Press **`F`** or **`F11`** for Fullscreen mode, and **`N`** to toggle Speaker Notes.
 
 ---
 
