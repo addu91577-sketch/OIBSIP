@@ -32,6 +32,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from src.master_pipeline import GooglePlaystoreMasterEngine
 from src.nlp_autocomplete_engine import CorpusPreprocessor
+from src.predictive_modeling import PlayStorePredictiveEngine
 
 
 # ============================================================================
@@ -212,16 +213,111 @@ class BenchmarkResponse(BaseModel):
     summary: List[EndpointLatencyStat]
 
 
+# --- Day 9 Predictive ML & MLOps Drift Schemas ---
+
+class SuccessPredictRequest(BaseModel):
+    """Payload for predicting app high-velocity scale (>= 1,000,000 installs)."""
+    category: str = Field(..., json_schema_extra={"example": "GAME"})
+    size_mb: float = Field(..., gt=0.0, le=1024.0, json_schema_extra={"example": 45.0})
+    price: float = Field(default=0.0, ge=0.0, json_schema_extra={"example": 0.0})
+    content_rating: str = Field(default="Everyone", json_schema_extra={"example": "Everyone"})
+    expected_reviews: Optional[int] = Field(default=None, ge=0, json_schema_extra={"example": 15000})
+
+
+class SuccessPredictResponse(BaseModel):
+    """Prediction result for app install velocity potential."""
+    success_probability: float = Field(..., json_schema_extra={"example": 0.8842})
+    rf_probability: float = Field(..., json_schema_extra={"example": 0.8933})
+    gbm_probability: float = Field(..., json_schema_extra={"example": 0.8705})
+    predicted_tier: str = Field(..., json_schema_extra={"example": "High Velocity Scale (>= 1,000,000 Installs)"})
+    risk_assessment: str = Field(..., json_schema_extra={"example": "LOW_RISK"})
+    category: str = Field(..., json_schema_extra={"example": "GAME"})
+    size_mb: float = Field(..., json_schema_extra={"example": 45.0})
+    price: float = Field(..., json_schema_extra={"example": 0.0})
+    effective_reviews_evaluated: int = Field(..., json_schema_extra={"example": 15000})
+    key_drivers: List[str]
+    latency_ms: float = Field(..., json_schema_extra={"example": 2.15})
+
+
+class RatingPredictRequest(BaseModel):
+    """Payload for predicting app rating valuation."""
+    category: str = Field(..., json_schema_extra={"example": "EDUCATION"})
+    size_mb: float = Field(..., gt=0.0, le=1024.0, json_schema_extra={"example": 25.0})
+    price: float = Field(default=0.0, ge=0.0, json_schema_extra={"example": 1.99})
+    content_rating: str = Field(default="Everyone", json_schema_extra={"example": "Everyone"})
+    expected_reviews: Optional[int] = Field(default=None, ge=0, json_schema_extra={"example": 2500})
+
+
+class RatingPredictResponse(BaseModel):
+    """Prediction result for expected user rating."""
+    predicted_rating: float = Field(..., json_schema_extra={"example": 4.38})
+    confidence_interval_90: List[float] = Field(..., json_schema_extra={"example": [4.13, 4.63]})
+    quality_tier: str = Field(..., json_schema_extra={"example": "Top Quartile Quality (Elite App Tier)"})
+    category: str = Field(..., json_schema_extra={"example": "EDUCATION"})
+    category_baseline_mean: float = Field(..., json_schema_extra={"example": 4.36})
+    latency_ms: float = Field(..., json_schema_extra={"example": 1.95})
+
+
+class DriftMetricItem(BaseModel):
+    """Statistical drift metrics for an individual feature."""
+    feature: str
+    column: str
+    baseline_mean: float
+    monitored_mean: float
+    psi: float
+    ks_statistic: float
+    ks_pvalue: float
+    wasserstein_distance: float
+    status: str
+
+
+class DriftReportResponse(BaseModel):
+    """Comprehensive MLOps distribution drift report."""
+    health_verdict: str = Field(..., json_schema_extra={"example": "HEALTHY"})
+    overall_max_psi: float = Field(..., json_schema_extra={"example": 0.0842})
+    recommendation: str
+    baseline_samples: int
+    monitored_samples: int
+    metrics: List[DriftMetricItem]
+    generated_at: str
+
+
+class ModelCatalogResponse(BaseModel):
+    """Trained machine learning models and feature attribution metadata."""
+    classification_models: Dict[str, Any]
+    regression_models: Dict[str, Any]
+    top_features: List[Dict[str, Any]]
+
+
 # ============================================================================
 # Engine Singleton & Lifespan Management
 # ============================================================================
 
 _engine_instance: Optional[GooglePlaystoreMasterEngine] = None
+_predictive_engine_instance: Optional[PlayStorePredictiveEngine] = None
 _server_start_time: float = time.time()
 
 
 def get_engine() -> GooglePlaystoreMasterEngine:
     """Retrieve or initialize the singleton GooglePlaystoreMasterEngine instance."""
+    global _engine_instance
+    if _engine_instance is None:
+        _engine_instance = GooglePlaystoreMasterEngine()
+        # Initialize datasets
+        _ = _engine_instance.apps_df
+        _ = _engine_instance.reviews_df
+        # Warm up NLP assistant
+        _engine_instance.init_nlp_assistant()
+    return _engine_instance
+
+
+def get_predictive_engine() -> PlayStorePredictiveEngine:
+    """Retrieve or initialize the singleton PlayStorePredictiveEngine instance."""
+    global _predictive_engine_instance
+    if _predictive_engine_instance is None:
+        _predictive_engine_instance = PlayStorePredictiveEngine()
+        _predictive_engine_instance.train_models()
+    return _predictive_engine_instance
     global _engine_instance
     if _engine_instance is None:
         _engine_instance = GooglePlaystoreMasterEngine()
@@ -638,6 +734,77 @@ def create_app() -> FastAPI:
             total_requests=iterations * len(bench_results),
             endpoints_tested=len(bench_results),
             summary=bench_results
+        )
+
+    # -------------------------------------------------------------
+    # Day 9 ML Endpoints: Predictive Modeling & MLOps Drift
+    # -------------------------------------------------------------
+
+    @app.post(
+        "/api/v1/predict/success",
+        response_model=SuccessPredictResponse,
+        summary="Predict App Install Velocity Scale (>= 1M Installs)",
+        tags=["Predictive Intelligence"]
+    )
+    async def predict_success_endpoint(request_body: SuccessPredictRequest) -> SuccessPredictResponse:
+        """Predict probability of an app achieving high-velocity scale (>= 1,000,000 installs)."""
+        pred_engine = get_predictive_engine()
+        res = pred_engine.predict_app_success(
+            category=request_body.category,
+            size_mb=request_body.size_mb,
+            price=request_body.price,
+            content_rating=request_body.content_rating,
+            expected_reviews=request_body.expected_reviews,
+        )
+        return SuccessPredictResponse(**res)
+
+    @app.post(
+        "/api/v1/predict/rating",
+        response_model=RatingPredictResponse,
+        summary="Predict App User Rating Valuation",
+        tags=["Predictive Intelligence"]
+    )
+    async def predict_rating_endpoint(request_body: RatingPredictRequest) -> RatingPredictResponse:
+        """Predict expected user rating (1.0 to 5.0) and confidence interval."""
+        pred_engine = get_predictive_engine()
+        res = pred_engine.predict_app_rating(
+            category=request_body.category,
+            size_mb=request_body.size_mb,
+            price=request_body.price,
+            content_rating=request_body.content_rating,
+            expected_reviews=request_body.expected_reviews,
+        )
+        return RatingPredictResponse(**res)
+
+    @app.get(
+        "/api/v1/mlops/drift-report",
+        response_model=DriftReportResponse,
+        summary="Retrieve MLOps Distribution Drift Report",
+        tags=["MLOps & Observability"]
+    )
+    async def get_drift_report_endpoint() -> DriftReportResponse:
+        """Evaluate live dataset feature stability using PSI, KS-test, and Wasserstein distance."""
+        pred_engine = get_predictive_engine()
+        res = pred_engine.generate_drift_report()
+        return DriftReportResponse(**res)
+
+    @app.get(
+        "/api/v1/mlops/models",
+        response_model=ModelCatalogResponse,
+        summary="Retrieve Trained ML Model Catalog & Feature Weights",
+        tags=["MLOps & Observability"]
+    )
+    async def get_models_catalog_endpoint() -> ModelCatalogResponse:
+        """Return evaluation benchmarks and top feature importances for active models."""
+        pred_engine = get_predictive_engine()
+        top_feats = [
+            {"rank": i + 1, "feature": feat, "importance": round(imp, 5), "pct": round(imp * 100, 2)}
+            for i, (feat, imp) in enumerate(list(pred_engine.feature_importances_.items())[:12])
+        ]
+        return ModelCatalogResponse(
+            classification_models=pred_engine.classification_metrics,
+            regression_models=pred_engine.regression_metrics,
+            top_features=top_feats
         )
 
     return app

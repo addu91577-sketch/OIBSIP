@@ -29,6 +29,12 @@ from src.nlp_autocorrect_engine import (
 from src.master_pipeline import GooglePlaystoreMasterEngine
 from src.production_api import app, create_app
 from src.delivery_showcase import ProjectDeliveryShowcase
+from src.predictive_modeling import (
+    PlayStorePredictiveEngine,
+    calculate_psi,
+    calculate_ks_statistic,
+    calculate_wasserstein
+)
 
 __all__ = [
     "clean_playstore_apps",
@@ -49,5 +55,9 @@ __all__ = [
     "GooglePlaystoreMasterEngine",
     "app",
     "create_app",
-    "ProjectDeliveryShowcase"
+    "ProjectDeliveryShowcase",
+    "PlayStorePredictiveEngine",
+    "calculate_psi",
+    "calculate_ks_statistic",
+    "calculate_wasserstein"
 ]

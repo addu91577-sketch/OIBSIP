@@ -1,0 +1,5 @@
+feature,column,baseline_mean,monitored_mean,psi,ks_statistic,ks_pvalue,wasserstein_distance,status
+App Size (MB),Size_MB_Imputed,23.566932657800294,15.638955709061358,0.2288,0.1806,3.01e-69,8.0577,MONITOR (Moderate Shift)
+App Price ($),Price,1.7876377454084866,0.43277326290125967,0.0,0.0159,0.571,1.358,PASS (Stable)
+Review Counts (Log10),Reviews,3.0806669100653203,2.8610096733670574,0.0296,0.057,2.84e-07,0.2201,PASS (Stable)
+User Rating (Stars),Rating,4.1604985618408445,4.186505964214712,0.0068,0.0269,0.101,0.0264,PASS (Stable)

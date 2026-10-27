@@ -243,3 +243,68 @@ def test_api_benchmark_endpoint(client: TestClient) -> None:
     for stat in data["summary"]:
         assert stat["requests_sampled"] == 5
         assert stat["mean_latency_ms"] >= 0.0
+
+
+# ============================================================================
+# 6. Day 9 Predictive Intelligence & MLOps Drift Endpoints
+# ============================================================================
+
+def test_predict_success_endpoint_valid(client: TestClient) -> None:
+    """Verify Day 9 App Success probability prediction endpoint."""
+    payload = {
+        "category": "GAME",
+        "size_mb": 50.0,
+        "price": 0.0,
+        "content_rating": "Everyone",
+        "expected_reviews": 25000
+    }
+    response = client.post("/api/v1/predict/success", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert 0.0 <= data["success_probability"] <= 1.0
+    assert "High Velocity" in data["predicted_tier"] or "Scale" in data["predicted_tier"]
+    assert data["category"] == "GAME"
+    assert data["risk_assessment"] in ["LOW_RISK", "MODERATE_RISK", "HIGH_RISK"]
+    assert len(data["key_drivers"]) >= 1
+
+
+def test_predict_rating_endpoint_valid(client: TestClient) -> None:
+    """Verify Day 9 App Rating valuation prediction endpoint."""
+    payload = {
+        "category": "EDUCATION",
+        "size_mb": 20.0,
+        "price": 2.99,
+        "content_rating": "Everyone",
+        "expected_reviews": 5000
+    }
+    response = client.post("/api/v1/predict/rating", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert 1.0 <= data["predicted_rating"] <= 5.0
+    assert len(data["confidence_interval_90"]) == 2
+    assert "Quality" in data["quality_tier"] or "Mainstream" in data["quality_tier"]
+    assert data["category"] == "EDUCATION"
+
+
+def test_mlops_drift_report_endpoint(client: TestClient) -> None:
+    """Verify Day 9 MLOps distribution drift report endpoint."""
+    response = client.get("/api/v1/mlops/drift-report")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["health_verdict"] in ["HEALTHY", "MODERATE_DRIFT", "ACTION_REQUIRED"]
+    assert data["overall_max_psi"] >= 0.0
+    assert len(data["metrics"]) >= 4
+    for metric in data["metrics"]:
+        assert "feature" in metric
+        assert "psi" in metric
+        assert "status" in metric
+
+
+def test_mlops_models_catalog_endpoint(client: TestClient) -> None:
+    """Verify Day 9 MLOps trained models catalog endpoint."""
+    response = client.get("/api/v1/mlops/models")
+    assert response.status_code == 200
+    data = response.json()
+    assert "Random_Forest" in data["classification_models"]
+    assert "Random_Forest_Regressor" in data["regression_models"]
+    assert len(data["top_features"]) >= 5
