@@ -23,6 +23,9 @@ from .utils import (
     impute_menu_pricing_and_items,
     verify_day7_pricing_integrity,
     plot_day7_pricing_and_item_imputation,
+    impute_accounting_invariants_and_items,
+    verify_day8_accounting_integrity,
+    plot_day8_accounting_and_item_imputation,
 )
 
 __all__ = [
@@ -46,4 +49,7 @@ __all__ = [
     'impute_menu_pricing_and_items',
     'verify_day7_pricing_integrity',
     'plot_day7_pricing_and_item_imputation',
+    'impute_accounting_invariants_and_items',
+    'verify_day8_accounting_integrity',
+    'plot_day8_accounting_and_item_imputation',
 ]

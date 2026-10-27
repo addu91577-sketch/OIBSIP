@@ -39,6 +39,7 @@ DataAnalytics-L1-CleaningData/
 │   ├── day5_strict_datatype_enforcement.md # Day 5 Strict Data Type Enforcement & Validation Report
 │   ├── day6_categorical_encoding_and_memory_audit.md # Day 6 Categorical Encoding & Memory Audit Report
 │   ├── day7_deterministic_pricing_and_item_imputation.md # Day 7 Deterministic Pricing & Item Imputation Report
+│   ├── day8_mathematical_accounting_and_item_resolution.md # Day 8 Mathematical Accounting & Ambiguous Item Resolution Report
 │   └── figures/                        # High-resolution diagnostic visualizations
 │       ├── day3_column_defect_rates.png
 │       ├── day3_record_defect_distribution.png
@@ -50,7 +51,9 @@ DataAnalytics-L1-CleaningData/
 │       ├── day6_categorical_profiles_and_cardinality.png
 │       ├── day6_memory_footprint_reduction_waterfall.png
 │       ├── day7_price_recovery_stages_waterfall.png
-│       └── day7_price_and_item_distributions.png
+│       ├── day7_price_and_item_distributions.png
+│       ├── day8_accounting_recovery_waterfall.png
+│       └── day8_accounting_invariants_and_distributions.png
 └── src/
     ├── __init__.py
     └── utils.py                        # Reusable data audit & metric routines
@@ -66,7 +69,7 @@ DataAnalytics-L1-CleaningData/
 - [x] **Day 5 (Oct 23):** Strict data type casting (`datetime64[ns]`, `string` ID, nullable `Int64`, `float64`)
 - [x] **Day 6 (Oct 24):** Categorical encoding (`Item`, `Payment Method`, `Location`) and memory audit
 - [x] **Day 7 (Oct 25):** Deterministic menu pricing invariant recovery & reverse item mapping (PPU 100% resolved, 492 items recovered)
-- [ ] **Day 8 (Oct 26):** Mathematical accounting invariant recovery for Quantity & Total Spent ($\text{Total} = \text{Qty} \times \text{Price}$) + ambiguous item mode resolution
+- [x] **Day 8 (Oct 26):** Mathematical accounting invariant recovery for Quantity & Total Spent ($\text{Total} = \text{Qty} \times \text{Price}$) + ambiguous item mode resolution
 - [ ] **Day 9 (Oct 27):** Categorical mode imputation & distribution preservation for Payment Method & Location
 - [ ] **Day 10 (Oct 28):** Chronological temporal fill for Transaction Date & full 80,000-cell dataset completion audit
 - [ ] **Day 11–13:** Multi-tier duplicate resolution and statistical outlier detection
@@ -260,6 +263,33 @@ On Day 7, the pipeline initiated the multi-stage missing data imputation phase, 
 - **100% Quality Assertion Sign-Off:** Automated verification suite (`verify_day7_pricing_integrity()`) certified all 8 schema, domain, and invariant criteria.
 - **Diagnostic Visual Artifacts:** Serialized `day7_price_recovery_stages_waterfall.png` and `day7_price_and_item_distributions.png` to `Reports/figures/`.
 - **Full Report:** Comprehensive analysis available in [`Reports/day7_deterministic_pricing_and_item_imputation.md`](Reports/day7_deterministic_pricing_and_item_imputation.md).
+
+---
+
+## 🧮 Day 8 Milestone: Mathematical Accounting Invariants & Ambiguous Item Resolution
+
+On Day 8, the pipeline achieved complete mathematical reconciliation of transaction quantities and monetary totals, alongside resolving all residual item ambiguity:
+
+### Stage-by-Stage Forensic Recovery Audit Trail
+
+| Stage # | Imputation Operation | Target Feature | Applied Method | Records Recovered | Remaining Item Nulls | Remaining Qty Nulls | Remaining Spend Nulls | Resolution Rate (%) |
+| :---: | :--- | :--- | :--- | :---: | :---: | :---: | :---: | :---: |
+| **0** | Baseline State (Day 7) | `Item`, `Qty`, `Spend` | Categorical & Typed Ingestion | 0 | 477 | 476 | 502 | 0.00% |
+| **1** | Tier-Conditional Mode Imputation | `Item` | Tier Modes: $\$3.00 \rightarrow \text{Juice} (250)$, $\$4.00 \rightarrow \text{Sandwich} (227)$ | **477** | **0** | 476 | 502 | 100.0% (Item) |
+| **2** | Mathematical Identity Derivation | `Quantity` | Formula Derivation: $\text{Total Spent} / \text{Price Per Unit}$ | **456** | 0 | **20** | 502 | 95.80% (Qty) |
+| **3** | Item-Specific Modal Imputation | `Quantity` | Catalog Item Mode: $\{\text{Cookie/Tea}: 2, \text{Juice}: 3, \text{Others}: 5\}$ | **20** | 0 | **0** | 502 | 100.0% (Qty) |
+| **4** | Accounting Identity Derivation | `Total Spent` | Formula Derivation: $\text{Quantity} \times \text{Price Per Unit}$ | **502** | 0 | 0 | **0** | 100.0% (Spend) |
+| **Net** | **Day 8 Milestone State** | **`Item`, `Qty`, `Spend`** | **Multi-Stage Invariant Pipeline** | **1,455** | **0 (100% Clean)** | **0 (100% Clean)** | **0 (100% Clean)** | **100.0% Pipeline** |
+
+### Key Day 8 Achievements:
+- **100% Resolution Across 4 Core Features:** Completely eliminated all missing values across `Item` (477 $\rightarrow$ 0), `Quantity` (476 $\rightarrow$ 0), and `Total Spent` (502 $\rightarrow$ 0), alongside certified clean `Price Per Unit` ($10,000 / 10,000$ non-null cells each).
+- **Zero Accounting Violations (10,000 / 10,000 Rows):** Certified exact adherence to the fundamental identity $\text{Total Spent} \equiv \text{Quantity} \times \text{Price Per Unit}$ with **0 discrepancies** across the entire dataset.
+- **Deterministic Quantity Factorization (456 Records):** Recovered 456 transaction volumes directly from spend quotients ($\text{Total} / \text{Price}$), with 100% of values mapping to exact integers in $\{1, 2, 3, 4, 5\}$.
+- **Item-Specific Modal Recovery (20 Records):** Resolved the 20 joint-null edge cases where both `Quantity` and `Total Spent` were unrecorded using item-specific empirical purchase modes, preventing artificial uniform distortion.
+- **Ambiguity Elimination (477 Records):** Successfully resolved all ambiguous items isolated on Day 7 via empirical tier-conditional modes ($3.00 tier $\rightarrow$ `Juice`; $4.00 tier $\rightarrow$ `Sandwich`).
+- **100% Quality Assertion Sign-Off:** Automated verification suite (`verify_day8_accounting_integrity()`) certified all 11 schema, invariant, and domain criteria.
+- **Diagnostic Visual Artifacts:** Serialized `day8_accounting_recovery_waterfall.png` and `day8_accounting_invariants_and_distributions.png` to `Reports/figures/`.
+- **Full Report:** Comprehensive analysis available in [`Reports/day8_mathematical_accounting_and_item_resolution.md`](Reports/day8_mathematical_accounting_and_item_resolution.md).
 
 ---
 
