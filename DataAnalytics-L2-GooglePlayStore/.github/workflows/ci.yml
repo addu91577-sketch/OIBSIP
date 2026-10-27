@@ -28,17 +28,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Pre-cache NLTK Corpora
+        run: |
+          python -c "import nltk; nltk.download('vader_lexicon', quiet=True); nltk.download('stopwords', quiet=True)"
+
       - name: Verify Clean Data Integrity
         run: |
-          python -c "
-          import pandas as pd
-          apps = pd.read_csv('Data/cleaned_googleplaystore.csv')
-          revs = pd.read_csv('Data/cleaned_user_reviews.csv')
-          assert len(apps) == 9659, f'Unexpected apps count: {len(apps)}'
-          assert len(revs) == 29692, f'Unexpected reviews count: {len(revs)}'
-          print('Clean datasets verified successfully!')
-          "
+          python -c "import pandas as pd; apps = pd.read_csv('Data/cleaned_googleplaystore.csv'); revs = pd.read_csv('Data/cleaned_user_reviews.csv'); assert len(apps) == 9659, f'Unexpected apps count: {len(apps)}'; assert len(revs) == 29692, f'Unexpected reviews count: {len(revs)}'; print('Clean datasets verified successfully!')"
 
-      - name: Run Pytest Regression Suite across All Days (Days 1 - 7)
+      - name: Run Pytest Regression Suite across All Days (Days 1 - 9)
+        env:
+          PYTHONPATH: .
         run: |
           pytest tests/ -v --durations=10
