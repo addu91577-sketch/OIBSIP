@@ -10,8 +10,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.11", "3.12"]
+
+    env:
+      PYTHONPATH: .
+      MPLBACKEND: Agg
+      PYTHONUNBUFFERED: "1"
 
     steps:
       - name: Checkout Code Repository
@@ -37,7 +43,5 @@ jobs:
           python -c "import pandas as pd; apps = pd.read_csv('Data/cleaned_googleplaystore.csv'); revs = pd.read_csv('Data/cleaned_user_reviews.csv'); assert len(apps) == 9659, f'Unexpected apps count: {len(apps)}'; assert len(revs) == 29692, f'Unexpected reviews count: {len(revs)}'; print('Clean datasets verified successfully!')"
 
       - name: Run Pytest Regression Suite across All Days (Days 1 - 9)
-        env:
-          PYTHONPATH: .
         run: |
-          pytest tests/ -v --durations=10
+          python -m pytest tests/ -v --durations=10
