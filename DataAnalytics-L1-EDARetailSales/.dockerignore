@@ -1,0 +1,29 @@
+# Version Control
+.git/
+.gitignore
+
+# Python Caches & Environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+ENV/
+env/
+
+# Pytest & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Exclude large extraneous superstore datasets (only retail_sales_dataset.csv needed)
+Data/Sample - Superstore.csv
+Data/superstore_sales.csv

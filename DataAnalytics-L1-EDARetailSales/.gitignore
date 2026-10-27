@@ -23,6 +23,10 @@ htmlcov/
 Thumbs.db
 Desktop.ini
 
+# Machine Learning Models
+models/*.joblib
+!models/.gitkeep
+
 # Project Roadmaps & Execution Schedules (Internal only - strictly excluded)
 *schedule*
 *roadmap*
