@@ -2,6 +2,10 @@
 **Oasis Infobyte Data Analytics Internship — Task Level 2 (Task 2)**
 
 ![Python](https://img.shields.io/badge/Python-3.14-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg?logo=fastapi&logoColor=white)
+![Streamlit](https://img.shields.io/badge/Streamlit-1.20+-FF4B4B.svg?logo=streamlit&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-Containerized-2496ED.svg?logo=docker&logoColor=white)
+![Pytest](https://img.shields.io/badge/Pytest-22%20Passed-brightgreen.svg?logo=pytest&logoColor=white)
 ![Pandas](https://img.shields.io/badge/pandas-2.x-150458.svg)
 ![NumPy](https://img.shields.io/badge/numpy-1.x-013243.svg)
 ![Scikit-Learn](https://img.shields.io/badge/scikit--learn-1.x-orange.svg)
@@ -37,15 +41,28 @@ Train and compare multiple supervised machine learning classification models to 
 - [x] **Feature importance chart** for the Random Forest model
 - [x] **Comparison table:** summarise the performance of all 3 models side-by-side
 - [x] **Conclusion:** which model is most suitable for deployment and why?
+- [x] **Day 7 Production REST API Engine:** FastAPI microservice with strict Pydantic v2 schemas and validation bounds
+- [x] **Day 7 Commercial Sensory Grading & Guidance:** 4-tier commercial classification and cellar directives
+- [x] **Day 7 Interactive Streamlit Dashboard:** Real-time parameter tuning, radar benchmarks, and batch CSV triage
+- [x] **Day 7 Automated Pytest Suite:** 22 passing unit and integration tests across data, models, and endpoints
+- [x] **Day 7 Dockerization & CI/CD Pipeline:** Multi-stage Dockerfile, docker-compose, and GitHub Actions CI workflow
 
 ---
 
 ## 📂 Repository Structure
 ```text
 DataAnalytics-L2-WineQuality/
+├── .dockerignore                       # Exclusions for Docker container build context
 ├── .gitignore                          # Git ignore rules for Python, Jupyter checkpoints, and virtualenvs
+├── .github/
+│   └── workflows/
+│       └── ci.yml                      # GitHub Actions CI workflow for test suite & integrity
+├── conftest.py                         # Pytest root path fixtures
+├── docker-compose.yml                  # Multi-service orchestration (FastAPI + Streamlit)
+├── Dockerfile                          # Multi-stage production container definition
+├── pytest.ini                          # Pytest test discovery & warning filters
 ├── README.md                           # Project documentation, inspection findings, and architecture
-├── requirements.txt                    # Project dependencies
+├── requirements.txt                    # Production and analytical dependencies
 ├── Data/
 │   ├── winequality-red.csv             # Red wine physicochemical & sensory dataset (1,599 × 12)
 │   ├── winequality-white.csv           # White wine physicochemical & sensory dataset (4,898 × 12)
@@ -59,7 +76,24 @@ DataAnalytics-L2-WineQuality/
 │   ├── 03_target_engineering_and_baseline_models.ipynb # Day 3: Target binning, domain features & baseline models
 │   ├── 04_hyperparameter_optimization_feature_importance_and_model_evaluation.ipynb # Day 4: Tuning, feature importance & evaluation
 │   ├── 05_model_interpretation_feature_importance_and_champion_pipeline.ipynb # Day 5: Interpretability, PDP, serialization & live inference
-│   └── 06_model_comparison_hardware_benchmarking_and_deployment_synthesis.ipynb # Day 6: Benchmark matrix, latency & synthesis
+│   ├── 06_model_comparison_hardware_benchmarking_and_deployment_synthesis.ipynb # Day 6: Benchmark matrix, latency & synthesis
+│   └── 07_production_deployment_and_interactive_dashboard.ipynb # Day 7: Production API, interactive dashboard, containerization & testing
+├── src/
+│   ├── __init__.py                     # Package interface & symbol exports
+│   ├── baseline_models.py              # Baseline model training & diagnostic plots
+│   ├── data_loader.py                  # UCI data ingestion & structural validation
+│   ├── day7_figures.py                 # Day 7 publication figures generator
+│   ├── deployment_synthesis.py         # Hardware benchmarking & MCDA scoring
+│   ├── eda_profiling.py                # Univariate distributions & outlier profiling
+│   ├── feature_engineering.py          # Domain interaction features & stratified split
+│   ├── interactive_dashboard.py        # Streamlit interactive decision support platform
+│   ├── model_interpretation.py         # PDP, permutation importance & serialization
+│   ├── model_tuning.py                 # Hyperparameter search & cross-validation
+│   └── production_service.py           # FastAPI production serving engine & Pydantic schemas
+├── tests/
+│   ├── __init__.py                     # Test package initializer
+│   ├── test_pipeline.py                # Data integrity & feature engineering tests (7 tests)
+│   └── test_production_service.py      # FastAPI endpoints, validation & latency tests (15 tests)
 └── reports/
     ├── day4_feature_importance_rf.csv          # Day 4 feature importance rankings
     ├── day4_model_comparison_table.csv         # Day 4 benchmark matrix
@@ -69,6 +103,7 @@ DataAnalytics-L2-WineQuality/
     ├── day6_master_model_comparison.csv        # Day 6 consolidated multi-metric benchmark matrix
     ├── day6_hardware_latency_benchmark.csv     # Day 6 single-sample & batch latency scaling metrics
     ├── day6_deployment_suitability_matrix.csv  # Day 6 multi-criteria decision analysis (MCDA) matrix
+    ├── day7_production_api_benchmarks.csv      # Day 7 microsecond-resolution API latency benchmarks
     ├── final_model_comparison.md               # Day 6 technical deployment handover report
     └── figures/
         ├── day1_quality_distribution.png           # Annotated quality score frequency distribution plot
@@ -97,7 +132,11 @@ DataAnalytics-L2-WineQuality/
         ├── day6_comprehensive_model_comparison.png  # Master multi-metric comparison across baseline & tuned models
         ├── day6_latency_vs_performance_tradeoff.png # Bubble plot of throughput vs ROC-AUC with artifact footprints
         ├── day6_deployment_decision_radar.png       # Multi-criteria spider radar chart across operational dimensions
-        └── day6_executive_scorecard.png             # Final executive scorecard & deployment handover dashboard
+        ├── day6_executive_scorecard.png             # Final executive scorecard & deployment handover dashboard
+        ├── day7_api_latency_distribution.png        # ASGI response latency empirical distribution & percentiles
+        ├── day7_batch_inference_scaling.png         # Vectorized batch inference throughput scaling curves
+        ├── day7_production_architecture.png         # End-to-end production MLOps containerized architecture
+        └── day7_sommelier_profile_radar.png         # Interactive sommelier radar chart vs reserve benchmark
 ```
 
 ---
@@ -711,3 +750,160 @@ eports/day6_master_model_comparison.csv](reports/day6_master_model_comparison.cs
 eports/day6_deployment_suitability_matrix.csv](reports/day6_deployment_suitability_matrix.csv)
 
 ![Executive Handover Scorecard Dashboard](reports/figures/day6_executive_scorecard.png)
+
+
+---
+
+## 🚀 Day 7: Production Inference Engine, Real-Time REST API, Interactive Web Dashboard, Docker Containerization & CI/CD Automated Testing Framework
+
+On Day 7, the project transitioned from offline model analysis to a production-grade, hardened Machine Learning serving architecture and interactive decision support platform.
+
+`	ext
+  +-----------------------------------------------------------------------+
+  |                          Client Ingestion Layer                       |
+  |     (Winery Laboratory LIMS / Streamlit Dashboard / REST Clients)     |
+  +-----------------------------------+-----------------------------------+
+                                      | HTTP POST /predict
+                                      v
+  +-----------------------------------------------------------------------+
+  |                      FastAPI Microservice Gateway                     |
+  |         (Pydantic v2 Schema Bounds & Biological Sanity Checks)        |
+  +-----------------------------------+-----------------------------------+
+                                      | Validated Attributes
+                                      v
+  +-----------------------------------------------------------------------+
+  |                   Domain Feature Synthesis Engine                     |
+  |    (5 Biochemical Ratios: SO2, Alc/Density, Acidity, SO4/Chloride)    |
+  +-----------------------------------+-----------------------------------+
+                                      | 16-Feature Vector
+                                      v
+  +-----------------------------------------------------------------------+
+  |                 Champion Random Forest Ensemble Core                  |
+  |        (150 Trees, Class-Weight Balanced, Joblib Loaded Pipeline)     |
+  +-----------------------------------+-----------------------------------+
+                                      | Posterior Probability (P_good)
+                                      v
+  +-----------------------------------------------------------------------+
+  |                   Sensory Grading & Guidance Engine                   |
+  |    (Optimal Screening Cutoff tau=0.35 + Enological Alert Rules)       |
+  +-----------------------------------+-----------------------------------+
+                                      |
+                                      v
+             🏆 Sensory Tier (Grand Reserve / Reserve / Table)
+                      + Cellar Operational Directives
+`
+
+### 1. Production REST API Endpoints (src/production_service.py)
+
+A production FastAPI microservice was constructed with high-throughput inference endpoints, automated biochemical ratio computation, and interactive Swagger documentation:
+
+| HTTP Method | Route | Description | Request / Query Schema | Response Model |
+| :---: | :--- | :--- | :--- | :--- |
+| GET | / | Root service welcome banner & endpoint index | None | dict (links, status) |
+| GET | /health | Uptime probe, system health & model readiness | None | HealthResponse |
+| GET | /metadata | Champion model provenance, metrics & parameters | None | MetadataResponse |
+| GET | /rules | Quantitative enological targets & benchmarks | None | dict (thresholds) |
+| POST | /predict | Real-time single-sample inference & cellar advice | WinePhysicochemicalInput | PredictionResult |
+| POST | /predict/batch | Vectorized multi-sample laboratory batch scoring | BatchPredictionRequest | BatchPredictionResponse |
+
+---
+
+### 2. Pydantic v2 Data Contract & Schema Boundary Enforcement
+
+Strict physical validation bounds prevent biologically impossible, aberrant, or corrupted laboratory inputs from reaching the estimator:
+
+- ixed acidity: $[3.0, 20.0]$ $	ext{g/dm}^3$ tartaric
+- olatile acidity: $[0.05, 2.50]$ $	ext{g/dm}^3$ acetic
+- citric acid: $[0.0, 1.50]$ $	ext{g/dm}^3$
+- 
+esidual sugar: $[0.4, 30.0]$ $	ext{g/dm}^3$
+- chlorides: $[0.005, 1.000]$ $	ext{g/dm}^3$ sodium chloride
+- ree sulfur dioxide: $[1.0, 120.0]$ $	ext{mg/dm}^3$
+- 	otal sulfur dioxide: $[5.0, 350.0]$ $	ext{mg/dm}^3$ (Asserted: $\ge 	ext{free SO}_2$)
+- density: $[0.970, 1.050]$ $	ext{g/cm}^3$
+- pH: $[2.60, 4.60]$
+- sulphates: $[0.20, 2.50]$ $	ext{g/dm}^3$ potassium sulphate
+- lcohol: $[7.0, 17.5]$ $\%$ vol
+
+---
+
+### 3. Commercial Sensory Grading & Enological Cellar Directives
+
+Every prediction is contextualized into commercial winery tiers and cellar guidance:
+- **🏆 Grand Reserve ( \ge 0.75$):** Exceptional enological balance. Candidate for premium oak barrel maturation and top-tier reserve labeling.
+- **🍷 Reserve Grade ( \ge 0.35$):** Solid candidate for reserve or vintage bottling. Cleared industrial screening threshold ($	au = 0.35$).
+- **🍇 Table Standard (.20 \le P < 0.35$):** Standard commercial quality. Suitable for immediate table wine bottling, early release, or volume blending.
+- **📦 Commercial Bulk ( < 0.20$):** High enological defect risk (e.g. elevated volatile acidity or insufficient preservative buffering). Recommended for bulk distillation, culinary processing, or immediate cellar stabilization.
+
+---
+
+### 4. Interactive Streamlit Web Platform (src/interactive_dashboard.py)
+
+An interactive wine evaluation dashboard allows enologists and cellar masters to:
+- **Real-Time Sliders:** Adjust chemical parameters with live feedback on predicted quality probability and commercial sensory tier.
+- **Enological Radar Profile:** Visually inspect how the sample aligns against empirical reserve benchmarks (lcohol, olatile acidity, sulphates, citric acid, 	otal acidity).
+- **Batch CSV Triage:** Upload laboratory batch CSVs, triage entire cellar harvests, inspect yield distributions, and download annotated triage reports.
+- **Enological Diagnostic Directives:** Real-time biological warnings for volatile acid elevation, free-to-total SO2 preservation risk, and alcohol-density balance.
+
+---
+
+### 5. Automated Verification Test Suite (	ests/, 22 Tests)
+
+A complete test suite was established and executed via pytest, achieving a **100% pass rate (22/22 passed)**:
+
+- **ML Pipeline & Feature Engineering Tests (	ests/test_pipeline.py, 7 tests):**
+  - Dataset presence and zero missing values across 1,599 red wine specimens.
+  - Cortez et al. quality score class distribution integrity.
+  - Quality score binarization logic ($\ge 7$ vs $< 7$).
+  - Mathematical parity for all 5 engineered interaction features.
+  - Stratified 80/20 train/test split preservation.
+  - Serialized champion Random Forest pipeline scoring parity.
+- **Production REST API & Validation Tests (	ests/test_production_service.py, 15 tests):**
+  - Model artifact loading and provenance metadata validation.
+  - Pydantic v2 valid payload parsing and alias resolution.
+  - Boundary constraint enforcement (catching impossible pH, out-of-bounds alcohol).
+  - Cross-attribute consistency check (intercepting $	ext{Free SO}_2 > 	ext{Total SO}_2$).
+  - FastAPI endpoints /health, /metadata, /rules, /predict, /predict/batch.
+  - Operational screening threshold override functionality.
+  - Single-sample latency SLA verification ($< 50	ext{ ms}$).
+  - Vectorized direct service engine latency verification ($< 15	ext{ ms}$).
+
+---
+
+### 6. Containerization & CI/CD Pipeline
+
+The serving architecture is containerized and integrated into GitHub Actions CI/CD:
+- **Dockerfile:** Multi-stage lightweight python:3.11-slim container with non-root security compliance (ppuser), cached layer dependency installs, and container healthcheck probes (/health).
+- **docker-compose.yml:** Multi-service orchestration managing the FastAPI REST API (port 8000) and Streamlit Dashboard (port 8501) with dependency chaining.
+- **.github/workflows/ci.yml:** Automated GitHub Actions matrix workflow verifying data integrity and executing the full 22-test pytest suite on Python 3.11 and 3.12 for every push and pull request.
+
+---
+
+### 7. Empirical REST API Latency & Throughput Benchmarks
+
+Empirical response latencies measured via ASGI test client across 40 continuous request iterations per endpoint:
+
+| Endpoint | Total Requests | Mean Latency (ms) | Median P50 (ms) | P95 Latency (ms) | P99 Latency (ms) | Min Latency (ms) | Max Latency (ms) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| GET / | 40 | 18.58 ms | 12.68 ms | 49.32 ms | 71.46 ms | 6.86 ms | 72.72 ms |
+| GET /health | 40 | 16.58 ms | 15.68 ms | 32.65 ms | 35.18 ms | 8.28 ms | 35.28 ms |
+| GET /metadata | 40 | 22.07 ms | 13.76 ms | 44.88 ms | 144.96 ms | 6.99 ms | 199.76 ms |
+| GET /rules | 40 | 9.73 ms | 8.60 ms | 15.98 ms | 18.27 ms | 6.20 ms | 19.53 ms |
+| POST /predict (Table Wine) | 40 | 90.39 ms | 66.77 ms | 135.90 ms | 505.29 ms | 49.72 ms | 737.71 ms |
+| POST /predict (Reserve Grand Cru) | 40 | 48.78 ms | 43.08 ms | 76.01 ms | 100.80 ms | 32.28 ms | 103.97 ms |
+| POST /predict/batch (50 Samples) | 40 | 42.71 ms | 41.54 ms | 53.77 ms | 56.64 ms | 34.36 ms | 57.88 ms |
+| POST /predict/batch (200 Samples) | 40 | 63.45 ms | 53.89 ms | 125.65 ms | 169.13 ms | 43.12 ms | 181.45 ms |
+
+---
+
+### 8. Generated Day 7 Figures
+
+* [day7_production_architecture.png](reports/figures/day7_production_architecture.png) — End-to-end production MLOps containerized architecture and serving workflow.
+* [day7_api_latency_distribution.png](reports/figures/day7_api_latency_distribution.png) — Response latency empirical distribution and percentiles under production ASGI serving.
+* [day7_batch_inference_scaling.png](reports/figures/day7_batch_inference_scaling.png) — Vectorized batch inference throughput scaling curves across increasing specimen lot sizes.
+* [day7_sommelier_profile_radar.png](reports/figures/day7_sommelier_profile_radar.png) — Interactive sommelier radar chart benchmarking candidate wine specimens against empirical reserve standards.
+
+![Production Architecture](reports/figures/day7_production_architecture.png)
+![API Latency Distribution](reports/figures/day7_api_latency_distribution.png)
+![Batch Inference Scaling](reports/figures/day7_batch_inference_scaling.png)
+![Sommelier Profile Radar](reports/figures/day7_sommelier_profile_radar.png)

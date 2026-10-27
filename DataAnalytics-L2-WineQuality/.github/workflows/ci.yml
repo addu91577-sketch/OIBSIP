@@ -1,0 +1,45 @@
+name: CI - Wine Quality Prediction & Serving Suite
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12"]
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v4
+
+      - name: Set Up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r DataAnalytics-L2-WineQuality/requirements.txt
+
+      - name: Verify Clean Data Integrity
+        run: |
+          python -c "
+          import pandas as pd
+          red = pd.read_csv('DataAnalytics-L2-WineQuality/Data/winequality-red.csv', sep=';')
+          white = pd.read_csv('DataAnalytics-L2-WineQuality/Data/winequality-white.csv', sep=';')
+          assert len(red) == 1599, f'Unexpected red wine count: {len(red)}'
+          assert len(white) == 4898, f'Unexpected white wine count: {len(white)}'
+          print('Wine quality datasets verified successfully!')
+          "
+
+      - name: Run Pytest Test Suite across All Days (Days 1 - 7)
+        working-directory: DataAnalytics-L2-WineQuality
+        run: |
+          pytest tests/ -v --durations=10

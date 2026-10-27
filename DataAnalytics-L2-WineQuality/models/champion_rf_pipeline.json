@@ -59,5 +59,32 @@
         "recall_good": 0.7907,
         "captured_lots": "34 / 43",
         "use_case": "Automated pre-barrel cellar screening for sommelier lot grading"
-    }
+    },
+    "n_estimators": 150,
+    "max_depth": null,
+    "class_weight": "balanced",
+    "features": [
+        "fixed acidity",
+        "volatile acidity",
+        "citric acid",
+        "residual sugar",
+        "chlorides",
+        "free sulfur dioxide",
+        "total sulfur dioxide",
+        "density",
+        "pH",
+        "sulphates",
+        "alcohol",
+        "total_acidity",
+        "bound_sulfur_dioxide",
+        "free_to_total_so2_ratio",
+        "alcohol_to_density_ratio",
+        "sulphate_to_chloride_ratio"
+    ],
+    "num_features": 16,
+    "test_roc_auc": 0.9349,
+    "test_pr_auc": 0.826,
+    "test_balanced_accuracy_screen_threshold": 0.852,
+    "operating_screening_threshold": 0.35,
+    "date_finalized": "2026-10-21"
 }
