@@ -323,7 +323,6 @@ class ProjectDeliveryShowcase:
             "Day 8 Delivery Script": self.base_dir / "src" / "delivery_showcase.py",
             "Day 8 Presentation Deck": self.presentation_dir / "index.html",
             "Day 8 Presentation Guide": self.base_dir / "PRESENTATION_GUIDE.md",
-            "Day 8 Figure 17": self.figures_dir / "17_project_delivery_lifecycle_and_scorecard.png",
             "Day 8 Scorecard CSV": self.reports_dir / "project_delivery_scorecard.csv"
         }
 

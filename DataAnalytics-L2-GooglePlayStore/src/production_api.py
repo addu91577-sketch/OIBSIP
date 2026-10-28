@@ -33,6 +33,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 from src.master_pipeline import GooglePlaystoreMasterEngine
 from src.nlp_autocomplete_engine import CorpusPreprocessor
 from src.predictive_modeling import PlayStorePredictiveEngine
+from src.simulation_engine import PlayStoreSimulationEngine
 
 
 # ============================================================================
@@ -289,12 +290,96 @@ class ModelCatalogResponse(BaseModel):
     top_features: List[Dict[str, Any]]
 
 
+# --- Day 10 Simulation & A/B Experimentation Schemas ---
+
+class WhatIfSimulateRequest(BaseModel):
+    """Payload for counterfactual what-if scenario simulation."""
+    app_name: Optional[str] = Field(None, json_schema_extra={"example": "Subway Surfers"})
+    category: Optional[str] = Field(None, json_schema_extra={"example": "GAME"})
+    rating: Optional[float] = Field(None, ge=1.0, le=5.0, json_schema_extra={"example": 4.2})
+    reviews: Optional[int] = Field(None, ge=0, json_schema_extra={"example": 15000})
+    size_mb: Optional[float] = Field(None, gt=0.0, le=1024.0, json_schema_extra={"example": 45.0})
+    price: Optional[float] = Field(None, ge=0.0, json_schema_extra={"example": 0.0})
+    content_rating: Optional[str] = Field("Everyone", json_schema_extra={"example": "Everyone"})
+    delta_size_pct: float = Field(0.0, ge=-0.95, le=5.0, description="Percentage change in APK size", json_schema_extra={"example": -0.25})
+    delta_price: float = Field(0.0, description="Absolute change in USD price", json_schema_extra={"example": 0.0})
+    delta_rating: float = Field(0.0, ge=-4.0, le=4.0, description="Projected rating shift", json_schema_extra={"example": 0.2})
+
+
+class WhatIfSimulateResponse(BaseModel):
+    """Result of counterfactual what-if simulation."""
+    app_name: str
+    category: str
+    base_size_mb: float
+    simulated_size_mb: float
+    base_price: float
+    simulated_price: float
+    base_rating: float
+    simulated_rating: float
+    base_scale_prob: float
+    simulated_scale_prob: float
+    delta_scale_prob: float
+    pct_scale_prob_uplift: float
+    base_expected_rating: float
+    simulated_expected_rating: float
+    base_expected_revenue: float
+    simulated_expected_revenue: float
+    delta_revenue: float
+    marginal_size_elasticity: float
+    marginal_price_elasticity: float
+    recommendations: List[str]
+
+
+class ABTestExperimentRequest(BaseModel):
+    """Payload for two-sample A/B test analysis."""
+    visitors_a: int = Field(..., gt=0, json_schema_extra={"example": 10000})
+    conversions_a: int = Field(..., ge=0, json_schema_extra={"example": 500})
+    visitors_b: int = Field(..., gt=0, json_schema_extra={"example": 10000})
+    conversions_b: int = Field(..., ge=0, json_schema_extra={"example": 575})
+    alpha: float = Field(0.05, gt=0.0, lt=0.5, json_schema_extra={"example": 0.05})
+
+
+class ABTestExperimentResponse(BaseModel):
+    """Comprehensive statistical outcome of A/B test."""
+    visitors_a: int
+    conversions_a: int
+    rate_a: float
+    visitors_b: int
+    conversions_b: int
+    rate_b: float
+    absolute_uplift: float
+    relative_uplift: float
+    z_statistic: float
+    p_value: float
+    is_statistically_significant: bool
+    ci_lower_diff: float
+    ci_upper_diff: float
+    bayesian_prob_b_beats_a: float
+    expected_loss: float
+    credible_interval_a: List[float]
+    credible_interval_b: List[float]
+    decision: str
+    summary_verdict: str
+
+
+class PriceElasticityResponse(BaseModel):
+    """Empirical price elasticity of demand analysis."""
+    total_paid_apps_analyzed: int
+    overall_elasticity: float
+    overall_r_squared: float
+    overall_elasticity_type: str
+    overall_optimal_price: float
+    categories_analyzed: int
+    category_benchmarks: List[Dict[str, Any]]
+
+
 # ============================================================================
 # Engine Singleton & Lifespan Management
 # ============================================================================
 
 _engine_instance: Optional[GooglePlaystoreMasterEngine] = None
 _predictive_engine_instance: Optional[PlayStorePredictiveEngine] = None
+_simulation_engine_instance: Optional[PlayStoreSimulationEngine] = None
 _server_start_time: float = time.time()
 
 
@@ -303,10 +388,8 @@ def get_engine() -> GooglePlaystoreMasterEngine:
     global _engine_instance
     if _engine_instance is None:
         _engine_instance = GooglePlaystoreMasterEngine()
-        # Initialize datasets
         _ = _engine_instance.apps_df
         _ = _engine_instance.reviews_df
-        # Warm up NLP assistant
         _engine_instance.init_nlp_assistant()
     return _engine_instance
 
@@ -318,15 +401,14 @@ def get_predictive_engine() -> PlayStorePredictiveEngine:
         _predictive_engine_instance = PlayStorePredictiveEngine()
         _predictive_engine_instance.train_models()
     return _predictive_engine_instance
-    global _engine_instance
-    if _engine_instance is None:
-        _engine_instance = GooglePlaystoreMasterEngine()
-        # Initialize datasets
-        _ = _engine_instance.apps_df
-        _ = _engine_instance.reviews_df
-        # Warm up NLP assistant
-        _engine_instance.init_nlp_assistant()
-    return _engine_instance
+
+
+def get_simulation_engine() -> PlayStoreSimulationEngine:
+    """Retrieve or initialize the singleton PlayStoreSimulationEngine instance."""
+    global _simulation_engine_instance
+    if _simulation_engine_instance is None:
+        _simulation_engine_instance = PlayStoreSimulationEngine(predictive_engine=get_predictive_engine())
+    return _simulation_engine_instance
 
 
 @asynccontextmanager
@@ -806,6 +888,67 @@ def create_app() -> FastAPI:
             regression_models=pred_engine.regression_metrics,
             top_features=top_feats
         )
+
+    # --- Day 10 Counterfactual Simulation & A/B Experimentation Endpoints ---
+
+    @app.post(
+        "/api/v1/simulate/what-if",
+        response_model=WhatIfSimulateResponse,
+        summary="Simulate Counterfactual App What-If Scenario",
+        tags=["Simulation & Optimization"]
+    )
+    async def simulate_what_if_endpoint(request_body: WhatIfSimulateRequest) -> WhatIfSimulateResponse:
+        """Simulate the effect of APK size compression, price adjustments, or rating shifts."""
+        sim_engine = get_simulation_engine()
+        res = sim_engine.simulate_what_if(
+            app_name=request_body.app_name,
+            category=request_body.category,
+            rating=request_body.rating,
+            reviews=request_body.reviews,
+            size_mb=request_body.size_mb,
+            price=request_body.price,
+            content_rating=request_body.content_rating or "Everyone",
+            delta_size_pct=request_body.delta_size_pct,
+            delta_price=request_body.delta_price,
+            delta_rating=request_body.delta_rating,
+        )
+        return WhatIfSimulateResponse(**res.to_dict())
+
+    @app.post(
+        "/api/v1/experiment/ab-test",
+        response_model=ABTestExperimentResponse,
+        summary="Evaluate Two-Sample Frequentist & Bayesian A/B Test",
+        tags=["Simulation & Optimization"]
+    )
+    async def run_ab_test_endpoint(request_body: ABTestExperimentRequest) -> ABTestExperimentResponse:
+        """Run frequentist Z-test and Bayesian Beta-Binomial superiority evaluation."""
+        sim_engine = get_simulation_engine()
+        try:
+            res = sim_engine.run_ab_experiment(
+                visitors_a=request_body.visitors_a,
+                conversions_a=request_body.conversions_a,
+                visitors_b=request_body.visitors_b,
+                conversions_b=request_body.conversions_b,
+                alpha=request_body.alpha,
+            )
+            d = res.to_dict()
+            d["credible_interval_a"] = list(d["credible_interval_a"])
+            d["credible_interval_b"] = list(d["credible_interval_b"])
+            return ABTestExperimentResponse(**d)
+        except ValueError as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    @app.get(
+        "/api/v1/analytics/price-elasticity",
+        response_model=PriceElasticityResponse,
+        summary="Retrieve Empirical Price Elasticity of Demand Summary",
+        tags=["Simulation & Optimization"]
+    )
+    async def get_price_elasticity_endpoint() -> PriceElasticityResponse:
+        """Compute catalog and category econometric price elasticity of demand."""
+        sim_engine = get_simulation_engine()
+        res = sim_engine.analyze_price_elasticity()
+        return PriceElasticityResponse(**res)
 
     return app
 

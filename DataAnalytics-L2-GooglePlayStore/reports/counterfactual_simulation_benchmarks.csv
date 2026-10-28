@@ -1,0 +1,6 @@
+app_name,category,base_size_mb,simulated_size_mb,base_price,simulated_price,base_rating,simulated_rating,base_scale_prob,simulated_scale_prob,delta_scale_prob,pct_scale_prob_uplift,base_expected_rating,simulated_expected_rating,base_expected_revenue,simulated_expected_revenue,delta_revenue,marginal_size_elasticity,marginal_price_elasticity,recommendations
+Subway Surfers,GAME,76.0,53.2,0.0,0.0,4.5,4.7,0.9793,0.9814,0.0021,0.21,4.43,4.42,0.0,0.0,0.0,-0.0071,0.0,['Improving rating by +0.20 lifts store ranking visibility and conversion headroom.']
+Candy Crush Saga,GAME,74.0,51.8,0.0,0.0,4.4,4.6,0.9793,0.9814,0.0021,0.21,4.43,4.42,0.0,0.0,0.0,-0.0071,0.0,['Improving rating by +0.20 lifts store ranking visibility and conversion headroom.']
+Duolingo: Learn Languages Free,FAMILY,,0.5,0.0,0.0,4.7,4.9,0.8416,0.8466,0.005,0.59,4.42,4.42,0.0,0.0,0.0,0.0,0.0,['Improving rating by +0.20 lifts store ranking visibility and conversion headroom.']
+Dropbox,PRODUCTIVITY,61.0,42.7,0.0,0.0,4.4,4.6,0.9119,0.9148,0.0029,0.32,4.42,4.41,0.0,0.0,0.0,-0.0106,0.0,['Improving rating by +0.20 lifts store ranking visibility and conversion headroom.']
+Hypothetical App (GAME),GAME,60.0,42.0,0.0,0.0,4.2,4.2,0.2245,0.2261,0.0016,0.71,4.13,4.13,0.0,0.0,0.0,-0.0238,0.0,['Scenario shows minimal variance against baseline store performance.']

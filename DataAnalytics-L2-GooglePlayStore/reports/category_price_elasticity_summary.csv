@@ -1,0 +1,14 @@
+category,paid_app_count,median_price,elasticity_coefficient,r_squared,p_value,elasticity_type,optimal_price_recommendation,pricing_advice
+FAMILY,182,2.99,0.262,0.007,0.2747,Inelastic (Utility/Specialized),4.04,Niche value proposition enables premium pricing with low demand erosion.
+GAME,82,2.74,1.132,0.057,0.0308,Inelastic (Utility/Specialized),3.7,Niche value proposition enables premium pricing with low demand erosion.
+MEDICAL,81,4.99,0.445,0.037,0.0865,Inelastic (Utility/Specialized),6.74,Niche value proposition enables premium pricing with low demand erosion.
+PERSONALIZATION,80,1.49,1.842,0.093,0.006,Inelastic (Utility/Specialized),2.99,Niche value proposition enables premium pricing with low demand erosion.
+TOOLS,78,2.77,0.733,0.033,0.1089,Inelastic (Utility/Specialized),3.74,Niche value proposition enables premium pricing with low demand erosion.
+BOOKS_AND_REFERENCE,28,5.04,-1.159,0.096,0.1092,Highly Elastic (Price Sensitive),4.99,Users strongly resist higher upfront prices; discount pricing or free-to-play with IAP maximizes market share.
+COMMUNICATION,27,2.49,0.869,0.038,0.3324,Inelastic (Utility/Specialized),3.36,Niche value proposition enables premium pricing with low demand erosion.
+PRODUCTIVITY,27,2.99,1.457,0.079,0.1555,Inelastic (Utility/Specialized),4.04,Niche value proposition enables premium pricing with low demand erosion.
+SPORTS,24,2.99,0.621,0.029,0.4301,Inelastic (Utility/Specialized),4.04,Niche value proposition enables premium pricing with low demand erosion.
+PHOTOGRAPHY,19,3.49,-1.447,0.097,0.1938,Highly Elastic (Price Sensitive),4.99,Users strongly resist higher upfront prices; discount pricing or free-to-play with IAP maximizes market share.
+LIFESTYLE,18,4.99,0.303,0.079,0.2589,Inelastic (Utility/Specialized),6.74,Niche value proposition enables premium pricing with low demand erosion.
+FINANCE,15,18.99,0.254,0.03,0.534,Inelastic (Utility/Specialized),19.99,Niche value proposition enables premium pricing with low demand erosion.
+HEALTH_AND_FITNESS,15,3.49,-0.775,0.024,0.5784,Inelastic (Utility/Specialized),4.71,Niche value proposition enables premium pricing with low demand erosion.

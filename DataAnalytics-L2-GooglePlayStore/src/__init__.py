@@ -35,6 +35,12 @@ from src.predictive_modeling import (
     calculate_ks_statistic,
     calculate_wasserstein
 )
+from src.simulation_engine import (
+    PlayStoreSimulationEngine,
+    WhatIfScenarioResult,
+    ABTestResult,
+    PriceElasticityResult,
+)
 
 __all__ = [
     "clean_playstore_apps",
@@ -59,5 +65,9 @@ __all__ = [
     "PlayStorePredictiveEngine",
     "calculate_psi",
     "calculate_ks_statistic",
-    "calculate_wasserstein"
+    "calculate_wasserstein",
+    "PlayStoreSimulationEngine",
+    "WhatIfScenarioResult",
+    "ABTestResult",
+    "PriceElasticityResult"
 ]
