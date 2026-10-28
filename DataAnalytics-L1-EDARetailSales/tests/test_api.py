@@ -148,3 +148,64 @@ def test_bundle_recommendation_endpoint(test_client):
     assert data["primary_category"] == "Electronics"
     assert data["items_count"] == 3
     assert data["discount_percentage"] == 10.0
+
+
+# --- DAY 9 NEW REST ENDPOINT TESTS ---
+def test_drift_audit_endpoint_stable(test_client):
+    """POST /api/v1/mlops/drift with stable scenario must return 200 and HEALTHY_STABLE."""
+    payload = {"scenario": "stable", "sample_size": 250}
+    response = test_client.post("/api/v1/mlops/drift", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["global_status"] == "HEALTHY_STABLE"
+    assert data["retrain_recommended"] is False
+    assert "feature_audits" in data
+
+
+def test_drift_audit_endpoint_surge(test_client):
+    """POST /api/v1/mlops/drift with tech_surge must trigger CRITICAL_DRIFT."""
+    payload = {"scenario": "tech_surge", "sample_size": 300}
+    response = test_client.post("/api/v1/mlops/drift", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["global_status"] == "CRITICAL_DRIFT"
+    assert data["retrain_recommended"] is True
+
+
+def test_rfm_segments_endpoint(test_client):
+    """GET /api/v1/analytics/rfm-segments must return 4 cluster profiles."""
+    response = test_client.get("/api/v1/analytics/rfm-segments")
+    assert response.status_code == 200
+    data = response.json()
+    assert "metrics" in data
+    assert "profiles" in data
+    assert len(data["profiles"]) == 4
+    assert data["total_customers"] == 1000
+
+
+def test_what_if_simulation_endpoint(test_client):
+    """POST /api/v1/simulations/what-if must calculate projected revenue and uplift."""
+    payload = {
+        "bundle_adoption_rate": 0.25,
+        "target_basket_units": 3.20,
+        "bundle_discount_pct": 0.10,
+        "vip_retention_lift_pct": 0.15,
+    }
+    response = test_client.post("/api/v1/simulations/what-if", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["projected_total_revenue"] > 456000.0
+    assert data["overall_pct_revenue_lift"] > 0
+    assert data["combined_roi_pct"] > 0
+
+
+def test_what_if_simulation_validation_error(test_client):
+    """POST /api/v1/simulations/what-if with out-of-bounds discount must return 422."""
+    payload = {
+        "bundle_adoption_rate": 0.25,
+        "target_basket_units": 3.20,
+        "bundle_discount_pct": 0.95,  # > 0.90 max
+        "vip_retention_lift_pct": 0.15,
+    }
+    response = test_client.post("/api/v1/simulations/what-if", json=payload)
+    assert response.status_code == 422

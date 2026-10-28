@@ -3,7 +3,7 @@ Production FastAPI REST API for Retail Sales Analytics & Machine Learning Infere
 
 Exposes comprehensive endpoints for descriptive statistics, time-series velocity,
 demographic segmentation, Pareto concentration profiling, real-time ML inference,
-and strategic cross-department bundle recommendations.
+continuous MLOps drift monitoring, RFM customer clustering, and financial what-if simulation.
 """
 
 from contextlib import asynccontextmanager
@@ -15,19 +15,28 @@ from pydantic import BaseModel, Field, field_validator
 from src.analytics import RetailAnalyticsEngine
 from src.ml_models import RetailMLManager
 from src.recommendations import BusinessRecommendationEngine
+from src.mlops_drift import DriftDetector
+from src.segmentation import CustomerSegmentationEngine
+from src.simulation import FinancialWhatIfSimulator
 
 # Global singletons
 analytics_engine: Optional[RetailAnalyticsEngine] = None
 ml_manager: Optional[RetailMLManager] = None
+drift_detector: Optional[DriftDetector] = None
+segmentation_engine: Optional[CustomerSegmentationEngine] = None
+whatif_simulator: Optional[FinancialWhatIfSimulator] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initializes engines and loads/trains machine learning models on startup."""
-    global analytics_engine, ml_manager
+    global analytics_engine, ml_manager, drift_detector, segmentation_engine, whatif_simulator
     analytics_engine = RetailAnalyticsEngine()
     ml_manager = RetailMLManager()
     ml_manager.load_or_train_models()
+    drift_detector = DriftDetector(baseline_df=analytics_engine.df)
+    segmentation_engine = CustomerSegmentationEngine()
+    whatif_simulator = FinancialWhatIfSimulator()
     yield
 
 
@@ -36,7 +45,8 @@ app = FastAPI(
     description=(
         "Production-ready enterprise REST API delivering real-time statistical analytics, "
         "time-series forecasting, demographic profiling, Pareto concentration intelligence, "
-        "and machine learning inference for retail transactions."
+        "machine learning inference, continuous MLOps drift monitoring, RFM behavioral clustering, "
+        "and financial what-if scenario simulations."
     ),
     version="1.0.0",
     lifespan=lifespan,
@@ -130,6 +140,39 @@ class BundleRecommendationRequest(BaseModel):
         return v_title
 
 
+class DriftAuditRequest(BaseModel):
+    scenario: str = Field(
+        default="stable",
+        description="Drift test scenario: 'stable', 'tech_surge', 'inflation', or 'youth_pivot'",
+    )
+    sample_size: int = Field(
+        default=300, ge=10, le=1000, description="Batch sample size (10-1000)"
+    )
+
+    @field_validator("scenario")
+    @classmethod
+    def validate_scenario(cls, v: str) -> str:
+        valid = ["stable", "tech_surge", "inflation", "youth_pivot"]
+        if v.lower() not in valid:
+            raise ValueError(f"Scenario must be one of {valid}")
+        return v.lower()
+
+
+class WhatIfSimulationRequest(BaseModel):
+    bundle_adoption_rate: float = Field(
+        default=0.25, ge=0.0, le=1.0, description="Bundle adoption fraction (0.0 - 1.0)"
+    )
+    target_basket_units: float = Field(
+        default=3.20, gt=0.0, le=10.0, description="Target basket units (baseline: 2.51)"
+    )
+    bundle_discount_pct: float = Field(
+        default=0.10, ge=0.0, le=0.90, description="Tiered bundle discount percentage (0.0 - 0.90)"
+    )
+    vip_retention_lift_pct: float = Field(
+        default=0.15, ge=0.0, le=1.0, description="VIP repeat purchase rate increase (0.0 - 1.0)"
+    )
+
+
 def get_analytics() -> RetailAnalyticsEngine:
     global analytics_engine
     if analytics_engine is None:
@@ -145,20 +188,40 @@ def get_ml() -> RetailMLManager:
     return ml_manager
 
 
-# Endpoints
+def get_drift() -> DriftDetector:
+    global drift_detector
+    if drift_detector is None:
+        drift_detector = DriftDetector(baseline_df=get_analytics().df)
+    return drift_detector
+
+
+def get_segmentation() -> CustomerSegmentationEngine:
+    global segmentation_engine
+    if segmentation_engine is None:
+        segmentation_engine = CustomerSegmentationEngine()
+    return segmentation_engine
+
+
+def get_simulation() -> FinancialWhatIfSimulator:
+    global whatif_simulator
+    if whatif_simulator is None:
+        whatif_simulator = FinancialWhatIfSimulator()
+    return whatif_simulator
+
+
+# --- ROOT & HEALTH ---
 @app.get("/", tags=["System & Health"])
-def root_endpoint() -> Dict[str, Any]:
-    """Returns root API metadata, operational status, and available route modules."""
+def root_status() -> Dict[str, Any]:
+    """Root endpoint verifying API availability and active version."""
     analytics = get_analytics()
     kpis = analytics.get_kpi_overview()
     return {
-        "service": "Retail Sales Analytics & Machine Learning Intelligence API",
-        "version": "1.0.0",
         "status": "ONLINE",
-        "documentation": "/docs",
+        "version": "1.0.0",
+        "service": "Retail Sales Analytics & Machine Learning Intelligence API",
         "summary": {
             "total_revenue": kpis["total_revenue"],
-            "total_transactions": kpis["total_orders"],
+            "total_orders": kpis["total_orders"],
             "average_order_value": kpis["average_order_value"],
             "gini_coefficient": kpis["gini_coefficient"],
         },
@@ -179,6 +242,7 @@ def health_check() -> Dict[str, Any]:
     }
 
 
+# --- ANALYTICAL ROUTES ---
 @app.get("/api/v1/metrics/overview", tags=["Executive KPIs"])
 def get_executive_overview() -> Dict[str, Any]:
     """Returns storewide executive performance indicators and baseline metrics."""
@@ -220,6 +284,7 @@ def get_pareto_analytics() -> Dict[str, Any]:
     return get_analytics().get_pareto_concentration()
 
 
+# --- ML INFERENCE ROUTES ---
 @app.post("/api/v1/predict/vip", tags=["Machine Learning Inference"])
 def predict_vip_propensity(payload: VIPPredictionRequest) -> Dict[str, Any]:
     """
@@ -284,3 +349,70 @@ def generate_cross_sell_bundle(payload: BundleRecommendationRequest) -> Dict[str
         target_units=payload.target_units,
     )
     return bundle
+
+
+# --- DAY 9 NEW REST ENDPOINTS ---
+@app.post("/api/v1/mlops/drift", tags=["MLOps & Data Drift"])
+def run_drift_audit(payload: DriftAuditRequest) -> Dict[str, Any]:
+    """
+    Executes a real-time statistical drift audit comparing live production batch
+    against the golden baseline dataset using Population Stability Index (PSI)
+    and Kolmogorov-Smirnov (KS) hypothesis tests.
+    """
+    try:
+        detector = get_drift()
+        batch = detector.generate_synthetic_batch(
+            scenario=payload.scenario,
+            n_samples=payload.sample_size,
+        )
+        audit_results = detector.run_drift_audit(batch)
+        audit_results["audit_scenario"] = payload.scenario
+        return audit_results
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Drift audit failed: {str(e)}",
+        )
+
+
+@app.get("/api/v1/analytics/rfm-segments", tags=["Customer Segmentation"])
+def get_rfm_customer_segments() -> Dict[str, Any]:
+    """
+    Returns customer RFM metrics and unsupervised K-Means behavioral clustering profiles
+    (VIP Whales, Core Lifestyle Shoppers, Premium Specialists, Casual Budget Explorers).
+    """
+    try:
+        engine = get_segmentation()
+        return engine.get_summary()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Segmentation failed: {str(e)}",
+        )
+
+
+@app.post("/api/v1/simulations/what-if", tags=["Strategic Simulations"])
+def run_what_if_simulation(payload: WhatIfSimulationRequest) -> Dict[str, Any]:
+    """
+    Simulates commercial interventions (cross-department bundles & VIP retention),
+    projecting net revenue uplift ($ and %), gross margin gains, and ROI.
+    """
+    try:
+        sim = get_simulation()
+        result = sim.simulate_combined_strategy(
+            bundle_adoption=payload.bundle_adoption_rate,
+            target_units=payload.target_basket_units,
+            bundle_discount=payload.bundle_discount_pct,
+            vip_lift=payload.vip_retention_lift_pct,
+        )
+        return result
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(ve),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Simulation error: {str(e)}",
+        )
