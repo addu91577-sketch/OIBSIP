@@ -26,6 +26,9 @@ from .utils import (
     impute_accounting_invariants_and_items,
     verify_day8_accounting_integrity,
     plot_day8_accounting_and_item_imputation,
+    impute_categorical_modes_and_distributions,
+    verify_day9_categorical_integrity,
+    plot_day9_categorical_imputation,
 )
 
 __all__ = [
@@ -52,4 +55,7 @@ __all__ = [
     'impute_accounting_invariants_and_items',
     'verify_day8_accounting_integrity',
     'plot_day8_accounting_and_item_imputation',
+    'impute_categorical_modes_and_distributions',
+    'verify_day9_categorical_integrity',
+    'plot_day9_categorical_imputation',
 ]
