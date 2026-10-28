@@ -422,8 +422,8 @@ docker-compose up --build
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/addu91577-sketch/Retail-Sales-EDA.git
-   cd Retail-Sales-EDA
+   git clone https://github.com/addu91577-sketch/OIBSIP.git
+   cd OIBSIP/DataAnalytics-L1-EDARetailSales
    ```
 
 2. **Install dependencies:**
