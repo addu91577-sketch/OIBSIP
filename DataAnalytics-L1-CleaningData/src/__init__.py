@@ -29,6 +29,9 @@ from .utils import (
     impute_categorical_modes_and_distributions,
     verify_day9_categorical_integrity,
     plot_day9_categorical_imputation,
+    impute_chronological_dates_and_verify_completion,
+    verify_day10_temporal_and_completion_integrity,
+    plot_day10_temporal_and_completion_audit,
 )
 
 __all__ = [
@@ -58,4 +61,7 @@ __all__ = [
     'impute_categorical_modes_and_distributions',
     'verify_day9_categorical_integrity',
     'plot_day9_categorical_imputation',
+    'impute_chronological_dates_and_verify_completion',
+    'verify_day10_temporal_and_completion_integrity',
+    'plot_day10_temporal_and_completion_audit',
 ]
