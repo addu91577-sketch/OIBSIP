@@ -1,0 +1,31 @@
+Seed_App,Rank,Recommended_App,Category,Similarity_Score,Rating,Installs,Size_MB,Price
+Subway Surfers,1,Jetpack Joyride,GAME,0.9996,4.4,100000000,96.0,0.0
+Subway Surfers,2,Zombie Tsunami,GAME,0.9993,4.4,100000000,25.0,0.0
+Subway Surfers,3,Vector,GAME,0.9995,4.4,100000000,89.0,0.0
+Subway Surfers,4,Run Sausage Run!,GAME,0.998,4.4,10000000,25.0,0.0
+Subway Surfers,5,Nyan Cat: Lost In Space,GAME,0.9978,4.5,10000000,90.0,0.0
+Duolingo: Learn Languages Free,1,Babbel – Learn Languages,FAMILY,0.974,4.3,10000000,21.0,0.0
+Duolingo: Learn Languages Free,2,"Learn Japanese, Korean, Chinese Offline & Free",EDUCATION,0.9595,4.9,1000000,26.0,0.0
+Duolingo: Learn Languages Free,3,Learn Bulgarian Free,FAMILY,0.9673,4.7,50000,25.0,0.0
+Duolingo: Learn Languages Free,4,"DataCamp - Learn R, Python & SQL",FAMILY,0.9663,4.4,100000,12.0,0.0
+Duolingo: Learn Languages Free,5,"Learn languages, grammar & vocabulary with Memrise",EDUCATION,0.9633,4.7,10000000,25.0,0.0
+F,1,DF Wall Plus – Droid Firewall,TOOLS,0.9999,4.1,500,6.3,0.0
+F,2,DV - Digito Verificador,TOOLS,0.9998,4.1,500,4.2,0.0
+F,3,HOLSTON EC,TOOLS,0.9999,4.1,1000,4.2,0.0
+F,4,Mesure CI,TOOLS,0.9999,4.1,500,6.6,0.0
+F,5,DW Cleaner,TOOLS,0.9997,4.1,500,3.0,0.0
+WhatsApp Messenger,1,Viber Messenger,COMMUNICATION,0.9998,4.3,500000000,25.0,0.0
+WhatsApp Messenger,2,Google Chrome: Fast & Secure,COMMUNICATION,0.9997,4.3,1000000000,25.0,0.0
+WhatsApp Messenger,3,WeChat,COMMUNICATION,0.9996,4.2,100000000,25.0,0.0
+WhatsApp Messenger,4,Yahoo Mail – Stay Organized,COMMUNICATION,0.9995,4.3,100000000,16.0,0.0
+WhatsApp Messenger,5,Gmail,COMMUNICATION,0.9995,4.3,1000000000,25.0,0.0
+Adobe Photoshop Express:Photo Editor Collage Maker,1,Square InPic - Photo Editor & Collage Maker,PHOTOGRAPHY,0.9995,4.4,50000000,14.0,0.0
+Adobe Photoshop Express:Photo Editor Collage Maker,2,PicsArt Photo Studio: Collage Maker & Pic Editor,PHOTOGRAPHY,0.9751,4.5,100000000,34.0,0.0
+Adobe Photoshop Express:Photo Editor Collage Maker,3,"PhotoGrid: Video & Pic Collage Maker, Photo Editor",PHOTOGRAPHY,0.954,4.6,100000000,25.0,0.0
+Adobe Photoshop Express:Photo Editor Collage Maker,4,Photo Editor Collage Maker Pro,PHOTOGRAPHY,0.9464,4.5,100000000,25.0,0.0
+Adobe Photoshop Express:Photo Editor Collage Maker,5,"S Photo Editor - Collage Maker , Photo Collage",PHOTOGRAPHY,0.9345,4.4,100000000,45.0,0.0
+Clash of Clans,1,Clash Royale,GAME,0.9999,4.6,100000000,97.0,0.0
+Clash of Clans,2,Final Fantasy XV: A New Empire,GAME,0.9989,4.0,10000000,25.0,0.0
+Clash of Clans,3,Guns of Glory,GAME,0.9981,4.0,10000000,77.0,0.0
+Clash of Clans,4,Disney Heroes: Battle Mode,GAME,0.9967,4.6,5000000,25.0,0.0
+Clash of Clans,5,Plants vs. Zombies FREE,GAME,0.9963,4.4,100000000,69.0,0.0

@@ -41,6 +41,12 @@ from src.simulation_engine import (
     ABTestResult,
     PriceElasticityResult,
 )
+from src.recommendation_engine import (
+    PlayStoreRecommendationEngine,
+    AppRecommendationItem,
+    RecommendationBatchResult,
+    ColdStartRecommendationResult,
+)
 
 __all__ = [
     "clean_playstore_apps",
@@ -69,5 +75,9 @@ __all__ = [
     "PlayStoreSimulationEngine",
     "WhatIfScenarioResult",
     "ABTestResult",
-    "PriceElasticityResult"
+    "PriceElasticityResult",
+    "PlayStoreRecommendationEngine",
+    "AppRecommendationItem",
+    "RecommendationBatchResult",
+    "ColdStartRecommendationResult"
 ]

@@ -27,6 +27,7 @@ if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
 from src.master_pipeline import GooglePlaystoreMasterEngine
+from src.recommendation_engine import PlayStoreRecommendationEngine
 
 
 # ============================================================================
@@ -146,7 +147,14 @@ def load_master_engine() -> GooglePlaystoreMasterEngine:
     return engine
 
 
+@st.cache_resource(show_spinner="Indexing Play Store Vector Embeddings for Recommendations...")
+def load_recommendation_engine() -> PlayStoreRecommendationEngine:
+    """Initialize and cache the recommendation engine singleton."""
+    return PlayStoreRecommendationEngine()
+
+
 engine = load_master_engine()
+rec_engine = load_recommendation_engine()
 
 
 # ============================================================================
@@ -204,11 +212,12 @@ st.markdown("---")
 # Interactive Multi-Tab Workspace
 # ============================================================================
 
-tab1, tab2, tab3, tab4 = st.tabs([
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
     "📊 Market Intelligence & Category Radar",
     "💡 Developer Concept Feasibility Calculator",
     "⌨️ Real-Time Smart Keyboard Assistant",
-    "🧠 Review Linguistics & Executive Scorecard"
+    "🧠 Review Linguistics & Executive Scorecard",
+    "🎯 App Recommendation & Personalized Discovery"
 ])
 
 
@@ -500,3 +509,154 @@ with tab4:
         )
         fig_cross.update_layout(height=400)
         st.plotly_chart(fig_cross, use_container_width=True)
+
+
+# ----------------------------------------------------------------------------
+# TAB 5: App Recommendation & Personalized Discovery (Day 11)
+# ----------------------------------------------------------------------------
+with tab5:
+    st.subheader("🎯 Multi-Modal App Recommendation & Vector Discovery Engine")
+    st.markdown("Leverage multi-modal vector embeddings (text semantics, scale, ratings, price, and sentiment priors) to find similar apps, explore personalized user portfolios, and benchmark cold-start app concepts.")
+
+    rec_sub1, rec_sub2, rec_sub3 = st.tabs([
+        "🔍 Similar App Finder (MMR Diversification)",
+        "📱 Personalized User Portfolio",
+        "🚀 Cold-Start Developer Benchmarking"
+    ])
+
+    with rec_sub1:
+        st.markdown("#### Content-Based Cosine Similarity & MMR Diversification")
+        col_rec1, col_rec2 = st.columns([2, 1])
+
+        with col_rec1:
+            app_options = sorted(rec_engine.apps_df["App_Clean"].unique().tolist())
+            default_app = "Duolingo: Learn Languages Free"
+            default_idx = app_options.index(default_app) if default_app in app_options else 0
+            selected_app = st.selectbox("Select Target App to Recommend From", app_options, index=default_idx)
+
+        with col_rec2:
+            top_k_val = st.slider("Number of Recommendations (Top-K)", min_value=3, max_value=20, value=5)
+
+        col_param1, col_param2 = st.columns(2)
+        with col_param1:
+            diversity_slider = st.slider(
+                "MMR Diversity Weight (λ)",
+                min_value=0.0,
+                max_value=1.0,
+                value=0.7,
+                step=0.05,
+                help="1.0 = Pure greedy relevance (may have near-duplicates). 0.0 = Maximal diversity. 0.7 = Recommended balance."
+            )
+        with col_param2:
+            cat_filter_opts = ["All Categories"] + sorted(rec_engine.apps_df["Category"].unique().tolist())
+            cat_filter_choice = st.selectbox("Optional Category Filter", cat_filter_opts, index=0)
+            applied_cat_filter = None if cat_filter_choice == "All Categories" else cat_filter_choice
+
+        if st.button("Generate Recommendations", type="primary", use_container_width=True):
+            with st.spinner("Executing real-time vector search and MMR diversification..."):
+                t_start = time.perf_counter()
+                rec_res = rec_engine.get_similar_apps(
+                    app_name=selected_app,
+                    top_k=top_k_val,
+                    diversity_weight=diversity_slider,
+                    category_filter=applied_cat_filter
+                )
+                t_elapsed = (time.perf_counter() - t_start) * 1000.0
+
+            st.success(f"Generated {len(rec_res.recommendations)} recommendations for **{rec_res.query_target}** in {t_elapsed:.2f}ms (Intra-List Diversity: {rec_res.intra_list_diversity:.4f})")
+
+            rec_table_data = [
+                {
+                    "Rank": r.rank,
+                    "App Name": r.app_name,
+                    "Category": r.category,
+                    "Similarity": f"{r.similarity_score:.4f}",
+                    "Rating": f"⭐ {r.rating}",
+                    "Installs": f"{r.installs:,}",
+                    "Size (MB)": f"{r.size_mb:.1f} MB",
+                    "Price": "Free" if r.price == 0 else f"${r.price:.2f}",
+                    "Genres": r.genres
+                }
+                for r in rec_res.recommendations
+            ]
+            st.dataframe(pd.DataFrame(rec_table_data), use_container_width=True, hide_index=True)
+
+    with rec_sub2:
+        st.markdown("#### User Installed Portfolio Centroid Recommendation")
+        st.markdown("Enter multiple apps installed on a user's mobile device to synthesize a personalized user preference vector.")
+
+        default_portfolio = ["Spotify Music", "Duolingo: Learn Languages Free", "Subway Surfers"]
+        available_default = [a for a in default_portfolio if a in app_options]
+        user_portfolio = st.multiselect("Installed Apps Portfolio", app_options, default=available_default)
+
+        col_port1, col_port2 = st.columns(2)
+        with col_port1:
+            port_k = st.slider("Top-K Portfolio Recommendations", 3, 15, 5, key="port_k")
+        with col_port2:
+            port_div = st.slider("Portfolio MMR Diversity (λ)", 0.0, 1.0, 0.7, step=0.05, key="port_div")
+
+        if st.button("Generate Personalized Discovery", type="primary", use_container_width=True):
+            if not user_portfolio:
+                st.warning("Please select at least one installed application.")
+            else:
+                with st.spinner("Synthesizing user centroid vector and ranking non-portfolio apps..."):
+                    port_res = rec_engine.recommend_for_user_portfolio(user_portfolio, top_k=port_k, diversity_weight=port_div)
+
+                st.success(f"Found {len(port_res.recommendations)} personalized apps matching user tastes (Latency: {port_res.inference_latency_ms:.2f}ms)!")
+                port_table = [
+                    {
+                        "Rank": r.rank,
+                        "App Name": r.app_name,
+                        "Category": r.category,
+                        "Profile Match": f"{r.similarity_score:.4f}",
+                        "Rating": f"⭐ {r.rating}",
+                        "Installs": f"{r.installs:,}",
+                        "Price": "Free" if r.price == 0 else f"${r.price:.2f}"
+                    }
+                    for r in port_res.recommendations
+                ]
+                st.dataframe(pd.DataFrame(port_table), use_container_width=True, hide_index=True)
+
+    with rec_sub3:
+        st.markdown("#### Cold-Start Positioning & Competitor Discovery")
+        st.markdown("Benchmark prospective or unreleased app concepts against established store incumbents.")
+
+        cs_col1, cs_col2, cs_col3 = st.columns(3)
+        with cs_col1:
+            cs_cat = st.selectbox("Target Category", sorted(rec_engine.apps_df["Category"].unique().tolist()), index=0)
+            cs_genres = st.text_input("Genres / Sub-tags", "Finance;Tools")
+        with cs_col2:
+            cs_size = st.number_input("Estimated Binary Size (MB)", min_value=1.0, max_value=500.0, value=25.0, step=5.0)
+            cs_price = st.number_input("Target Upfront Price ($)", min_value=0.0, max_value=100.0, value=0.0, step=0.99)
+        with cs_col3:
+            cs_rating = st.selectbox("Content Rating", ["Everyone", "Teen", "Mature 17+", "Everyone 10+"], index=0)
+            cs_k = st.slider("Competitor Benchmarks to Return", 3, 10, 5)
+
+        if st.button("Evaluate Cold-Start Positioning", type="primary", use_container_width=True):
+            with st.spinner("Synthesizing concept vector and querying category incumbents..."):
+                cs_res = rec_engine.recommend_cold_start(
+                    category=cs_cat,
+                    genres=cs_genres,
+                    size_mb=cs_size,
+                    price=cs_price,
+                    content_rating=cs_rating,
+                    top_k=cs_k
+                )
+
+            st.info(f"**Category Saturation Status**: {cs_res.category_competition_intensity} | **Category Mean Rating**: {cs_res.category_mean_rating:.2f} | **Median Installs**: {cs_res.category_median_installs:,}")
+            for advice in cs_res.strategic_advice:
+                st.markdown(f"- 💡 {advice}")
+
+            cs_table = [
+                {
+                    "Rank": r.rank,
+                    "Incumbent Competitor": r.app_name,
+                    "Similarity Match": f"{r.similarity_score:.4f}",
+                    "Rating": f"⭐ {r.rating}",
+                    "Installs": f"{r.installs:,}",
+                    "Size": f"{r.size_mb:.1f} MB",
+                    "Price": "Free" if r.price == 0 else f"${r.price:.2f}"
+                }
+                for r in cs_res.top_competitors
+            ]
+            st.dataframe(pd.DataFrame(cs_table), use_container_width=True, hide_index=True)

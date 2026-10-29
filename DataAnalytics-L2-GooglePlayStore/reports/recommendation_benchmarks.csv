@@ -1,0 +1,4 @@
+diversity_weight_lambda,hit_rate_at_3,hit_rate_at_5,hit_rate_at_10,precision_at_5,recall_at_5,ndcg_at_5,ndcg_at_10,mrr,intra_list_diversity,catalog_coverage_pct,latency_p50_ms,latency_p95_ms,latency_p99_ms
+1.0,0.99,1.0,1.0,0.994,0.0209,0.9928,0.9947,0.9925,0.0443,9.45,4.437,6.653,7.677
+0.7,1.0,1.0,1.0,0.986,0.0206,0.9872,0.9903,0.995,0.0615,9.48,4.78,5.836,8.53
+0.4,1.0,1.0,1.0,0.956,0.0193,0.9608,0.9668,0.995,0.1525,9.31,4.862,6.407,7.83

@@ -30,10 +30,13 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
+_REPORTS_DIR = _PROJECT_ROOT / "reports"
+
 from src.master_pipeline import GooglePlaystoreMasterEngine
 from src.nlp_autocomplete_engine import CorpusPreprocessor
 from src.predictive_modeling import PlayStorePredictiveEngine
 from src.simulation_engine import PlayStoreSimulationEngine
+from src.recommendation_engine import PlayStoreRecommendationEngine
 
 
 # ============================================================================
@@ -373,6 +376,91 @@ class PriceElasticityResponse(BaseModel):
     category_benchmarks: List[Dict[str, Any]]
 
 
+# Day 11 Recommendation Schemas
+
+class AppRecommendationItemSchema(BaseModel):
+    """Individual app recommendation item schema."""
+    app_name: str
+    category: str
+    rating: float
+    reviews: int
+    installs: int
+    size_mb: float
+    price: float
+    genres: str
+    content_rating: str
+    similarity_score: float
+    rank: int
+
+
+class SimilarAppsRequest(BaseModel):
+    """Payload for finding similar apps with optional MMR diversification."""
+    app_name: str = Field(..., json_schema_extra={"example": "Duolingo: Learn Languages Free"})
+    top_k: int = Field(5, ge=1, le=50, json_schema_extra={"example": 5})
+    diversity_weight: float = Field(0.7, ge=0.0, le=1.0, json_schema_extra={"example": 0.7})
+    category_filter: Optional[str] = Field(None, json_schema_extra={"example": "EDUCATION"})
+
+
+class SimilarAppsResponse(BaseModel):
+    """Batch response for similar apps query."""
+    query_type: str
+    query_target: str
+    top_k: int
+    diversity_weight: float
+    intra_list_diversity: float
+    inference_latency_ms: float
+    recommendations: List[AppRecommendationItemSchema]
+
+
+class PersonalizedRecommendRequest(BaseModel):
+    """Payload for personalized recommendations based on installed portfolio."""
+    installed_apps: List[str] = Field(..., min_length=1, json_schema_extra={"example": ["Spotify Music", "Duolingo: Learn Languages Free"]})
+    top_k: int = Field(5, ge=1, le=50, json_schema_extra={"example": 5})
+    diversity_weight: float = Field(0.7, ge=0.0, le=1.0, json_schema_extra={"example": 0.7})
+
+
+class PersonalizedRecommendResponse(BaseModel):
+    """Batch response for personalized portfolio recommendation."""
+    query_type: str
+    query_target: str
+    top_k: int
+    diversity_weight: float
+    intra_list_diversity: float
+    inference_latency_ms: float
+    recommendations: List[AppRecommendationItemSchema]
+
+
+class ColdStartRecommendRequest(BaseModel):
+    """Payload for cold-start prospective app positioning and competitor discovery."""
+    category: str = Field(..., json_schema_extra={"example": "FINANCE"})
+    genres: str = Field(..., json_schema_extra={"example": "Finance"})
+    size_mb: float = Field(25.0, gt=0.0, json_schema_extra={"example": 18.5})
+    price: float = Field(0.0, ge=0.0, json_schema_extra={"example": 0.0})
+    content_rating: str = Field("Everyone", json_schema_extra={"example": "Everyone"})
+    top_k: int = Field(5, ge=1, le=20, json_schema_extra={"example": 5})
+
+
+class ColdStartRecommendResponse(BaseModel):
+    """Comprehensive cold-start competitor analysis and positioning advice."""
+    candidate_category: str
+    candidate_genres: str
+    candidate_size_mb: float
+    candidate_price: float
+    candidate_content_rating: str
+    top_competitors: List[AppRecommendationItemSchema]
+    category_mean_rating: float
+    category_median_installs: int
+    category_competition_intensity: str
+    strategic_advice: List[str]
+    inference_latency_ms: float
+
+
+class RecommendationMetricsResponse(BaseModel):
+    """System-wide recommendation offline benchmark evaluation response."""
+    test_sample_size: int
+    benchmark_results: Dict[str, Any]
+
+
 # ============================================================================
 # Engine Singleton & Lifespan Management
 # ============================================================================
@@ -380,6 +468,7 @@ class PriceElasticityResponse(BaseModel):
 _engine_instance: Optional[GooglePlaystoreMasterEngine] = None
 _predictive_engine_instance: Optional[PlayStorePredictiveEngine] = None
 _simulation_engine_instance: Optional[PlayStoreSimulationEngine] = None
+_recommendation_engine_instance: Optional[PlayStoreRecommendationEngine] = None
 _server_start_time: float = time.time()
 
 
@@ -409,6 +498,14 @@ def get_simulation_engine() -> PlayStoreSimulationEngine:
     if _simulation_engine_instance is None:
         _simulation_engine_instance = PlayStoreSimulationEngine(predictive_engine=get_predictive_engine())
     return _simulation_engine_instance
+
+
+def get_recommendation_engine() -> PlayStoreRecommendationEngine:
+    """Retrieve or initialize the singleton PlayStoreRecommendationEngine instance."""
+    global _recommendation_engine_instance
+    if _recommendation_engine_instance is None:
+        _recommendation_engine_instance = PlayStoreRecommendationEngine()
+    return _recommendation_engine_instance
 
 
 @asynccontextmanager
@@ -949,6 +1046,83 @@ def create_app() -> FastAPI:
         sim_engine = get_simulation_engine()
         res = sim_engine.analyze_price_elasticity()
         return PriceElasticityResponse(**res)
+
+    # --- Day 11 Recommendation & Discovery Endpoints ---
+
+    @app.post(
+        "/api/v1/recommend/similar-apps",
+        response_model=SimilarAppsResponse,
+        summary="Find Top-K Similar Apps with MMR Diversification",
+        tags=["Recommendation & Discovery"]
+    )
+    async def recommend_similar_apps_endpoint(request_body: SimilarAppsRequest) -> SimilarAppsResponse:
+        """Find Top-K similar apps to a seed app using multi-modal embeddings and MMR diversity."""
+        rec_engine = get_recommendation_engine()
+        try:
+            res = rec_engine.get_similar_apps(
+                app_name=request_body.app_name,
+                top_k=request_body.top_k,
+                diversity_weight=request_body.diversity_weight,
+                category_filter=request_body.category_filter
+            )
+            return SimilarAppsResponse(**res.to_dict())
+        except ValueError as e:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+    @app.post(
+        "/api/v1/recommend/personalized",
+        response_model=PersonalizedRecommendResponse,
+        summary="Generate Personalized Recommendations for User Portfolio",
+        tags=["Recommendation & Discovery"]
+    )
+    async def recommend_personalized_endpoint(request_body: PersonalizedRecommendRequest) -> PersonalizedRecommendResponse:
+        """Construct user profile vector from installed apps portfolio and return diversified recommendations."""
+        rec_engine = get_recommendation_engine()
+        try:
+            res = rec_engine.recommend_for_user_portfolio(
+                installed_apps=request_body.installed_apps,
+                top_k=request_body.top_k,
+                diversity_weight=request_body.diversity_weight
+            )
+            return PersonalizedRecommendResponse(**res.to_dict())
+        except ValueError as e:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+    @app.post(
+        "/api/v1/recommend/cold-start",
+        response_model=ColdStartRecommendResponse,
+        summary="Cold-Start Competitor Benchmarking for Unreleased App",
+        tags=["Recommendation & Discovery"]
+    )
+    async def recommend_cold_start_endpoint(request_body: ColdStartRecommendRequest) -> ColdStartRecommendResponse:
+        """Synthesize candidate vector and benchmark competitor positioning for a prospective app."""
+        rec_engine = get_recommendation_engine()
+        res = rec_engine.recommend_cold_start(
+            category=request_body.category,
+            genres=request_body.genres,
+            size_mb=request_body.size_mb,
+            price=request_body.price,
+            content_rating=request_body.content_rating,
+            top_k=request_body.top_k
+        )
+        return ColdStartRecommendResponse(**res.to_dict())
+
+    @app.get(
+        "/api/v1/recommend/metrics",
+        response_model=RecommendationMetricsResponse,
+        summary="Retrieve System Offline Recommendation Benchmarks",
+        tags=["Recommendation & Discovery"]
+    )
+    async def get_recommendation_metrics_endpoint() -> RecommendationMetricsResponse:
+        """Retrieve Hit Rate@K, Precision@K, NDCG@K, MRR, and ILD metrics across diversity levels."""
+        benchmarks_path = _REPORTS_DIR / "recommendation_benchmarks.csv"
+        if benchmarks_path.exists():
+            df = pd.read_csv(benchmarks_path)
+            res_dict = {str(row["diversity_weight_lambda"]): row.to_dict() for _, row in df.iterrows()}
+            return RecommendationMetricsResponse(test_sample_size=100, benchmark_results=res_dict)
+        rec_engine = get_recommendation_engine()
+        metrics = rec_engine.evaluate_engine(test_samples=50)
+        return RecommendationMetricsResponse(**metrics)
 
     return app
 
