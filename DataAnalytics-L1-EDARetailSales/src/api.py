@@ -18,6 +18,9 @@ from src.recommendations import BusinessRecommendationEngine
 from src.mlops_drift import DriftDetector
 from src.segmentation import CustomerSegmentationEngine
 from src.simulation import FinancialWhatIfSimulator
+from src.elasticity_optimization import PriceElasticityOptimizer
+from src.ab_experimentation import RetailABTestingEngine
+from src.clv_churn import CustomerLifetimeValueEngine
 
 # Global singletons
 analytics_engine: Optional[RetailAnalyticsEngine] = None
@@ -25,18 +28,25 @@ ml_manager: Optional[RetailMLManager] = None
 drift_detector: Optional[DriftDetector] = None
 segmentation_engine: Optional[CustomerSegmentationEngine] = None
 whatif_simulator: Optional[FinancialWhatIfSimulator] = None
+elasticity_optimizer: Optional[PriceElasticityOptimizer] = None
+ab_engine: Optional[RetailABTestingEngine] = None
+clv_engine: Optional[CustomerLifetimeValueEngine] = None
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Initializes engines and loads/trains machine learning models on startup."""
     global analytics_engine, ml_manager, drift_detector, segmentation_engine, whatif_simulator
+    global elasticity_optimizer, ab_engine, clv_engine
     analytics_engine = RetailAnalyticsEngine()
     ml_manager = RetailMLManager()
     ml_manager.load_or_train_models()
     drift_detector = DriftDetector(baseline_df=analytics_engine.df)
     segmentation_engine = CustomerSegmentationEngine()
     whatif_simulator = FinancialWhatIfSimulator()
+    elasticity_optimizer = PriceElasticityOptimizer()
+    ab_engine = RetailABTestingEngine()
+    clv_engine = CustomerLifetimeValueEngine()
     yield
 
 
@@ -173,6 +183,53 @@ class WhatIfSimulationRequest(BaseModel):
     )
 
 
+# --- DAY 10 SCHEMAS ---
+class MarkdownSimulationRequest(BaseModel):
+    category: str = Field(..., description="Category ('Electronics', 'Clothing', or 'Beauty')")
+    discount_pct: float = Field(..., ge=0.01, le=0.90, description="Promotional discount fraction (0.01 - 0.90)")
+    expected_volume_lift_pct: float = Field(
+        ..., ge=-0.90, le=5.0, description="Projected volume lift fraction (-0.90 to 5.0)"
+    )
+    gross_margin_pct: Optional[float] = Field(
+        default=0.40, ge=0.05, le=0.95, description="Category gross margin fraction (default 0.40)"
+    )
+
+    @field_validator("category")
+    @classmethod
+    def validate_category(cls, v: str) -> str:
+        v_title = v.strip().title()
+        if v_title not in ["Electronics", "Clothing", "Beauty"]:
+            raise ValueError("Category must be 'Electronics', 'Clothing', or 'Beauty'")
+        return v_title
+
+
+class ABTestProportionRequest(BaseModel):
+    control_successes: int = Field(..., ge=0, description="Control group successes (e.g. conversions)")
+    control_total: int = Field(..., gt=0, description="Control group total sample size")
+    treatment_successes: int = Field(..., ge=0, description="Treatment group successes")
+    treatment_total: int = Field(..., gt=0, description="Treatment group total sample size")
+    metric_name: Optional[str] = Field(default="Conversion Rate", description="Metric label")
+    alpha: Optional[float] = Field(default=0.05, gt=0.0, lt=0.5, description="Significance level alpha")
+
+
+class ABTestContinuousRequest(BaseModel):
+    control_data: List[float] = Field(..., min_length=2, description="Continuous observations for Control")
+    treatment_data: List[float] = Field(..., min_length=2, description="Continuous observations for Treatment")
+    metric_name: Optional[str] = Field(default="Basket Spend", description="Metric label")
+    alpha: Optional[float] = Field(default=0.05, gt=0.0, lt=0.5, description="Significance level alpha")
+
+
+class CustomerCLVRequest(BaseModel):
+    recency_days: float = Field(..., ge=0.0, description="Days elapsed since most recent transaction")
+    aov: float = Field(..., gt=0.0, description="Average Order Value ($)")
+    gross_margin_pct: Optional[float] = Field(
+        default=0.40, ge=0.05, le=0.95, description="Product margin fraction (0.05 - 0.95)"
+    )
+    horizon_days: Optional[int] = Field(
+        default=365, ge=30, le=1825, description="Forecasting horizon in days (30 - 1825)"
+    )
+
+
 def get_analytics() -> RetailAnalyticsEngine:
     global analytics_engine
     if analytics_engine is None:
@@ -207,6 +264,27 @@ def get_simulation() -> FinancialWhatIfSimulator:
     if whatif_simulator is None:
         whatif_simulator = FinancialWhatIfSimulator()
     return whatif_simulator
+
+
+def get_elasticity() -> PriceElasticityOptimizer:
+    global elasticity_optimizer
+    if elasticity_optimizer is None:
+        elasticity_optimizer = PriceElasticityOptimizer()
+    return elasticity_optimizer
+
+
+def get_ab_engine() -> RetailABTestingEngine:
+    global ab_engine
+    if ab_engine is None:
+        ab_engine = RetailABTestingEngine()
+    return ab_engine
+
+
+def get_clv() -> CustomerLifetimeValueEngine:
+    global clv_engine
+    if clv_engine is None:
+        clv_engine = CustomerLifetimeValueEngine()
+    return clv_engine
 
 
 # --- ROOT & HEALTH ---
@@ -415,4 +493,223 @@ def run_what_if_simulation(payload: WhatIfSimulationRequest) -> Dict[str, Any]:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Simulation error: {str(e)}",
+        )
+
+
+# --- DAY 10 REST ENDPOINTS: ELASTICITY, A/B EXPERIMENTATION & CLV ---
+@app.get("/api/v1/elasticity/summary", tags=["Price Elasticity & Optimization"])
+def get_price_elasticity_summary() -> Dict[str, Any]:
+    """
+    Returns econometric log-log regression price elasticity of demand (PED)
+    and arc elasticity breakdown across all catalog merchandise categories.
+    """
+    try:
+        optimizer = get_elasticity()
+        return optimizer.get_overall_elasticity_summary()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Elasticity calculation failed: {str(e)}",
+        )
+
+
+@app.post("/api/v1/elasticity/simulate", tags=["Price Elasticity & Optimization"])
+def simulate_markdown_promotion(payload: MarkdownSimulationRequest) -> Dict[str, Any]:
+    """
+    Simulates the commercial and margin impact of a promotional markdown discount
+    evaluating breakeven volume lift and value-accretive viability.
+    """
+    try:
+        optimizer = get_elasticity()
+        return optimizer.simulate_markdown_pricing(
+            category=payload.category,
+            discount_pct=payload.discount_pct,
+            expected_volume_lift_pct=payload.expected_volume_lift_pct,
+            gross_margin_pct=payload.gross_margin_pct,
+        )
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(ve),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Markdown simulation failed: {str(e)}",
+        )
+
+
+@app.get("/api/v1/elasticity/tiers/{category}", tags=["Price Elasticity & Optimization"])
+def get_tier_optimization(category: str) -> Dict[str, Any]:
+    """
+    Evaluates revenue and gross profit contribution across discrete pricing tiers
+    for a given category and identifies optimal profit-maximizing tier.
+    """
+    cat_clean = category.strip().title()
+    if cat_clean not in ["Electronics", "Clothing", "Beauty"]:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Category '{category}' not found in catalog.",
+        )
+    try:
+        optimizer = get_elasticity()
+        return optimizer.optimize_price_points(category=cat_clean)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Tier optimization failed: {str(e)}",
+        )
+
+
+@app.post("/api/v1/experiments/ab-proportions", tags=["A/B Experimentation"])
+def evaluate_ab_proportions(payload: ABTestProportionRequest) -> Dict[str, Any]:
+    """
+    Executes dual Frequentist (Two-proportion z-test, Chi-square) and Bayesian
+    Beta-Binomial conjugate updating for conversion / adoption experiment arms.
+    """
+    try:
+        engine = get_ab_engine()
+        freq_results = engine.evaluate_proportion_ab(
+            control_successes=payload.control_successes,
+            control_total=payload.control_total,
+            treatment_successes=payload.treatment_successes,
+            treatment_total=payload.treatment_total,
+            metric_name=payload.metric_name or "Conversion Rate",
+            alpha=payload.alpha or 0.05,
+        )
+        bayes_results = engine.bayesian_conversion_test(
+            control_conversions=payload.control_successes,
+            control_impressions=payload.control_total,
+            treatment_conversions=payload.treatment_successes,
+            treatment_impressions=payload.treatment_total,
+        )
+        return {
+            "frequentist_analysis": freq_results,
+            "bayesian_analysis": bayes_results,
+        }
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(ve),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"A/B evaluation failed: {str(e)}",
+        )
+
+
+@app.post("/api/v1/experiments/ab-continuous", tags=["A/B Experimentation"])
+def evaluate_ab_continuous(payload: ABTestContinuousRequest) -> Dict[str, Any]:
+    """
+    Executes Welch's t-test, Mann-Whitney U test, and Bayesian Dirichlet bootstrap
+    for continuous spend and basket value experimentation.
+    """
+    try:
+        engine = get_ab_engine()
+        freq_results = engine.evaluate_continuous_ab(
+            control_data=payload.control_data,
+            treatment_data=payload.treatment_data,
+            metric_name=payload.metric_name or "Basket Spend",
+            alpha=payload.alpha or 0.05,
+        )
+        bayes_results = engine.bayesian_revenue_test(
+            control_spend=payload.control_data,
+            treatment_spend=payload.treatment_data,
+        )
+        return {
+            "frequentist_analysis": freq_results,
+            "bayesian_bootstrap": bayes_results,
+        }
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(ve),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Continuous A/B evaluation failed: {str(e)}",
+        )
+
+
+@app.get("/api/v1/experiments/power-matrix", tags=["A/B Experimentation"])
+def get_sample_size_power_matrix(
+    baseline_rate: float = Query(0.20, ge=0.01, le=0.99, description="Baseline conversion rate"),
+    alpha: float = Query(0.05, ge=0.01, le=0.20, description="Significance level"),
+    power: float = Query(0.80, ge=0.50, le=0.99, description="Target statistical power"),
+) -> List[Dict[str, Any]]:
+    """
+    Generates required sample sizes per arm across retail Minimum Detectable Effects (MDE).
+    """
+    try:
+        engine = get_ab_engine()
+        return engine.generate_power_matrix(
+            baseline_rate=baseline_rate,
+            alpha=alpha,
+            power=power,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Power matrix generation failed: {str(e)}",
+        )
+
+
+@app.get("/api/v1/clv/overview", tags=["Customer Lifetime Value & Churn"])
+def get_clv_overview() -> Dict[str, Any]:
+    """
+    Returns storewide customer equity audit, churn tier risk distribution,
+    and VIP whale early warning statistics.
+    """
+    try:
+        engine = get_clv()
+        return engine.audit_customer_equity()
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"CLV overview failed: {str(e)}",
+        )
+
+
+@app.post("/api/v1/clv/predict-customer", tags=["Customer Lifetime Value & Churn"])
+def predict_individual_clv(payload: CustomerCLVRequest) -> Dict[str, Any]:
+    """
+    Predicts probabilistic churn risk and discounted future CLV for an individual shopper.
+    """
+    try:
+        engine = get_clv()
+        return engine.predict_customer_clv(
+            recency_days=payload.recency_days,
+            aov=payload.aov,
+            gross_margin_pct=payload.gross_margin_pct,
+            horizon_days=payload.horizon_days or 365,
+        )
+    except ValueError as ve:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(ve),
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Customer CLV prediction failed: {str(e)}",
+        )
+
+
+@app.get("/api/v1/clv/at-risk-vips", tags=["Customer Lifetime Value & Churn"])
+def get_at_risk_vip_list(
+    min_spend: float = Query(1000.0, ge=100.0, description="Minimum historical spend"),
+    limit: int = Query(15, ge=1, le=100, description="Maximum records to return"),
+) -> List[Dict[str, Any]]:
+    """
+    Retrieves highest-priority at-risk VIP whale customers for targeted retention campaigns.
+    """
+    try:
+        engine = get_clv()
+        return engine.get_at_risk_vips(min_spend=min_spend, limit=limit)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"At-risk VIP query failed: {str(e)}",
         )

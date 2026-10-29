@@ -26,11 +26,16 @@ This repository contains an **Exploratory Data Analysis (EDA)** on retail sales 
 - [x] **Interactive Streamlit Web Analytics Dashboard:** multi-tab executive UI, dynamic filters, live scenario simulation, and bundle engine (`src/dashboard.py`) (Day 8)
 - [x] **Machine Learning Predictive Engine:** VIP Whale propensity classifier (Random Forest, $AUC \ge 0.85$) and basket spend regressor (Gradient Boosting, $R^2 \ge 0.90$) (`src/ml_models.py`) (Day 8)
 - [x] **Cross-Department Bundle Recommendation Engine:** operationalizing Recommendation #3 to break the 2.5-unit inelasticity cap with tiered discounts (`src/recommendations.py`) (Day 8)
-- [x] **Automated Pytest Regression Suite:** 52 unit and integration tests covering data integrity, mathematical invariants, analytics, ML inference, drift detection, clustering, and API endpoints (`tests/`) (Day 9)
+- [x] **Automated Pytest Regression Suite:** 82 unit and integration tests covering data integrity, mathematical invariants, analytics, ML inference, drift detection, clustering, and API endpoints (`tests/`) (Day 9)
 - [x] **Production Dockerization & CI/CD Pipeline:** multi-container orchestration (`Dockerfile`, `docker-compose.yml`) and multi-version GitHub Actions workflow (`.github/workflows/ci.yml`) (Day 8)
 - [x] **Continuous MLOps Drift Monitoring:** Population Stability Index (PSI) and Kolmogorov-Smirnov statistical data guardrails (`src/mlops_drift.py`) (Day 9)
 - [x] **Customer RFM Behavioral Micro-Segmentation:** K-Means clustering and customer lifecycle archetypes (`src/segmentation.py`) (Day 9)
 - [x] **Financial What-If Scenario Simulator:** real-time commercial uplift, margin, and ROI projection engine (`src/simulation.py`) (Day 9)
+- [x] **Econometric Price Elasticity of Demand (PED) & Markdown Optimization:** log-log regressions, arc elasticity, and promotional margin breakeven frontiers (`src/elasticity_optimization.py`) (Day 10)
+- [x] **Dual Bayesian & Frequentist Retail A/B Testing Engine:** Welch's t-test, Mann-Whitney U, Beta-Binomial conjugate updating, and power matrix (`src/ab_experimentation.py`) (Day 10)
+- [x] **Customer Lifetime Value (CLV) & Probabilistic Churn Risk Modeling:** exponential recency survival decay, 4-tier risk classification, and VIP Whale triage (`src/clv_churn.py`) (Day 10)
+- [x] **Expanded 13-Tab Executive Streamlit Web Analytics Dashboard:** live elasticity simulators, Bayesian testing testbed, and CLV equity explorer (`src/dashboard.py`) (Day 10)
+- [x] **Automated Pytest Regression Suite (82 Tests):** 82 unit and integration tests passing across full analytical stack (`tests/`) (Day 10)
 
 ---
 
@@ -65,7 +70,10 @@ Retail-Sales-EDA/
 │       ├── 16_demographic_persona_archetypes_and_vip_propensity.png
 │       ├── 17_mlops_feature_drift_and_psi_monitoring.png
 │       ├── 18_rfm_customer_behavioral_clusters.png
-│       └── 19_financial_whatif_scenario_simulation.png
+│       ├── 19_financial_whatif_scenario_simulation.png
+│       ├── 20_price_elasticity_and_revenue_optimization.png
+│       ├── 21_bayesian_ab_testing_and_posterior_distributions.png
+│       └── 22_clv_projections_and_churn_risk_matrix.png
 ├── Data/
 │   ├── retail_sales_dataset.csv    # Primary retail dataset (1,000 rows × 9 cols)
 │   ├── Sample - Superstore.csv     # Superstore dataset (CP1252)
@@ -84,8 +92,11 @@ Retail-Sales-EDA/
 │   ├── mlops_drift.py              # Continuous MLOps PSI, KS-test, & drift detection guardrails
 │   ├── segmentation.py             # Customer RFM heuristics & K-Means behavioral clustering
 │   ├── simulation.py               # Financial what-if scenario & commercial uplift simulator
-│   ├── api.py                      # Production FastAPI REST application & OpenAPI documentation
-│   └── dashboard.py                # Interactive Streamlit executive web analytics dashboard (10 tabs)
+│   ├── elasticity_optimization.py  # Econometric log-log price elasticity & markdown optimizer
+│   ├── ab_experimentation.py       # Dual Frequentist & Bayesian retail A/B testing engine
+│   ├── clv_churn.py                # Probabilistic customer lifetime value & churn risk engine
+│   ├── api.py                      # Production FastAPI REST application & OpenAPI documentation (24 routes)
+│   └── dashboard.py                # Interactive Streamlit executive web analytics dashboard (13 tabs)
 ├── tests/
 │   ├── __init__.py                 # Test package initialization
 │   ├── conftest.py                 # Pytest fixtures and FastAPI TestClient configuration
@@ -95,7 +106,10 @@ Retail-Sales-EDA/
 │   ├── test_api.py                 # FastAPI route integration & validation error tests (18 tests)
 │   ├── test_mlops_drift.py         # PSI, KS hypothesis testing, TVD, and drift alert tests (5 tests)
 │   ├── test_segmentation.py        # RFM extraction, silhouette scores, and cluster bounds (3 tests)
-│   └── test_simulation.py         # Financial baseline, bundle uplift, VIP lift, & ROI tests (5 tests)
+│   ├── test_simulation.py         # Financial baseline, bundle uplift, VIP lift, & ROI tests (5 tests)
+│   ├── test_elasticity_optimization.py # Log-log regression, arc elasticity, markdown breakeven (7 tests)
+│   ├── test_ab_experimentation.py  # Welch t-test, Mann-Whitney U, Beta-Binomial updating, power (7 tests)
+│   └── test_clv_churn.py           # Survival decay, risk classification, discounted CLV, VIP triage (6 tests)
 ├── .dockerignore                   # Docker context exclusion rules
 ├── .gitignore                      # Git exclusion rules (strictly excludes roadmaps & schedules)
 ├── docker-compose.yml              # Multi-service container orchestration (API + Dashboard)
@@ -336,9 +350,108 @@ End-to-End Regression Shield"]
 
 ---
 
+## ⚖️ Day 10: Econometric Price Elasticity, Bayesian A/B Experimentation & Customer Lifetime Value (CLV)
+
+Day 10 delivers advanced commercial pricing intelligence, probabilistic experimentation rigor, and enterprise customer equity lifetime value modeling:
+
+```mermaid
+flowchart TD
+    subgraph Data_Inputs["Empirical Transaction Stream"]
+        TX["Retail Sales Stream
+(1,000 Transactions · $456k Revenue)"]
+    end
+
+    subgraph Day10_Core_Engines["Day 10 Analytics & Inference Engines"]
+        PED["Price Elasticity Optimizer
+- Log-Log PED: ln(Q) = α + β·ln(P)
+- Arc Elasticity Across Tiers
+- Breakeven Markdown Hurdle: d / (m - d)"]
+        AB["Retail A/B Testing Engine
+- Welch's t-test & Mann-Whitney U
+- Beta-Binomial Conjugate Updating
+- Probability Best & Expected Loss
+- Power Analysis & MDE Matrix"]
+        CLV["Customer Lifetime Value & Churn
+- Survival: P(Alive) = exp(-λ·R)
+- 4-Tier Risk: Active / Cooling / At-Risk / Lapsed
+- Discounted 12m CLV Equity
+- VIP Whale Early Warning ($240k at Risk)"]
+    end
+
+    subgraph Service_Delivery["Production Serving & Verification"]
+        FASTAPI["FastAPI REST API
+(/api/v1/elasticity, /experiments, /clv)"]
+        DASHBOARD["Executive Streamlit Dashboard
+(13 Interactive Tabs)"]
+        PYTEST["Automated Pytest Suite
+(82 / 82 Passing Tests)"]
+    end
+
+    TX --> PED
+    TX --> AB
+    TX --> CLV
+
+    PED --> FASTAPI
+    AB --> FASTAPI
+    CLV --> FASTAPI
+
+    PED --> DASHBOARD
+    AB --> DASHBOARD
+    CLV --> DASHBOARD
+
+    FASTAPI --> PYTEST
+```
+
+### 1. ⚖️ Econometric Price Elasticity & Markdown Profitability (`src/elasticity_optimization.py`)
+- **Log-Log Econometric Demand Regression:** $\ln(Q) = \alpha + \beta \cdot \ln(P)$
+  - **Beauty:** $\beta = +0.0028$ ($R^2 = 0.0031$) $\rightarrow$ Strictly Inelastic
+  - **Clothing:** $\beta = +0.0021$ ($R^2 = 0.0019$) $\rightarrow$ Strictly Inelastic
+  - **Electronics:** $\beta = -0.0031$ ($R^2 = 0.0042$) $\rightarrow$ Strictly Inelastic
+  - **Empirical Finding:** Across all departments, basket unit volume is essentially fixed at **2.51 units/basket** regardless of whether individual items are priced at $25 or $500.
+- **Promotional Markdown Breakeven Frontier:** Given baseline gross margin $m$ (40%) and discount percentage $d$:
+  $$\text{Breakeven Volume Lift Required} = \frac{d}{m - d}$$
+  - A **10% discount** at 40% margin requires a **+33.3% volume lift** to preserve gross margin.
+  - A **15% discount** requires a **+60.0% volume lift**.
+  - A **20% discount** requires a **+100.0% volume lift** (2× unit volume).
+  - **Executive Merchandising Rule:** Unbundled single-category price cuts destroy profitability; discounts must always be bundled to increase basket units past the 2.51 threshold.
+
+### 2. 🧪 Dual Bayesian & Frequentist Retail A/B Testing Engine (`src/ab_experimentation.py`)
+- **Frequentist Hypothesis Testing:**
+  - Continuous spend: Two-sample Welch's t-test (unequal variance) and Mann-Whitney U test (handles heavy Pareto skewness).
+  - Proportions: Two-proportion z-test and Pearson's Chi-square test of independence.
+- **Bayesian Beta-Binomial Conjugate Updating:**
+  - Prior: $\text{Beta}(\alpha_0=1, \beta_0=1)$; Posterior: $\text{Beta}(\alpha_0 + k, \beta_0 + n - k)$
+  - Computes exact **Probability of Being Best** ($P(T > C)$) and **Expected Loss** ($E[\max(0, C - T)]$) via Monte Carlo sampling (25,000 iterations).
+  - Clear commercial decision rule: Deploy Variant when $P(T > C) \ge 95.0\%$ and Expected Loss $< 0.001$.
+- **Statistical Power Analysis & Sample Size Matrix:**
+  - Standard formulation: $n = \frac{2(z_{\alpha/2} + z_\beta)^2 p(1-p)}{(p \cdot \text{MDE})^2}$
+  - At baseline $p = 20\%$ and 80% power: MDE 5% requires **12,320 orders/arm**; MDE 15% requires **1,369 orders/arm**.
+
+### 3. 💎 Customer Lifetime Value (CLV) & Churn Risk Probabilistic Modeling (`src/clv_churn.py`)
+- **Exponential Recency Survival Decay Function:**
+  $$P(\text{Alive} \mid R) = \exp(-\lambda \cdot R), \quad \lambda = 0.0075$$
+  $$P(\text{Churn} \mid R) = 1.0 - P(\text{Alive} \mid R)$$
+- **Four-Tier Customer Lifecycle Risk Segmentation:**
+  1. **Active (Low Risk, $R < 57\text{d}$, $P(\text{Churn}) < 35\%$):** 163 customers, $74,835 spend, **$24,018 projected CLV**.
+  2. **Cooling (Medium Risk, $57 \le R < 140\text{d}$, $35\% \le P(\text{Churn}) < 65\%$):** 216 customers, $100,535 spend, **$24,845 projected CLV**.
+  3. **At-Risk (High Risk, $140 \le R < 253\text{d}$, $65\% \le P(\text{Churn}) < 85\%$):** 313 customers, $142,670 spend, **$24,429 projected CLV**.
+  4. **Lapsed (Defected, $R \ge 253\text{d}$, $P(\text{Churn}) \ge 85\%$):** 308 customers, $137,960 spend, **$12,754 projected CLV**.
+- **Storewide Customer Base Equity:** Total forward 12-month projected customer equity is **$86,046.90** ($86.05 average forward CLV per customer).
+- **VIP Whale Churn Early Warning:**
+  - Total VIP Whales ($Spend \ge \$1,000$): **202 customers** ($286,800 historical spend).
+  - **170 VIPs (84.2%)** reside in Cooling, At-Risk, or Lapsed zones.
+  - Total **VIP Revenue at Risk: $239,950.00**.
+
+### 🖼️ Exported Day 10 Visualizations:
+* [20_price_elasticity_and_revenue_optimization.png](01-retail-sales-eda/screenshots/20_price_elasticity_and_revenue_optimization.png) — Econometric log-log regression demand lines, catalog pricing tier revenue & profit distribution, markdown breakeven volume lift frontiers, and cohort elasticity heatmap.
+* [21_bayesian_ab_testing_and_posterior_distributions.png](01-retail-sales-eda/screenshots/21_bayesian_ab_testing_and_posterior_distributions.png) — Beta-Binomial posterior belief distributions, Monte Carlo posterior relative lift & 95% High Density Interval (HDI), statistical power curve, and sample size MDE matrix.
+* [22_clv_projections_and_churn_risk_matrix.png](01-retail-sales-eda/screenshots/22_clv_projections_and_churn_risk_matrix.png) — Transaction recency survival decay curve with color-coded risk bands, 12-month customer equity distribution, age cohort historical vs CLV comparison, and VIP Whale churn risk matrix.
+
+---
+
 ### 🌐 Complete REST API Route Catalog
 
-The FastAPI service exposes 15 production endpoints documented interactively via OpenAPI / Swagger UI:
+The FastAPI service exposes 24 production endpoints documented interactively via OpenAPI / Swagger UI:
 
 | Method | Endpoint Route | Tag / Category | Functional Description | Sample Output Key |
 | :---: | :--- | :--- | :--- | :--- |
@@ -357,16 +470,25 @@ The FastAPI service exposes 15 production endpoints documented interactively via
 | **`POST`** | `/api/v1/mlops/drift` | MLOps & Data Drift | Real-time batch drift audit with PSI scores, KS tests, and retrain flags | `{"global_status": "HEALTHY_STABLE", "max_psi": 0.021}` |
 | **`GET`** | `/api/v1/analytics/rfm-segments` | Customer Segmentation | RFM summary, silhouette scores, and 4 behavioral cluster profiles | `{"profiles": [...], "metrics": {"n_clusters": 4}}` |
 | **`POST`** | `/api/v1/simulations/what-if` | Strategic Simulations | Dynamic financial simulation projecting revenue uplift, margin, & ROI | `{"projected_total_revenue": 534400.0, "roi_pct": 321.4}` |
+| **`GET`** | `/api/v1/elasticity/summary` | Price Elasticity & Optimization | Econometric log-log PED coefficients, R², and arc elasticities per category | `{"catalog_overall": {...}, "categories": {...}}` |
+| **`POST`** | `/api/v1/elasticity/simulate` | Price Elasticity & Optimization | Evaluates promotional discount, unit lift, and profit delta | `{"financial_impact": {"status": "Value Accretive"}}` |
+| **`GET`** | `/api/v1/elasticity/tiers/{category}` | Price Elasticity & Optimization | Profit & revenue maximizing discrete catalog price tier evaluation | `{"profit_maximizing_tier": 500.0}` |
+| **`POST`** | `/api/v1/experiments/ab-proportions` | A/B Experimentation | Dual Frequentist z/chi2 test and Bayesian Beta-Binomial updating | `{"bayesian_analysis": {"prob_treatment_better_pct": 99.2}}` |
+| **`POST`** | `/api/v1/experiments/ab-continuous` | A/B Experimentation | Welch's t-test, Mann-Whitney U, and Bayesian Dirichlet bootstrap on spend | `{"frequentist_tests": {"welch_p_value": 0.002}}` |
+| **`GET`** | `/api/v1/experiments/power-matrix` | A/B Experimentation | Sample size required per arm across retail MDEs (2% to 20%) | `[{"mde_relative_pct": 5.0, "sample_size_per_arm": 12320}]` |
+| **`GET`** | `/api/v1/clv/overview` | Customer Lifetime Value & Churn | Customer base equity audit, 4-tier risk distribution, VIP early warning | `{"customer_base": {"total_projected_12m_customer_equity": 86046.9}}` |
+| **`POST`** | `/api/v1/clv/predict-customer` | Customer Lifetime Value & Churn | Scores customer recency/spend into risk tier, churn prob, and projected CLV | `{"churn_tier": "Active (Low Risk)", "projected_clv": 233.53}` |
+| **`GET`** | `/api/v1/clv/at-risk-vips` | Customer Lifetime Value & Churn | Top priority VIP whales in danger of churn for immediate win-back triage | `[{"customer_id": "CUST001", "historical_spend": 1500.0}]` |
 
 ---
 
-### 🖥️ Interactive Streamlit Web Analytics Dashboard (10 Tabs)
+### 🖥️ Interactive Streamlit Web Analytics Dashboard (13 Tabs)
 
 Launch the interactive dashboard:
 ```bash
 streamlit run src/dashboard.py
 ```
-The dashboard features 10 dedicated analytical tabs:
+The dashboard features 13 dedicated analytical tabs:
 1. **📊 Executive KPIs:** High-level scorecard ($456k turnover, $456 AOV, 2.51 units/order), dynamic category/gender/age cohort filtering, monthly trendline, and departmental revenue pie chart.
 2. **📈 Time-Series Trends:** Dual-axis monthly revenue and volume chart, day-of-week sales velocity, and Saturday peak vs. Thursday lull.
 3. **👥 Customer Demographics:** Age cohort distributions (18–25, 26–35, 36–50, 51–64), gender commercial parity, and persona callouts.
@@ -376,11 +498,14 @@ The dashboard features 10 dedicated analytical tabs:
 7. **🛡️ MLOps Drift Guard (Day 9):** Live PSI and KS distribution drift gauges, batch scenario testing, feature density comparison overlays, and automated model retraining alert triggers.
 8. **🧬 RFM Micro-Segments (Day 9):** K-Means 2D/3D behavioral cluster explorer, customer archetype profile cards, and targeted retention playbooks.
 9. **🔮 What-If Simulator (Day 9):** Real-time financial intervention sliders (Bundle Adoption, Target Units, Discount Rate, VIP Lift) with revenue uplift waterfalls, sensitivity heatmaps, and ROI calculations.
-10. **🎯 Strategic Action Plan:** Comprehensive cards for all 5 business recommendations with projected financial impacts.
+10. **⚖️ Price Elasticity (Day 10):** Interactive category log-log demand regressions, promotional markdown simulator, margin erosion warnings, and discrete pricing tier profit contribution tables.
+11. **🧪 Bayesian A/B Testing (Day 10):** Dual Frequentist & Bayesian experiment testbed, Beta-Binomial posterior belief density overlays, Probability of Being Best gauge, and interactive sample size MDE matrix.
+12. **💎 CLV & Churn Guard (Day 10):** Enterprise customer equity distribution, interactive individual customer CLV & churn predictor, and high-priority at-risk VIP Whale triage table.
+13. **🎯 Strategic Action Plan:** Comprehensive cards for all 5 business recommendations with projected financial impacts.
 
 ---
 
-### 🧪 Automated Pytest Regression Suite (52 Tests Passing · 100% Pass Rate)
+### 🧪 Automated Pytest Regression Suite (82 Tests Passing · 100% Pass Rate)
 
 The project includes an end-to-end automated test suite verifying data hygiene, mathematical invariants, analytical aggregations, ML model accuracy, statistical drift, customer clustering, financial simulations, and API endpoints:
 
@@ -390,14 +515,17 @@ python -m pytest tests/ -v
 
 | Test Module | Coverage Scope | Tests | Status |
 | :--- | :--- | :---: | :---: |
-| **`tests/test_data_integrity.py`** | Raw dataset presence, schema shape (1,000 × 9), zero nulls, unique transaction IDs, age bounds (18–64), discrete price tiers, quantity bounds (1–4), and mathematical invariant ($Total = Qty \times Price$). | 8 | **52 / 52 PASSED** ✅ |
-| **`tests/test_analytics.py`** | Baseline executive KPIs ($456k rev, 1k orders, 2,514 units), descriptive statistics profiles, monthly seasonality (May peak, Sept trough), day-of-week velocity, weekend technology lift, gender symmetry, and Gini precision ($0.6091 \pm 0.001$). | 7 | **52 / 52 PASSED** ✅ |
-| **`tests/test_ml_models.py`** | VIP Whale classifier benchmark metrics ($Acc \ge 85\%, AUC \ge 85\%$), Spend regressor ($R^2 \ge 90\%$), elite VIP inference, budget classification, regression confidence intervals, and bundle discount math (10% and 15%). | 6 | **52 / 52 PASSED** ✅ |
-| **`tests/test_api.py`** | FastAPI `TestClient` verification across root, health, overview, descriptive stats, time-series, demographics, products, pareto, ML VIP inference, spend regression, input validation errors (422), bundles, drift audits, RFM segments, and what-if simulations. | 18 | **52 / 52 PASSED** ✅ |
-| **`tests/test_mlops_drift.py`** | Population Stability Index (PSI) calculation, identical distribution zero assertions, critical drift triggers ($PSI \ge 0.25$), Kolmogorov-Smirnov test p-values, categorical TVD, and automated retraining flags. | 5 | **52 / 52 PASSED** ✅ |
-| **`tests/test_segmentation.py`** | Customer RFM feature calculation, Recency bounds, K-Means clustering ($k=4$), silhouette score ($>0.15$), Davies-Bouldin index, and cluster profile completeness. | 3 | **52 / 52 PASSED** ✅ |
-| **`tests/test_simulation.py`** | Financial baseline initialization, bundle expansion revenue and profit uplift, VIP retention repeat lift, unified multi-lever financial simulation, and input boundary validation. | 5 | **52 / 52 PASSED** ✅ |
-| **Total Test Suite** | **Comprehensive end-to-end regression validation** | **52** | **100% Pass Rate** 🏆 |
+| **`tests/test_data_integrity.py`** | Raw dataset presence, schema shape (1,000 × 9), zero nulls, unique transaction IDs, age bounds (18–64), discrete price tiers, quantity bounds (1–4), and mathematical invariant ($Total = Qty \times Price$). | 8 | **82 / 82 PASSED** ✅ |
+| **`tests/test_analytics.py`** | Baseline executive KPIs ($456k rev, 1k orders, 2,514 units), descriptive statistics profiles, monthly seasonality (May peak, Sept trough), day-of-week velocity, weekend technology lift, gender symmetry, and Gini precision ($0.6091 \pm 0.001$). | 7 | **82 / 82 PASSED** ✅ |
+| **`tests/test_ml_models.py`** | VIP Whale classifier benchmark metrics ($Acc \ge 85\%, AUC \ge 85\%$), Spend regressor ($R^2 \ge 90\%$), elite VIP inference, budget classification, regression confidence intervals, and bundle discount math (10% and 15%). | 6 | **82 / 82 PASSED** ✅ |
+| **`tests/test_api.py`** | FastAPI `TestClient` verification across root, health, overview, descriptive stats, time-series, demographics, products, pareto, ML VIP inference, spend regression, input validation errors (422), bundles, drift audits, RFM segments, what-if simulations, elasticity summary/simulations, Bayesian A/B testing, and CLV endpoints. | 28 | **82 / 82 PASSED** ✅ |
+| **`tests/test_mlops_drift.py`** | Population Stability Index (PSI) calculation, identical distribution zero assertions, critical drift triggers ($PSI \ge 0.25$), Kolmogorov-Smirnov test p-values, categorical TVD, and automated retraining flags. | 5 | **82 / 82 PASSED** ✅ |
+| **`tests/test_segmentation.py`** | Customer RFM feature calculation, Recency bounds, K-Means clustering ($k=4$), silhouette score ($>0.15$), Davies-Bouldin index, and cluster profile completeness. | 3 | **82 / 82 PASSED** ✅ |
+| **`tests/test_simulation.py`** | Financial baseline initialization, bundle expansion revenue and profit uplift, VIP retention repeat lift, unified multi-lever financial simulation, and input boundary validation. | 5 | **82 / 82 PASSED** ✅ |
+| **`tests/test_elasticity_optimization.py`** | Econometric log-log regression slope, arc price elasticity, promotional markdown financial impact, and discrete pricing tier gross margin optimization. | 7 | **82 / 82 PASSED** ✅ |
+| **`tests/test_ab_experimentation.py`** | Welch's t-test, Mann-Whitney U test, two-proportion z/chi-square tests, Bayesian Beta-Binomial conjugate updating, Monte Carlo lift HDI, and power calculation. | 7 | **82 / 82 PASSED** ✅ |
+| **`tests/test_clv_churn.py`** | Transaction recency survival decay function, 4-tier lifecycle churn classification, forward 12-month discounted CLV forecasting, customer equity audit, and VIP early warning triage. | 6 | **82 / 82 PASSED** ✅ |
+| **Total Test Suite** | **Comprehensive end-to-end regression validation** | **82** | **100% Pass Rate** 🏆 |
 
 ---
 
@@ -437,7 +565,7 @@ docker-compose up --build
    jupyter notebook retail_sales_eda.ipynb
    ```
 
-4. **Execute Automated Pytest Regression Suite (52 Tests):**
+4. **Execute Automated Pytest Regression Suite (82 Tests):**
    ```bash
    pytest tests/ -v
    ```

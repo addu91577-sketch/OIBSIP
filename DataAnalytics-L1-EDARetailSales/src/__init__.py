@@ -8,8 +8,11 @@ from src.recommendations import BusinessRecommendationEngine
 from src.mlops_drift import DriftDetector, calculate_psi, calculate_categorical_psi
 from src.segmentation import CustomerSegmentationEngine
 from src.simulation import FinancialWhatIfSimulator
+from src.elasticity_optimization import PriceElasticityOptimizer
+from src.ab_experimentation import RetailABTestingEngine
+from src.clv_churn import CustomerLifetimeValueEngine
 
-__version__ = "1.1.0"
+__version__ = "1.2.0"
 
 __all__ = [
     "RetailAnalyticsEngine",
@@ -20,4 +23,7 @@ __all__ = [
     "calculate_categorical_psi",
     "CustomerSegmentationEngine",
     "FinancialWhatIfSimulator",
+    "PriceElasticityOptimizer",
+    "RetailABTestingEngine",
+    "CustomerLifetimeValueEngine",
 ]

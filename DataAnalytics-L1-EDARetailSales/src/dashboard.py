@@ -26,6 +26,9 @@ from src.recommendations import BusinessRecommendationEngine
 from src.mlops_drift import DriftDetector
 from src.segmentation import CustomerSegmentationEngine
 from src.simulation import FinancialWhatIfSimulator
+from src.elasticity_optimization import PriceElasticityOptimizer
+from src.ab_experimentation import RetailABTestingEngine
+from src.clv_churn import CustomerLifetimeValueEngine
 
 st.set_page_config(
     page_title="Retail Sales Analytics & Predictive Intelligence Suite",
@@ -44,10 +47,13 @@ def load_engines():
     segmentation = CustomerSegmentationEngine()
     segmentation.fit_clusters()
     sim = FinancialWhatIfSimulator()
-    return analytics, ml, drift, segmentation, sim
+    elasticity = PriceElasticityOptimizer()
+    ab_test = RetailABTestingEngine()
+    clv = CustomerLifetimeValueEngine()
+    return analytics, ml, drift, segmentation, sim, elasticity, ab_test, clv
 
 
-analytics, ml, drift_engine, segmentation_engine, sim_engine = load_engines()
+analytics, ml, drift_engine, segmentation_engine, sim_engine, elasticity_engine, ab_engine, clv_engine = load_engines()
 df = analytics.df
 
 # Custom CSS for dark modern executive theme
@@ -141,6 +147,9 @@ st.sidebar.info(
     tab_drift,
     tab_clusters,
     tab_whatif,
+    tab_elasticity,
+    tab_ab_test,
+    tab_clv,
     tab_recs,
 ) = st.tabs(
     [
@@ -153,6 +162,9 @@ st.sidebar.info(
         "🛡️ MLOps Drift Guard",
         "🧬 RFM Micro-Segments",
         "🔮 What-If Simulator",
+        "⚖️ Price Elasticity",
+        "🧪 Bayesian A/B Testing",
+        "💎 CLV & Churn Guard",
         "🎯 Strategic Action Plan",
     ]
 )
@@ -642,7 +654,216 @@ with tab_whatif:
     fig_fin.update_layout(template="plotly_dark", height=380, showlegend=False)
     st.plotly_chart(fig_fin, use_container_width=True)
 
-# ----------------- TAB 10: STRATEGIC ACTION PLAN -----------------
+# ----------------- TAB 10: PRICE ELASTICITY & REVENUE OPTIMIZATION -----------------
+with tab_elasticity:
+    st.subheader("⚖️ Econometric Price Elasticity & Markdown Revenue Optimization")
+    st.markdown(
+        "Evaluate price responsiveness, demand inelasticity, and margin breakeven frontiers "
+        "across catalog departments to prevent value-destructive discounts."
+    )
+
+    el_col1, el_col2 = st.columns([1, 2])
+    with el_col1:
+        selected_cat_el = st.selectbox(
+            "Select Catalog Category",
+            options=["Clothing", "Electronics", "Beauty"],
+            index=1,
+            key="el_cat_select",
+        )
+        cat_ped_res = elasticity_engine.compute_category_elasticity(selected_cat_el)
+
+        st.metric("Log-Log PED Coefficient", f"{cat_ped_res['ped_coefficient']:+.4f}")
+        st.metric("Regression R²", f"{cat_ped_res['r_squared']:.4f}")
+        st.info(f"**Classification:** {cat_ped_res['classification']}")
+        st.caption(cat_ped_res["interpretation"])
+
+    with el_col2:
+        st.markdown("#### 📉 Interactive Promotional Markdown Simulator")
+        sim_disc = st.slider("Promotional Discount (%)", min_value=2, max_value=30, value=10, step=1) / 100.0
+        sim_lift = st.slider("Expected Volume Lift (%)", min_value=-10, max_value=80, value=15, step=5) / 100.0
+
+        promo_eval = elasticity_engine.simulate_markdown_pricing(
+            category=selected_cat_el,
+            discount_pct=sim_disc,
+            expected_volume_lift_pct=sim_lift,
+        )
+
+        p_status = promo_eval["financial_impact"]["status"]
+        if p_status == "Value Accretive":
+            st.success(f"✅ **{p_status}**: Profit Delta {promo_eval['financial_impact']['profit_delta']:+,.2f} ({promo_eval['financial_impact']['profit_delta_pct']:+.1f}%)")
+        elif "Dilutive" in p_status:
+            st.warning(f"⚠️ **{p_status}**: Profit Delta {promo_eval['financial_impact']['profit_delta']:+,.2f} ({promo_eval['financial_impact']['profit_delta_pct']:+.1f}%)")
+        else:
+            st.error(f"❌ **{p_status}**: Revenue Delta {promo_eval['financial_impact']['revenue_delta']:+,.2f}")
+
+        st.caption(
+            f"**Breakeven Hurdle:** Requires at least **+{promo_eval['financial_impact']['breakeven_volume_lift_required_pct']:.1f}% volume lift** "
+            f"to offset a {int(sim_disc*100)}% discount at 40% margin."
+        )
+
+        # Plotly comparison
+        comp_df = pd.DataFrame([
+            {"Stage": "Baseline", "Revenue": promo_eval["baseline"]["revenue"], "Gross Profit": promo_eval["baseline"]["gross_profit"]},
+            {"Stage": "Post-Markdown", "Revenue": promo_eval["post_promotion"]["simulated_revenue"], "Gross Profit": promo_eval["post_promotion"]["simulated_gross_profit"]},
+        ])
+        fig_el = px.bar(
+            comp_df,
+            x="Stage",
+            y=["Revenue", "Gross Profit"],
+            barmode="group",
+            text_auto="$,.0f",
+            title=f"{selected_cat_el}: Baseline vs Markdown Financials",
+            color_discrete_sequence=["#38bdf8", "#34d399"],
+        )
+        fig_el.update_layout(template="plotly_dark", height=320)
+        st.plotly_chart(fig_el, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("#### 🏷️ Discrete Catalog Price Tier Margin Architecture")
+    tier_eval = elasticity_engine.optimize_price_points(selected_cat_el)
+    st.dataframe(pd.DataFrame(tier_eval["tier_evaluations"]), use_container_width=True)
+
+
+# ----------------- TAB 11: BAYESIAN A/B EXPERIMENTATION -----------------
+with tab_ab_test:
+    st.subheader("🧪 Bayesian & Frequentist Retail A/B Experimentation Suite")
+    st.markdown(
+        "Evaluate pilot retail promotions, bundle offers, and pricing experiments "
+        "using rigorous dual hypothesis testing, Beta-Binomial conjugate updating, and power calculations."
+    )
+
+    ab_c1, ab_c2 = st.columns(2)
+    with ab_c1:
+        st.markdown("##### 🅰️ Control Group (Status Quo)")
+        c_conv = st.number_input("Control Conversions / Adoptions", min_value=1, value=100, step=10)
+        c_tot = st.number_input("Control Total Sample Size", min_value=10, value=1000, step=50)
+
+    with ab_c2:
+        st.markdown("##### 🅱️ Treatment Variant (New Promotion / Bundle)")
+        t_conv = st.number_input("Variant Conversions / Adoptions", min_value=1, value=150, step=10)
+        t_tot = st.number_input("Variant Total Sample Size", min_value=10, value=1000, step=50)
+
+    # Run Bayesian & Frequentist tests
+    ab_bayes = ab_engine.bayesian_conversion_test(
+        control_conversions=c_conv,
+        control_impressions=c_tot,
+        treatment_conversions=t_conv,
+        treatment_impressions=t_tot,
+    )
+    ab_freq = ab_engine.evaluate_proportion_ab(
+        control_successes=c_conv,
+        control_total=c_tot,
+        treatment_successes=t_conv,
+        treatment_total=t_tot,
+    )
+
+    m_col1, m_col2, m_col3, m_col4 = st.columns(4)
+    with m_col1:
+        st.metric("Control Conversion", f"{(c_conv/c_tot)*100:.2f}%")
+    with m_col2:
+        st.metric("Variant Conversion", f"{(t_conv/t_tot)*100:.2f}%", f"{ab_freq['lift']['relative_lift_pct']:+.1f}% Lift")
+    with m_col3:
+        st.metric("P(Variant > Control)", f"{ab_bayes['bayesian_metrics']['prob_treatment_better_pct']:.1f}%")
+    with m_col4:
+        st.metric("Expected Loss", f"{ab_bayes['bayesian_metrics']['expected_loss_treatment']*100:.3f}%")
+
+    b_dec = ab_bayes["recommendation"]["decision"]
+    if "Deploy" in b_dec:
+        st.success(f"🚀 **Decision: {b_dec}** — {ab_bayes['recommendation']['rationale']}")
+    elif "Retain" in b_dec:
+        st.error(f"🛑 **Decision: {b_dec}** — {ab_bayes['recommendation']['rationale']}")
+    else:
+        st.warning(f"⏳ **Decision: {b_dec}** — {ab_bayes['recommendation']['rationale']}")
+
+    # Plot posterior curves
+    x_grid = np.linspace(
+        max(0, min(c_conv/c_tot, t_conv/t_tot) - 0.08),
+        min(1.0, max(c_conv/c_tot, t_conv/t_tot) + 0.08),
+        300,
+    )
+    y_c = stats.beta.pdf(x_grid, 1 + c_conv, 1 + c_tot - c_conv)
+    y_t = stats.beta.pdf(x_grid, 1 + t_conv, 1 + t_tot - t_conv)
+
+    fig_ab = go.Figure()
+    fig_ab.add_trace(go.Scatter(x=x_grid*100, y=y_c, mode="lines", name="Control Posterior", line=dict(color="#94a3b8", width=2.5), fill="tozeroy"))
+    fig_ab.add_trace(go.Scatter(x=x_grid*100, y=y_t, mode="lines", name="Variant Posterior", line=dict(color="#38bdf8", width=2.5), fill="tozeroy"))
+    fig_ab.update_layout(
+        title="Beta-Binomial Posterior Belief Distributions P(Conversion Rate | Data)",
+        xaxis_title="Conversion Rate (%)",
+        yaxis_title="Posterior Density",
+        template="plotly_dark",
+        height=340,
+    )
+    st.plotly_chart(fig_ab, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("##### 📐 Sample Size Determination Matrix (Power = 80%, α = 0.05)")
+    p_mat = ab_engine.generate_power_matrix(baseline_rate=c_conv/c_tot)
+    st.dataframe(pd.DataFrame(p_mat), use_container_width=True)
+
+
+# ----------------- TAB 12: CLV & CHURN EARLY WARNING -----------------
+with tab_clv:
+    st.subheader("💎 Customer Lifetime Value (CLV) & Churn Risk Early Warning Guard")
+    st.markdown(
+        "Monitor enterprise customer equity, survival probability decay, and high-monetary VIP whale churn risk "
+        "to trigger high-ROI retention interventions."
+    )
+
+    clv_audit = clv_engine.audit_customer_equity()
+    base_info = clv_audit["customer_base"]
+    vip_info = clv_audit["vip_early_warning"]
+
+    c_m1, c_m2, c_m3, c_m4 = st.columns(4)
+    with c_m1:
+        st.metric("Total Projected Equity", f"${base_info['total_projected_12m_customer_equity']:,.0f}")
+    with c_m2:
+        st.metric("Average Customer CLV", f"${base_info['average_customer_clv']:,.2f}")
+    with c_m3:
+        st.metric("VIP Whales at Risk", f"{vip_info['vips_at_risk_count']} / {vip_info['total_vips']}")
+    with c_m4:
+        st.metric("VIP Equity at Risk", f"${vip_info['vip_revenue_at_risk']:,.0f}")
+
+    clv_col1, clv_col2 = st.columns([1, 1])
+    with clv_col1:
+        st.markdown("##### 👥 Customer Equity by Lifecycle Risk Tier")
+        t_df = pd.DataFrame(clv_audit["churn_tier_distribution"])
+        fig_tiers = px.pie(
+            t_df,
+            names="churn_tier",
+            values="total_projected_12m_clv",
+            title="12-Month Projected Customer Equity Distribution",
+            color="churn_tier",
+            color_discrete_map={
+                "Active (Low Risk)": "#22c55e",
+                "Cooling (Medium Risk)": "#eab308",
+                "At Risk (High Risk)": "#f97316",
+                "Lapsed (Defected)": "#ef4444",
+            },
+            hole=0.45,
+        )
+        fig_tiers.update_layout(template="plotly_dark", height=320)
+        st.plotly_chart(fig_tiers, use_container_width=True)
+
+    with clv_col2:
+        st.markdown("##### 🔮 Interactive Individual Customer CLV Predictor")
+        in_rec = st.slider("Customer Recency (Days Elapsed Since Order)", min_value=1, max_value=365, value=45, step=5)
+        in_aov = st.slider("Historical Basket Spend ($)", min_value=25, max_value=2000, value=500, step=25)
+
+        ind_pred = clv_engine.predict_customer_clv(recency_days=in_rec, aov=in_aov)
+        st.info(
+            f"**Risk Tier:** `{ind_pred['churn_tier']}` · **Churn Probability:** `{ind_pred['prob_churn']*100:.1f}%`\n\n"
+            f"**Projected 12m CLV:** `${ind_pred['projected_clv']:,.2f}`\n\n"
+            f"**Action Playbook:** {ind_pred['recommended_playbook']}"
+        )
+
+    st.markdown("---")
+    st.markdown("##### 🚨 High-Priority At-Risk VIP Whales (Immediate Intervention Target)")
+    at_risk_list = clv_engine.get_at_risk_vips(limit=10)
+    st.dataframe(pd.DataFrame(at_risk_list), use_container_width=True)
+
+
+# ----------------- TAB 13: STRATEGIC ACTION PLAN -----------------
 with tab_recs:
     st.subheader("Strategic Business Action Plan & Projected Financial Return")
     recommendations = BusinessRecommendationEngine.get_strategic_recommendations()

@@ -209,3 +209,131 @@ def test_what_if_simulation_validation_error(test_client):
     }
     response = test_client.post("/api/v1/simulations/what-if", json=payload)
     assert response.status_code == 422
+
+
+# --- DAY 10 API ENDPOINTS INTEGRATION TESTS ---
+def test_elasticity_summary_endpoint(test_client):
+    """GET /api/v1/elasticity/summary must return category & catalog PED coefficients."""
+    response = test_client.get("/api/v1/elasticity/summary")
+    assert response.status_code == 200
+    data = response.json()
+    assert "categories" in data
+    assert "Electronics" in data["categories"]
+    assert "ped_coefficient" in data["categories"]["Electronics"]
+
+
+def test_markdown_simulation_endpoint(test_client):
+    """POST /api/v1/elasticity/simulate must return financial impact of markdown."""
+    payload = {
+        "category": "Clothing",
+        "discount_pct": 0.10,
+        "expected_volume_lift_pct": 0.20,
+        "gross_margin_pct": 0.40,
+    }
+    response = test_client.post("/api/v1/elasticity/simulate", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["category"] == "Clothing"
+    assert "financial_impact" in data
+    assert "breakeven_volume_lift_required_pct" in data["financial_impact"]
+
+
+def test_markdown_simulation_validation_error(test_client):
+    """POST /api/v1/elasticity/simulate with invalid category must return 422."""
+    payload = {
+        "category": "Furniture",
+        "discount_pct": 0.10,
+        "expected_volume_lift_pct": 0.20,
+    }
+    response = test_client.post("/api/v1/elasticity/simulate", json=payload)
+    assert response.status_code == 422
+
+
+def test_tier_optimization_endpoint(test_client):
+    """GET /api/v1/elasticity/tiers/Electronics must return tier gross margins."""
+    response = test_client.get("/api/v1/elasticity/tiers/Electronics")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["category"] == "Electronics"
+    assert data["profit_maximizing_tier"] in [25.0, 30.0, 50.0, 300.0, 500.0]
+
+
+def test_ab_proportions_endpoint(test_client):
+    """POST /api/v1/experiments/ab-proportions must return Frequentist & Bayesian evaluation."""
+    payload = {
+        "control_successes": 50,
+        "control_total": 500,
+        "treatment_successes": 75,
+        "treatment_total": 500,
+        "metric_name": "VIP Conversion",
+    }
+    response = test_client.post("/api/v1/experiments/ab-proportions", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "frequentist_analysis" in data
+    assert "bayesian_analysis" in data
+    assert data["bayesian_analysis"]["bayesian_metrics"]["prob_treatment_better_pct"] > 90
+
+
+def test_ab_continuous_endpoint(test_client):
+    """POST /api/v1/experiments/ab-continuous must return spend comparison."""
+    payload = {
+        "control_data": [50.0, 100.0, 150.0, 200.0],
+        "treatment_data": [70.0, 120.0, 180.0, 250.0],
+        "metric_name": "Basket Value",
+    }
+    response = test_client.post("/api/v1/experiments/ab-continuous", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "frequentist_analysis" in data
+    assert "bayesian_bootstrap" in data
+
+
+def test_power_matrix_endpoint(test_client):
+    """GET /api/v1/experiments/power-matrix must return sample sizes across MDEs."""
+    response = test_client.get("/api/v1/experiments/power-matrix?baseline_rate=0.20")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert "sample_size_per_arm" in data[0]
+
+
+def test_clv_overview_endpoint(test_client):
+    """GET /api/v1/clv/overview must return customer equity audit & churn distribution."""
+    response = test_client.get("/api/v1/clv/overview")
+    assert response.status_code == 200
+    data = response.json()
+    assert "customer_base" in data
+    assert "churn_tier_distribution" in data
+    assert "vip_early_warning" in data
+
+
+def test_predict_customer_clv_endpoint(test_client):
+    """POST /api/v1/clv/predict-customer must score churn risk and calculate CLV."""
+    payload = {
+        "recency_days": 40.0,
+        "aov": 450.0,
+        "gross_margin_pct": 0.40,
+    }
+    response = test_client.post("/api/v1/clv/predict-customer", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["churn_tier"] in [
+        "Active (Low Risk)",
+        "Cooling (Medium Risk)",
+        "At Risk (High Risk)",
+        "Lapsed (Defected)",
+    ]
+    assert data["projected_clv"] > 0
+
+
+def test_at_risk_vips_endpoint(test_client):
+    """GET /api/v1/clv/at-risk-vips must return high-priority at-risk VIP shoppers."""
+    response = test_client.get("/api/v1/clv/at-risk-vips?min_spend=1000&limit=5")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) <= 5
+    if len(data) > 0:
+        assert data[0]["historical_spend"] >= 1000.0
