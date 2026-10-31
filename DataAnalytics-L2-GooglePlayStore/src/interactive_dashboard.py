@@ -28,6 +28,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 
 from src.master_pipeline import GooglePlaystoreMasterEngine
 from src.recommendation_engine import PlayStoreRecommendationEngine
+from src.aso_intelligence_engine import ASOReviewIntelligenceEngine
 
 
 # ============================================================================
@@ -153,8 +154,15 @@ def load_recommendation_engine() -> PlayStoreRecommendationEngine:
     return PlayStoreRecommendationEngine()
 
 
+@st.cache_resource(show_spinner="Initializing Day 12 ASO & Review Aspect Intelligence...")
+def load_aso_engine() -> ASOReviewIntelligenceEngine:
+    """Initialize and cache the ASO & review aspect intelligence engine singleton."""
+    return ASOReviewIntelligenceEngine()
+
+
 engine = load_master_engine()
 rec_engine = load_recommendation_engine()
+aso_engine = load_aso_engine()
 
 
 # ============================================================================
@@ -212,12 +220,13 @@ st.markdown("---")
 # Interactive Multi-Tab Workspace
 # ============================================================================
 
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
     "📊 Market Intelligence & Category Radar",
     "💡 Developer Concept Feasibility Calculator",
     "⌨️ Real-Time Smart Keyboard Assistant",
     "🧠 Review Linguistics & Executive Scorecard",
-    "🎯 App Recommendation & Personalized Discovery"
+    "🎯 App Recommendation & Personalized Discovery",
+    "🔍 ASO & Review Aspect Intelligence"
 ])
 
 
@@ -660,3 +669,163 @@ with tab5:
                 for r in cs_res.top_competitors
             ]
             st.dataframe(pd.DataFrame(cs_table), use_container_width=True, hide_index=True)
+
+
+# ----------------------------------------------------------------------------
+# TAB 6: Day 12 ASO & Review Aspect Intelligence
+# ----------------------------------------------------------------------------
+with tab6:
+    st.markdown("### 🔍 Aspect-Based Sentiment Analysis, LDA Topic Mining & ASO Diagnostics")
+    st.markdown(
+        "Day 12 delivers production-grade review intelligence: Aspect-Based Sentiment Analysis (ABSA) across 5 core dimensions, "
+        "Latent Dirichlet Allocation (LDA) topic discovery, bot/brigading review authenticity auditing, competitor ASO keyword gap mining, "
+        "and a 360-degree composite App Health Index."
+    )
+
+    aso_sub1, aso_sub2, aso_sub3, aso_sub4 = st.tabs([
+        "🔬 Aspect Sentiment (ABSA)",
+        "🏷️ Competitor ASO Keyword Gap",
+        "🛡️ Review Authenticity & Fraud Audit",
+        "🩺 360° App Health Diagnostic"
+    ])
+
+    with aso_sub1:
+        st.markdown("#### Operational Aspect Breakdown across 5 Dimensions")
+        aso_target_type = st.radio("Target Scope", ["Individual App", "Whole Category"], horizontal=True)
+
+        if aso_target_type == "Individual App":
+            target_app_input = st.selectbox(
+                "Select Application",
+                sorted(aso_engine.df_apps["App_Clean"].unique().tolist()),
+                index=sorted(aso_engine.df_apps["App_Clean"].unique().tolist()).index("Duolingo: Learn Languages Free")
+                if "Duolingo: Learn Languages Free" in aso_engine.df_apps["App_Clean"].values else 0,
+                key="aso_app_select"
+            )
+            is_cat = False
+            target_str = target_app_input
+        else:
+            cat_input = st.selectbox("Select Store Category", sorted(aso_engine.categories), index=0, key="aso_cat_select")
+            is_cat = True
+            target_str = cat_input
+
+        if st.button("Run Aspect-Based Sentiment Analysis", type="primary", use_container_width=True):
+            with st.spinner("Extracting aspect mentions and calculating net sentiment scores..."):
+                aspect_res = aso_engine.analyze_aspect_sentiment(target_name=target_str, is_category=is_cat)
+
+            st.success(f"Analyzed {aspect_res.total_reviews_analyzed:,} review records for **{aspect_res.target_name}**.")
+
+            kpi_col1, kpi_col2, kpi_col3 = st.columns(3)
+            with kpi_col1:
+                st.metric("Aggregate Aspect Health", f"{aspect_res.aggregate_aspect_health:.1f} / 100")
+            with kpi_col2:
+                st.metric("Dominant Strength", aspect_res.dominant_strength.upper())
+            with kpi_col3:
+                st.metric("Key Vulnerability", aspect_res.dominant_vulnerability.upper())
+
+            aspect_rows = []
+            for aspect_k, score_v in aspect_res.aspect_scores.items():
+                aspect_rows.append({
+                    "Aspect": aspect_k.upper(),
+                    "Health Score (0-100)": score_v.aspect_health_index,
+                    "Net Sentiment Score (NSS %)": f"{score_v.net_sentiment_score:+.1f}%",
+                    "Mentions": score_v.mention_count,
+                    "Pos / Neu / Neg": f"{score_v.positive_mentions} / {score_v.neutral_mentions} / {score_v.negative_mentions}",
+                    "Mean Polarity": score_v.mean_polarity,
+                    "Representative Keywords": ", ".join(score_v.representative_keywords[:4])
+                })
+            st.dataframe(pd.DataFrame(aspect_rows), use_container_width=True, hide_index=True)
+
+    with aso_sub2:
+        st.markdown("#### Competitor ASO Keyword Gap & Metadata Prescriptions")
+        aso_app_choice = st.selectbox(
+            "Select Target Application for ASO Audit",
+            sorted(aso_engine.df_apps["App_Clean"].unique().tolist()),
+            index=0,
+            key="aso_gap_app_select"
+        )
+        top_k_kws = st.slider("Number of Keyword Opportunities to Mine", 4, 15, 8)
+
+        if st.button("Mine Competitor Keyword Gap", type="primary", use_container_width=True):
+            with st.spinner("Analyzing category incumbent keyword frequencies and identifying gap..."):
+                gap_res = aso_engine.mine_aso_keyword_gap(target_app=aso_app_choice, top_n_keywords=top_k_kws)
+
+            st.metric("Current ASO Optimization Score", f"{gap_res.aso_optimization_score:.1f}%")
+            st.info(f"**Recommended Title Rebrand**: `{gap_res.prescribed_title_copy}`")
+
+            col_gap1, col_gap2 = st.columns(2)
+            with col_gap1:
+                st.markdown("##### 📌 Keywords Present in App")
+                st.write(gap_res.current_keywords if gap_res.current_keywords else ["None found in title"])
+            with col_gap2:
+                st.markdown("##### 🚀 High-Value Missing Category Keywords")
+                st.write(gap_res.missing_high_value_keywords)
+
+            st.markdown("##### 📝 Prescribed Copy Directives:")
+            for bullet in gap_res.prescribed_feature_bullets:
+                st.markdown(f"- {bullet}")
+
+    with aso_sub3:
+        st.markdown("#### Review Authenticity, Bot Brigading & Anomaly Audit")
+        auth_app_choice = st.selectbox(
+            "Target App to Audit for Review Fraud / Bot Floods",
+            sorted(aso_engine.df_apps["App_Clean"].unique().tolist()),
+            index=0,
+            key="auth_app_select"
+        )
+
+        if st.button("Audit Review Authenticity", type="primary", use_container_width=True):
+            with st.spinner("Auditing review text duplicates, polarity dissonance, and entropy..."):
+                auth_res = aso_engine.evaluate_review_authenticity(app_name=auth_app_choice)
+
+            auth_col1, auth_col2, auth_col3 = st.columns(3)
+            with auth_col1:
+                st.metric("Authenticity Index", f"{auth_res.authenticity_index:.1f} / 100")
+            with auth_col2:
+                st.metric("Audit Verdict", auth_res.verdict)
+            with auth_col3:
+                st.metric("Polarity Entropy Score", f"{auth_res.entropy_score:.2f}")
+
+            st.markdown(f"**Total Reviews Audited**: {auth_res.total_reviews} | **Flagged Anomalies**: {auth_res.suspicious_reviews_count}")
+            st.write({
+                "Duplicate Cluster Count": auth_res.duplicate_cluster_count,
+                "Sentiment-Rating Dissonance Count": auth_res.sentiment_dissonance_count,
+                "Ultra-Short / Spam Count": auth_res.spam_length_count
+            })
+
+    with aso_sub4:
+        st.markdown("#### 360-Degree App Health Scorecard & Recourse Matrix")
+        health_app_choice = st.selectbox(
+            "Select App for Full Lifecycle Health Scorecard",
+            sorted(aso_engine.df_apps["App_Clean"].unique().tolist()),
+            index=0,
+            key="health_app_select"
+        )
+
+        if st.button("Generate 360° Health Diagnostic", type="primary", use_container_width=True):
+            with st.spinner("Synthesizing multi-pillar metrics and compiling diagnostic recourse..."):
+                diag = aso_engine.evaluate_app_health(app_name=health_app_choice)
+
+            tier_colors = {
+                "CHAMPION": "green",
+                "SOLID_PERFORMER": "blue",
+                "VULNERABLE": "orange",
+                "CRITICAL_RENOVATION": "red"
+            }
+            color = tier_colors.get(diag.health_tier, "blue")
+            st.markdown(f"### Overall Health: **:{color}[{diag.composite_health_index:.1f} / 100]** ({diag.health_tier})")
+
+            h_col1, h_col2, h_col3, h_col4, h_col5 = st.columns(5)
+            with h_col1:
+                st.metric("Rating Score (30%)", f"{diag.rating_score:.1f}")
+            with h_col2:
+                st.metric("Sentiment Score (25%)", f"{diag.sentiment_score:.1f}")
+            with h_col3:
+                st.metric("Aspect Score (20%)", f"{diag.aspect_health_score:.1f}")
+            with h_col4:
+                st.metric("Authenticity (15%)", f"{diag.authenticity_score:.1f}")
+            with h_col5:
+                st.metric("ASO Coverage (10%)", f"{diag.aso_optimization_score:.1f}")
+
+            st.markdown("#### 🛠️ Actionable Prescriptive Growth & Quality Recourse:")
+            for p in diag.prescriptions:
+                st.markdown(f"- 💡 {p}")

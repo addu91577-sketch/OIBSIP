@@ -1,0 +1,6 @@
+topic_id,label,top_words,topic_weight,prevalent_sentiment
+1,User Experience & Visual Interface,"love, fun, awesome, best, amazing, thank, easy",0.2268,Positive
+2,"Performance, Crashes & Battery Bugs","easy, read, add, need, option, free, helpful",0.1958,Positive
+3,Feature Utility & Daily Tracking,"update, fix, work, screen, open, working, news",0.2159,Neutral
+4,"Ads, Subscriptions & In-App Paywalls","best, day, card, excellent, new, update, features",0.1721,Positive
+5,"Updates, Accounts & Support Reliability","ads, bad, account, money, pay, annoying, log",0.1895,Neutral

@@ -1,0 +1,8 @@
+app_name,category,rating,installs,composite_health_index,health_tier,aspect_health_score,authenticity_score,aso_score,primary_prescription
+Duolingo: Learn Languages Free,FAMILY,4.7,100000000,75.3,SOLID_PERFORMER,70.23,93.85,68.33,Operational Remediation: PERFORMANCE is the weakest aspect (66.8/100). Focus sprint resources on resolving user pain-points here.
+Subway Surfers,GAME,4.5,1000000000,65.09,VULNERABLE,53.92,89.19,55.0,Operational Remediation: PERFORMANCE is the weakest aspect (50.1/100). Focus sprint resources on resolving user pain-points here.
+Colorfy: Colouring Book for Adults,PRODUCTIVITY,4.2,1000000,71.27,SOLID_PERFORMER,78.52,89.19,73.46,Operational Remediation: FEATURE_UTILITY is the weakest aspect (71.5/100). Focus sprint resources on resolving user pain-points here.
+Dropbox,PRODUCTIVITY,4.4,500000000,64.53,VULNERABLE,58.31,91.06,46.11,Operational Remediation: PERFORMANCE is the weakest aspect (52.7/100). Focus sprint resources on resolving user pain-points here.
+Google Drive,PRODUCTIVITY,4.4,1000000000,66.64,VULNERABLE,65.15,89.19,46.11,Operational Remediation: PERFORMANCE is the weakest aspect (61.3/100). Focus sprint resources on resolving user pain-points here.
+Clash of Clans,GAME,4.6,100000000,68.69,SOLID_PERFORMER,59.15,94.33,55.0,Operational Remediation: SUPPORT_RELIABILITY is the weakest aspect (51.8/100). Focus sprint resources on resolving user pain-points here.
+10 Best Foods for You,HEALTH_AND_FITNESS,4.0,500000,65.34,VULNERABLE,78.53,73.01,68.33,Operational Remediation: FEATURE_UTILITY is the weakest aspect (71.5/100). Focus sprint resources on resolving user pain-points here.

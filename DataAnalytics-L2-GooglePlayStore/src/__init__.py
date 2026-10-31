@@ -47,6 +47,16 @@ from src.recommendation_engine import (
     RecommendationBatchResult,
     ColdStartRecommendationResult,
 )
+from src.aso_intelligence_engine import (
+    ASOReviewIntelligenceEngine,
+    AspectScore,
+    AppAspectAnalysisResult,
+    TopicCluster,
+    ReviewAuthenticityReport,
+    KeywordOpportunityItem,
+    ASOGapAnalysisResult,
+    AppHealthDiagnosticResult,
+)
 
 __all__ = [
     "clean_playstore_apps",
@@ -79,5 +89,13 @@ __all__ = [
     "PlayStoreRecommendationEngine",
     "AppRecommendationItem",
     "RecommendationBatchResult",
-    "ColdStartRecommendationResult"
+    "ColdStartRecommendationResult",
+    "ASOReviewIntelligenceEngine",
+    "AspectScore",
+    "AppAspectAnalysisResult",
+    "TopicCluster",
+    "ReviewAuthenticityReport",
+    "KeywordOpportunityItem",
+    "ASOGapAnalysisResult",
+    "AppHealthDiagnosticResult"
 ]

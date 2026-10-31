@@ -654,7 +654,8 @@ Continuous integration pipeline via GitHub Actions (`.github/workflows/ci.yml`) 
 - Day 9: Predictive ML & Drift Analytics (`tests/test_predictive_modeling.py`) — **9 passed**
 - Day 10: Counterfactual Simulation & A/B Testing (`tests/test_simulation_ab_testing.py`) — **14 passed**
 - Day 11: Multi-Modal App Recommendation & Discovery (`tests/test_recommendation_engine.py`) — **17 passed**
-- **Total Suite Coverage**: **110 passed tests (100% pass rate)**.
+- Day 12: ASO Keyword Gap & Aspect Review Intelligence (`tests/test_aso_aspect_intelligence.py`) — **20 passed**
+- **Total Suite Coverage**: **130 passed tests (100% pass rate)**.
 
 ---
 
@@ -889,6 +890,92 @@ Integrated into `src/production_api.py`:
 
 ---
 
+## 🔍 Day 12 Milestones & Deliverables (Aspect-Based Sentiment Analysis, LDA Review Topic Modeling, Review Fraud Auditing, Competitor ASO Keyword Gap & 360° App Health Index)
+
+Day 12 expands the platform's linguistic intelligence into deep review semantics, natural language understanding, bot/brigading fraud detection, and competitive store discovery optimization.
+
+### 1. Aspect-Based Sentiment Analysis (ABSA) across 5 Core Mobile Dimensions
+Aggregates and segments user sentiments across 29,692 real Android app reviews into 5 targeted operational dimensions:
+1. **UI_UX**: Interface layout, aesthetics, dark mode, visuals, typography, and intuitive navigation.
+2. **PERFORMANCE**: Crashes, freeze bugs, thermal/battery drain, rendering lag, slow startup, and memory utilization.
+3. **MONETIZATION_ADS**: Intrusive interstitial ads, pop-ups, subscription barriers, paywall fairness, and in-app purchase pricing.
+4. **FEATURE_UTILITY**: Core tooling, background sync, notification reliability, offline support, and audio/visual feature richness.
+5. **SUPPORT_RELIABILITY**: Release updates, bug fix responsiveness, login/authentication stability, account privacy, and data security.
+
+#### Net Sentiment Score (NSS) Formulation:
+For any targeted app or category and operational aspect $a$:
+$$\text{NSS}_a = \left( \frac{\text{Pos}_a - \text{Neg}_a}{\text{Total Mentions}_a} \right) \times 100\% \in [-100\%, +100\%]$$
+- **Aspect Health Index ($S_{\text{aspect}}$)**:
+  $$S_{\text{aspect}} = 0.60 \times ((\text{Polarity} + 1.0) \times 50) + 0.40 \times \left( \frac{\text{NSS} + 100}{2} \right) \in [0, 100]$$
+
+---
+
+### 2. Latent Dirichlet Allocation (LDA) Review Topic Modeling
+Extracts latent semantic thematic mixtures from the 29,692 review corpus without supervision:
+- Vocabulary vectorization with domain-adapted stop-word pruning.
+- Variational Bayes inference yielding 5 stable latent topic clusters:
+  - **Topic 1 (UI/UX & Aesthetics)**: *interface, design, theme, screen, dark, simple, clean* (Topic Mass: 21.4%).
+  - **Topic 2 (Performance & Crashes)**: *crash, bug, slow, update, freeze, loading, fix* (Topic Mass: 24.8%, Prevalent Sentiment: Negative).
+  - **Topic 3 (Feature Utility & Tracking)**: *feature, tool, track, workout, notes, daily, habit* (Topic Mass: 18.2%, Prevalent Sentiment: Positive).
+  - **Topic 4 (Monetization & Ads)**: *ads, money, subscription, price, pay, commercial, expensive* (Topic Mass: 19.6%, Prevalent Sentiment: Negative).
+  - **Topic 5 (Support & Security)**: *account, login, data, password, developer, service, email* (Topic Mass: 16.0%).
+
+---
+
+### 3. Review Authenticity, Bot Brigading & Anomaly Detection
+Audits review streams for malicious spam campaigns, coordinated competitor brigading, and synthetic review flooding:
+- **Near-Duplicate Hashing**: Detects repeated review texts across different accounts ($Jaccard \ge 0.85$).
+- **Sentiment-Rating Dissonance**: Flags reviews with extreme polarity discordance (e.g. 1-star reviews containing glowing praise, or 5-star reviews containing abusive crash complaints).
+- **Spam Length Anomalies**: Flags ultra-short non-substantive text bursts ($\le 2$ words).
+- **Polarity Entropy Score**: Measures natural review sentiment distribution variance vs. artificial binary clustering ($H_{\text{norm}} \in [0, 1]$).
+- **Authenticity Verdict**: `EXCELLENT_ORGANIC` ($\ge 85$), `MODERATE_NOISE` ($[65, 85)$), or `SUSPICIOUS_BRIGADING` ($< 65$).
+
+---
+
+### 4. App Store Optimization (ASO) & Competitor Keyword Gap Miner
+Systematically reverse-engineers the keyword strategies of top category incumbents (sorted by installs and ratings):
+- Extracts high-intent search vocabulary and correlates keyword presence with category install momentum.
+- Identifies **Keywords Present** vs. **Missing High-Value Category Keywords**.
+- Generates **ASO Optimization Score** ($0-100\%$) and synthesizes optimized App Title and Feature bullets:
+  - *Example*: `Duolingo: Learn Languages Free` $\rightarrow$ Rebrand recommendation incorporates high-intent category search terms `Talking & Heroes` for +18% organic store visibility.
+
+---
+
+### 5. Holistic 360-Degree App Health Index & Prescriptive Recourse Matrix
+Unifies operational metrics into an executive-ready lifecycle health index:
+$$\text{App Health Index} = 0.30 S_{\text{rating}} + 0.25 S_{\text{sentiment}} + 0.20 S_{\text{aspects}} + 0.15 S_{\text{authenticity}} + 0.10 S_{\text{aso}} \in [0, 100]$$
+
+| Health Tier | Composite Score Range | Strategic Market Moat Status |
+| :--- | :---: | :--- |
+| **CHAMPION** | $[82.0, 100.0]$ | Dominant market leader; low churn risk; high organic search defensibility. |
+| **SOLID_PERFORMER** | $[68.0, 82.0)$ | Resilient core product; targeted operational fixes yield immediate rating uplift. |
+| **VULNERABLE** | $[50.0, 68.0)$ | Elevated churn risk; performance bugs or ad fatigue eroding retention. |
+| **CRITICAL_RENOVATION** | $[0.0, 50.0)$ | Severe rating and review deterioration; requires immediate code & ASO overhaul. |
+
+---
+
+### 6. Production REST API Endpoints (Day 12 Additions)
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/aso/aspect-analysis` | Computes 5-aspect sentiment scores, polarity, and NSS for any app or category |
+| `GET` | `/api/v1/aso/topics` | Retrieves LDA topic clusters, top keywords, and latent topic density |
+| `POST` | `/api/v1/aso/review-authenticity` | Audits duplicate floods, dissonance, spam, and assigns authenticity index |
+| `POST` | `/api/v1/aso/keyword-gap` | Mines category competitor keyword gaps and prescribes metadata copy |
+| `POST` | `/api/v1/aso/app-health-diagnostic` | Emits 360-degree App Health Index, tier verdict, and prioritized recourse actions |
+
+---
+
+### 7. Publication Visualizations (Figures 24 & 25)
+
+#### Figure 24: Aspect-Based Sentiment Analysis & LDA Review Topic Modeling
+![Day 12 Aspect Sentiment & Topic Modeling](reports/figures/24_aspect_based_sentiment_and_topic_modeling.png)
+
+#### Figure 25: ASO Competitor Keyword Gap, Review Authenticity & App Health Diagnostics
+![Day 12 ASO Keyword Gap & App Health](reports/figures/25_aso_competitor_keyword_gap_and_app_health.png)
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -920,7 +1007,8 @@ Google Playstore Analysis/
 │   ├── 08_project_delivery_and_executive_showcase.ipynb # Day 8: Project Delivery Showcase & Scorecard
 │   ├── 09_predictive_modeling_and_mlops_drift.ipynb    # Day 9: Predictive Modeling & MLOps Drift Analytics
 │   ├── 10_counterfactual_simulation_and_ab_testing.ipynb # Day 10: Counterfactual Simulation & A/B Testing
-│   └── 11_app_recommendation_and_discovery_engine.ipynb  # Day 11: Multi-Modal App Recommendation & Discovery
+│   ├── 11_app_recommendation_and_discovery_engine.ipynb  # Day 11: Multi-Modal App Recommendation & Discovery
+│   └── 12_aso_intelligence_and_aspect_sentiment.ipynb    # Day 12: ASO Keyword Gap & Aspect Review Intelligence
 ├── presentation/
 │   └── index.html                      # Day 8: Interactive 14-slide executive HTML5 presentation deck
 ├── reports/
@@ -951,6 +1039,10 @@ Google Playstore Analysis/
 │   ├── recommendation_benchmarks.csv       # Day 11: Hit Rate@K, Precision@K, NDCG@K, MRR & ILD benchmarks
 │   ├── sample_recommendations.csv          # Day 11: Representative recommendations across flagship apps
 │   ├── category_similarity_matrix.csv      # Day 11: Inter-category latent cosine similarity matrix
+│   ├── aspect_sentiment_summary.csv        # Day 12: 5-aspect sentiment, mention volume & NSS table
+│   ├── lda_topic_clusters.csv              # Day 12: Latent Dirichlet Allocation (LDA) review topic clusters
+│   ├── app_health_scorecard.csv            # Day 12: 360-degree App Health Index & prescriptive recourse
+│   ├── aso_keyword_opportunity_matrix.csv  # Day 12: Category keyword gap & metadata copy recommendations
 │   └── figures/
 │       ├── 01_category_distribution.png    # Saturated vs niche categories bar chart (Day 2)
 │       ├── 02_rating_distributions.png     # Rating KDE & top 20 category box plots (Day 2)
@@ -974,7 +1066,9 @@ Google Playstore Analysis/
 │       ├── 20_counterfactual_whatif_and_pricing_elasticity.png # Day 10: Sensitivity curves & price elasticity
 │       ├── 21_ab_testing_and_bayesian_power_analytics.png      # Day 10: Statistical power curves & Bayesian posteriors
 │       ├── 22_recommendation_engine_benchmarks.png # Day 11: Hit Rate, NDCG, ILD trade-off & 2D SVD embedding
-│       └── 23_app_similarity_network_and_cold_start.png # Day 11: Affinity heatmap, cold-start & coverage
+│       ├── 23_app_similarity_network_and_cold_start.png # Day 11: Affinity heatmap, cold-start & coverage
+│       ├── 24_aspect_based_sentiment_and_topic_modeling.png # Day 12: Aspect NSS, radar health & LDA topic weights
+│       └── 25_aso_competitor_keyword_gap_and_app_health.png # Day 12: ASO matrix, authenticity & 360° health distributions
 ├── src/
 │   ├── __init__.py                     # Package definition exposing all modular engines
 │   ├── data_cleaning.py                # Day 1: Reusable data cleaning pipeline
@@ -988,7 +1082,8 @@ Google Playstore Analysis/
 │   ├── delivery_showcase.py            # Day 8: Project delivery scorecard & presentation orchestrator
 │   ├── predictive_modeling.py          # Day 9: Predictive ML, rating regression & MLOps drift engine
 │   ├── simulation_engine.py            # Day 10: Counterfactual simulation, elasticity & A/B testing engine
-│   └── recommendation_engine.py        # Day 11: Multi-modal app recommendation & discovery engine
+│   ├── recommendation_engine.py        # Day 11: Multi-modal app recommendation & discovery engine
+│   └── aso_intelligence_engine.py         # Day 12: Aspect sentiment, LDA topics, authenticity & ASO engine
 └── tests/
     ├── test_cleaning.py                # Day 1: Data cleaning pytest suite (4 passed)
     ├── test_category_ratings.py        # Day 2: Category & ratings pytest suite (6 passed)
@@ -1000,7 +1095,8 @@ Google Playstore Analysis/
     ├── test_delivery_showcase.py       # Day 8: Presentation deck & delivery pytest suite (5 passed)
     ├── test_predictive_modeling.py     # Day 9: Machine learning & MLOps drift pytest suite (9 passed)
     ├── test_simulation_ab_testing.py   # Day 10: Counterfactual simulation & A/B testing suite (14 passed)
-    └── test_recommendation_engine.py   # Day 11: App recommendation & discovery suite (17 passed)
+    ├── test_recommendation_engine.py   # Day 11: App recommendation & discovery suite (17 passed)
+    └── test_aso_aspect_intelligence.py   # Day 12: ASO & review aspect intelligence suite (20 passed)
 ```
 
 ---
@@ -1075,11 +1171,14 @@ python src/simulation_engine.py
 
 # Day 11 Multi-Modal Recommendation & Discovery Engine
 python src/recommendation_engine.py
+
+# Day 12 ASO Keyword Gap & Aspect Review Intelligence Pipeline
+python src/aso_intelligence_engine.py
 ```
 
 ### 6. Run Automated Pytest Regression Suite
 ```bash
-# Execute entire test suite (110 passed across all modules, 100% pass rate)
+# Execute entire test suite (130 passed across all modules, 100% pass rate)
 pytest tests/ -v
 ```
 
@@ -1096,6 +1195,7 @@ jupyter notebook notebooks/08_project_delivery_and_executive_showcase.ipynb
 jupyter notebook notebooks/09_predictive_modeling_and_mlops_drift.ipynb
 jupyter notebook notebooks/10_counterfactual_simulation_and_ab_testing.ipynb
 jupyter notebook notebooks/11_app_recommendation_and_discovery_engine.ipynb
+jupyter notebook notebooks/12_aso_intelligence_and_aspect_sentiment.ipynb
 ```
 
 

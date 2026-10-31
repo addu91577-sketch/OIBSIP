@@ -37,6 +37,7 @@ from src.nlp_autocomplete_engine import CorpusPreprocessor
 from src.predictive_modeling import PlayStorePredictiveEngine
 from src.simulation_engine import PlayStoreSimulationEngine
 from src.recommendation_engine import PlayStoreRecommendationEngine
+from src.aso_intelligence_engine import ASOReviewIntelligenceEngine
 
 
 # ============================================================================
@@ -461,6 +462,109 @@ class RecommendationMetricsResponse(BaseModel):
     benchmark_results: Dict[str, Any]
 
 
+# Day 12 ASO & Aspect Review Schemas
+
+class AspectScoreItemSchema(BaseModel):
+    """Aspect score breakdown."""
+    aspect: str
+    mention_count: int
+    positive_mentions: int
+    neutral_mentions: int
+    negative_mentions: int
+    mean_polarity: float
+    mean_subjectivity: float
+    net_sentiment_score: float
+    aspect_health_index: float
+    representative_keywords: List[str]
+
+
+class AspectAnalysisRequest(BaseModel):
+    """Payload for aspect-based sentiment analysis."""
+    target_name: str = Field(..., json_schema_extra={"example": "Duolingo: Learn Languages Free"})
+    is_category: bool = Field(False, json_schema_extra={"example": False})
+
+
+class AspectAnalysisResponse(BaseModel):
+    """Aspect analysis breakdown response."""
+    target_name: str
+    total_reviews_analyzed: int
+    aspect_scores: Dict[str, AspectScoreItemSchema]
+    dominant_strength: str
+    dominant_vulnerability: str
+    aggregate_aspect_health: float
+
+
+class TopicClusterSchema(BaseModel):
+    """Latent review topic cluster item."""
+    topic_id: int
+    label: str
+    top_words: List[str]
+    topic_weight: float
+    prevalent_sentiment: str
+
+
+class TopicsResponse(BaseModel):
+    """List of latent review topics."""
+    num_topics: int
+    topics: List[TopicClusterSchema]
+
+
+class ReviewAuthenticityRequest(BaseModel):
+    """Payload to audit review authenticity and bot brigading."""
+    app_name: str = Field(..., json_schema_extra={"example": "Duolingo: Learn Languages Free"})
+
+
+class ReviewAuthenticityResponse(BaseModel):
+    """Review authenticity and anomaly audit response."""
+    app_name: str
+    total_reviews: int
+    suspicious_reviews_count: int
+    duplicate_cluster_count: int
+    sentiment_dissonance_count: int
+    spam_length_count: int
+    entropy_score: float
+    authenticity_index: float
+    verdict: str
+
+
+class ASOGapRequest(BaseModel):
+    """Payload for ASO keyword gap mining."""
+    target_app: str = Field(..., json_schema_extra={"example": "Duolingo: Learn Languages Free"})
+    top_n_keywords: int = Field(8, ge=1, le=25, json_schema_extra={"example": 8})
+
+
+class ASOGapResponse(BaseModel):
+    """ASO competitor gap analytics response."""
+    target_app: str
+    category: str
+    current_keywords: List[str]
+    missing_high_value_keywords: List[str]
+    aso_optimization_score: float
+    prescribed_title_copy: str
+    prescribed_feature_bullets: List[str]
+
+
+class AppHealthDiagnosticRequest(BaseModel):
+    """Payload to trigger 360-degree app health diagnostic."""
+    app_name: str = Field(..., json_schema_extra={"example": "Duolingo: Learn Languages Free"})
+
+
+class AppHealthDiagnosticResponse(BaseModel):
+    """Comprehensive 360-degree app health diagnostic response."""
+    app_name: str
+    category: str
+    rating: float
+    installs: int
+    rating_score: float
+    sentiment_score: float
+    aspect_health_score: float
+    authenticity_score: float
+    aso_optimization_score: float
+    composite_health_index: float
+    health_tier: str
+    prescriptions: List[str]
+
+
 # ============================================================================
 # Engine Singleton & Lifespan Management
 # ============================================================================
@@ -469,6 +573,7 @@ _engine_instance: Optional[GooglePlaystoreMasterEngine] = None
 _predictive_engine_instance: Optional[PlayStorePredictiveEngine] = None
 _simulation_engine_instance: Optional[PlayStoreSimulationEngine] = None
 _recommendation_engine_instance: Optional[PlayStoreRecommendationEngine] = None
+_aso_engine_instance: Optional[ASOReviewIntelligenceEngine] = None
 _server_start_time: float = time.time()
 
 
@@ -506,6 +611,14 @@ def get_recommendation_engine() -> PlayStoreRecommendationEngine:
     if _recommendation_engine_instance is None:
         _recommendation_engine_instance = PlayStoreRecommendationEngine()
     return _recommendation_engine_instance
+
+
+def get_aso_engine() -> ASOReviewIntelligenceEngine:
+    """Retrieve or initialize the singleton ASOReviewIntelligenceEngine instance."""
+    global _aso_engine_instance
+    if _aso_engine_instance is None:
+        _aso_engine_instance = ASOReviewIntelligenceEngine()
+    return _aso_engine_instance
 
 
 @asynccontextmanager
@@ -1123,6 +1236,76 @@ def create_app() -> FastAPI:
         rec_engine = get_recommendation_engine()
         metrics = rec_engine.evaluate_engine(test_samples=50)
         return RecommendationMetricsResponse(**metrics)
+
+    # ========================================================================
+    # Day 12 ASO & Review Aspect Intelligence Endpoints
+    # ========================================================================
+
+    @app.post(
+        "/api/v1/aso/aspect-analysis",
+        response_model=AspectAnalysisResponse,
+        summary="Aspect-Based Sentiment Analysis (ABSA) for App or Category",
+        tags=["ASO & Review Aspect Intelligence"]
+    )
+    async def aso_aspect_analysis_endpoint(request_body: AspectAnalysisRequest) -> AspectAnalysisResponse:
+        """Perform granular aspect-based sentiment breakdown across UI/UX, Performance, Ads, Features & Support."""
+        aso_engine = get_aso_engine()
+        res = aso_engine.analyze_aspect_sentiment(
+            target_name=request_body.target_name,
+            is_category=request_body.is_category
+        )
+        return AspectAnalysisResponse(**res.to_dict())
+
+    @app.get(
+        "/api/v1/aso/topics",
+        response_model=TopicsResponse,
+        summary="Extract Latent Dirichlet Allocation (LDA) Review Topics",
+        tags=["ASO & Review Aspect Intelligence"]
+    )
+    async def aso_topics_endpoint(num_topics: int = 5) -> TopicsResponse:
+        """Discover latent thematic topics and semantic word weights across user reviews."""
+        aso_engine = get_aso_engine()
+        topics = aso_engine.extract_lda_topics(num_topics=min(max(num_topics, 2), 10))
+        return TopicsResponse(num_topics=len(topics), topics=[t.to_dict() for t in topics])
+
+    @app.post(
+        "/api/v1/aso/review-authenticity",
+        response_model=ReviewAuthenticityResponse,
+        summary="Audit Review Authenticity and Detect Brigading / Anomaly Patterns",
+        tags=["ASO & Review Aspect Intelligence"]
+    )
+    async def aso_review_authenticity_endpoint(request_body: ReviewAuthenticityRequest) -> ReviewAuthenticityResponse:
+        """Audit review duplicates, rating dissonance, and spam length anomalies to evaluate authenticity."""
+        aso_engine = get_aso_engine()
+        report = aso_engine.evaluate_review_authenticity(app_name=request_body.app_name)
+        return ReviewAuthenticityResponse(**report.to_dict())
+
+    @app.post(
+        "/api/v1/aso/keyword-gap",
+        response_model=ASOGapResponse,
+        summary="ASO Competitor Keyword Gap Miner & Copy Prescription",
+        tags=["ASO & Review Aspect Intelligence"]
+    )
+    async def aso_keyword_gap_endpoint(request_body: ASOGapRequest) -> ASOGapResponse:
+        """Identify missing high-value category keywords and generate optimized metadata copy."""
+        aso_engine = get_aso_engine()
+        res = aso_engine.mine_aso_keyword_gap(
+            target_app=request_body.target_app,
+            top_n_keywords=request_body.top_n_keywords
+        )
+        return ASOGapResponse(**res.to_dict())
+
+    @app.post(
+        "/api/v1/aso/app-health-diagnostic",
+        response_model=AppHealthDiagnosticResponse,
+        summary="Comprehensive 360-Degree App Health Diagnostic and Prescriptive Recourse",
+        tags=["ASO & Review Aspect Intelligence"]
+    )
+    async def aso_health_diagnostic_endpoint(request_body: AppHealthDiagnosticRequest) -> AppHealthDiagnosticResponse:
+        """Generate unified health index combining Rating, Sentiment, Aspects, Authenticity and ASO."""
+        aso_engine = get_aso_engine()
+        diag = aso_engine.evaluate_app_health(app_name=request_body.app_name)
+        return AppHealthDiagnosticResponse(**diag.to_dict())
 
     return app
 
