@@ -29,6 +29,9 @@ from src.simulation import FinancialWhatIfSimulator
 from src.elasticity_optimization import PriceElasticityOptimizer
 from src.ab_experimentation import RetailABTestingEngine
 from src.clv_churn import CustomerLifetimeValueEngine
+from src.inventory_supply_chain import InventorySupplyChainEngine
+from src.market_basket import MarketBasketAffinityEngine
+from src.demand_forecasting import MultiHorizonDemandForecaster
 
 st.set_page_config(
     page_title="Retail Sales Analytics & Predictive Intelligence Suite",
@@ -50,10 +53,13 @@ def load_engines():
     elasticity = PriceElasticityOptimizer()
     ab_test = RetailABTestingEngine()
     clv = CustomerLifetimeValueEngine()
-    return analytics, ml, drift, segmentation, sim, elasticity, ab_test, clv
+    inventory = InventorySupplyChainEngine()
+    market_basket = MarketBasketAffinityEngine()
+    forecasting = MultiHorizonDemandForecaster()
+    return analytics, ml, drift, segmentation, sim, elasticity, ab_test, clv, inventory, market_basket, forecasting
 
 
-analytics, ml, drift_engine, segmentation_engine, sim_engine, elasticity_engine, ab_engine, clv_engine = load_engines()
+analytics, ml, drift_engine, segmentation_engine, sim_engine, elasticity_engine, ab_engine, clv_engine, inventory_engine, market_basket_engine, forecasting_engine = load_engines()
 df = analytics.df
 
 # Custom CSS for dark modern executive theme
@@ -150,6 +156,9 @@ st.sidebar.info(
     tab_elasticity,
     tab_ab_test,
     tab_clv,
+    tab_inventory,
+    tab_market_basket,
+    tab_forecasting,
     tab_recs,
 ) = st.tabs(
     [
@@ -165,6 +174,9 @@ st.sidebar.info(
         "⚖️ Price Elasticity",
         "🧪 Bayesian A/B Testing",
         "💎 CLV & Churn Guard",
+        "📦 Supply Chain & Inventory",
+        "🛒 Market Basket Affinity",
+        "⏱️ Multi-Horizon Forecasting",
         "🎯 Strategic Action Plan",
     ]
 )
@@ -863,7 +875,199 @@ with tab_clv:
     st.dataframe(pd.DataFrame(at_risk_list), use_container_width=True)
 
 
-# ----------------- TAB 13: STRATEGIC ACTION PLAN -----------------
+# ----------------- TAB 13: SUPPLY CHAIN & INVENTORY OPTIMIZATION -----------------
+with tab_inventory:
+    st.subheader("📦 Supply Chain & Inventory Optimization (EOQ, Dynamic ROP & Safety Stock)")
+    st.markdown(
+        "Calibrate safety stock buffers, dynamic reorder points, economic order batch sizes, "
+        "and inventory working capital requirements under lead time uncertainty."
+    )
+
+    inv_summary = inventory_engine.get_storewide_inventory_summary(service_level=0.95)
+    i_col1, i_col2, i_col3, i_col4 = st.columns(4)
+    with i_col1:
+        st.metric("Total Working Capital Committed", f"${inv_summary['total_working_capital_committed']:,.2f}")
+    with i_col2:
+        st.metric("Safety Buffer Capital", f"${inv_summary['total_safety_stock_capital']:,.2f}")
+    with i_col3:
+        st.metric("Cycle Stock Capital", f"${inv_summary['total_cycle_stock_capital']:,.2f}")
+    with i_col4:
+        st.metric("Annual Inventory Holding Cost", f"${inv_summary['total_annual_holding_cost']:,.2f}")
+
+    st.markdown("---")
+    sc_col1, sc_col2 = st.columns([1, 2])
+    with sc_col1:
+        st.markdown("##### ⚙️ Replenishment Policy Calibrator")
+        target_sl = st.slider("Target Cycle Service Level (SL)", min_value=0.80, max_value=0.999, value=0.95, step=0.005)
+        lead_time = st.number_input("Supplier Lead Time (Days)", min_value=1.0, max_value=60.0, value=7.0, step=1.0)
+        lead_std = st.number_input("Lead Time Std Dev (Days)", min_value=0.0, max_value=10.0, value=1.5, step=0.5)
+        sel_cat = st.selectbox("Merchandise Category", ["All Categories", "Clothing", "Electronics", "Beauty"])
+        query_cat = None if sel_cat == "All Categories" else sel_cat
+
+        cat_ss = inventory_engine.calculate_safety_stock_and_rop(
+            service_level=target_sl, lead_time_days=lead_time, lead_time_std=lead_std, category=query_cat
+        )
+        cat_eoq = inventory_engine.calculate_eoq(category=query_cat)
+        cat_risk = inventory_engine.simulate_stockout_risk(
+            service_level=target_sl, lead_time_days=lead_time, lead_time_std=lead_std, category=query_cat
+        )
+
+        st.info(
+            f"**Safety Stock (SS):** `{cat_ss['safety_stock_units']} units` (${cat_ss['safety_stock_capital']:,.2f})\n\n"
+            f"**Reorder Point (ROP):** `{cat_ss['reorder_point_units']} units`\n\n"
+            f"**Economic Batch Size (EOQ):** `{cat_eoq['eoq_units']} units`\n\n"
+            f"**Replenishment Interval:** Every `{cat_eoq['order_cycle_interval_days']} days`\n\n"
+            f"**Cycle Fill Rate:** `{cat_risk['cycle_fill_rate_percentage']:.2f}%` · **Lost Margin:** `${cat_risk['annual_lost_gross_margin']:,.2f}/yr`"
+        )
+
+    with sc_col2:
+        st.markdown("##### 📈 Service Level vs. Working Capital Investment Sensitivity")
+        sl_range = np.linspace(0.80, 0.999, 40)
+        ss_capitals = []
+        for sl_val in sl_range:
+            res_val = inventory_engine.calculate_safety_stock_and_rop(
+                service_level=float(sl_val), lead_time_days=lead_time, lead_time_std=lead_std, category=query_cat
+            )
+            ss_capitals.append(res_val["safety_stock_capital"])
+
+        fig_inv = go.Figure()
+        fig_inv.add_trace(go.Scatter(x=sl_range * 100.0, y=ss_capitals, mode="lines+markers", name="Safety Stock Capital ($)", line=dict(color="#38bdf8", width=3)))
+        fig_inv.update_layout(
+            title=f"Non-Linear Capital Escalation Curve ({sel_cat})",
+            xaxis_title="Target Cycle Service Level (%)",
+            yaxis_title="Safety Stock Capital Commitment ($)",
+            template="plotly_dark",
+            height=340,
+        )
+        st.plotly_chart(fig_inv, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("##### 📊 Multi-Criteria ABC-FSN Inventory Stratification Matrix")
+    abc_fsn = inventory_engine.perform_abc_fsn_analysis()
+    st.dataframe(pd.DataFrame(abc_fsn["sku_stratifications"]), use_container_width=True)
+
+
+# ----------------- TAB 14: MARKET BASKET & CROSS-MERCHANDISING -----------------
+with tab_market_basket:
+    st.subheader("🛒 Market Basket Association Rules & Cross-Merchandising Synergy Miner")
+    st.markdown(
+        "Uncover directional category co-occurrence, association lift, and margin-protected "
+        "promotional bundling opportunities across merchandise departments."
+    )
+
+    affinity_data = market_basket_engine.build_cooccurrence_and_affinity_matrix()
+    mb_col1, mb_col2 = st.columns([1, 1])
+
+    with mb_col1:
+        st.markdown("##### 🔗 Directional Cross-Category Lift & Synergy Heatmap")
+        rules_df = pd.DataFrame(affinity_data["rules"])
+        pivot_lift = rules_df.pivot(index="antecedent", columns="consequent", values="lift")
+
+        fig_heat = px.imshow(
+            pivot_lift,
+            text_auto=".2f",
+            color_continuous_scale="Viridis",
+            title="Association Lift (Values > 1.0 Indicate Complementary Cross-Selling)",
+            labels=dict(x="Consequent (Add-On)", y="Antecedent (Base Category)", color="Lift"),
+        )
+        fig_heat.update_layout(template="plotly_dark", height=340)
+        st.plotly_chart(fig_heat, use_container_width=True)
+
+    with mb_col2:
+        st.markdown("##### 🎁 Interactive Cross-Department Bundle Recommender")
+        t_cat = st.selectbox("Select Base Merchandise Department", ["Electronics", "Clothing", "Beauty"])
+        disc_pct = st.slider("Promotional Bundle Discount (%)", min_value=5, max_value=25, value=12, step=1)
+
+        combos = market_basket_engine.recommend_merchandising_combos(
+            target_category=t_cat, discount_rate=disc_pct / 100.0
+        )
+        for combo in combos:
+            st.info(
+                f"**Bundle Pairing:** `{combo['base_category']} + {combo['complementary_category']}`\n\n"
+                f"**Lift:** `{combo['association_lift']:.2f}` · **Confidence:** `{combo['purchase_confidence']*100:.1f}%`\n\n"
+                f"**Retail Pricing:** ~~${combo['original_bundle_price']:.2f}~~ ➔ **${combo['discounted_bundle_price']:.2f}** (Save ${combo['customer_savings']:.2f})\n\n"
+                f"**Retained Margin:** `{combo['estimated_retained_margin_pct']:.1f}%` · **Synergy Score:** `{combo['synergy_score']:.1f}`"
+            )
+
+    st.markdown("---")
+    st.markdown("##### 👥 Demographic Age Cohort Category Affinity Breakdown")
+    demo_breakdown = market_basket_engine.demographic_affinity_breakdown()
+    demo_records = []
+    for cohort_name, c_info in demo_breakdown["cohort_breakdown"].items():
+        demo_records.append({
+            "Age Cohort": cohort_name,
+            "Total Transactions": c_info["total_transactions"],
+            "Dominant Category": c_info["dominant_category"],
+            "Avg Basket Spend ($)": c_info["average_basket_spend"],
+            "Multi-Category Affinity Index": c_info["multi_category_affinity_index"],
+        })
+    st.dataframe(pd.DataFrame(demo_records), use_container_width=True)
+
+
+# ----------------- TAB 15: MULTI-HORIZON DEMAND FORECASTING -----------------
+with tab_forecasting:
+    st.subheader("⏱️ Multi-Horizon Demand Forecasting & Conformal Uncertainty Bounds")
+    st.markdown(
+        "Project future unit demand and revenue with distribution-free conformal prediction "
+        "intervals, walk-forward validation accuracy, and rolling anomaly detection."
+    )
+
+    f_acc = forecasting_engine.evaluate_forecast_accuracy(test_window_days=45)
+    fc1, fc2, fc3, fc4 = st.columns(4)
+    with fc1:
+        st.metric("Holdout MAE", f"{f_acc['mae_units']:.2f} units")
+    with fc2:
+        st.metric("Holdout RMSE", f"{f_acc['rmse_units']:.2f} units")
+    with fc3:
+        st.metric("Weighted APE (WAPE)", f"{f_acc['wape_percentage']:.2f}%")
+    with fc4:
+        st.metric("Conformal 95% Coverage", f"{f_acc['conformal_95_coverage_percentage']:.1f}%")
+
+    st.markdown("---")
+    f_cat_sel = st.selectbox("Select Forecast Category", ["All Categories", "Clothing", "Electronics", "Beauty"], key="fc_cat_sel")
+    q_f_cat = None if f_cat_sel == "All Categories" else f_cat_sel
+    f_horizon = st.slider("Select Forecast Horizon (Days Ahead)", min_value=7, max_value=60, value=30, step=7)
+
+    forecast_res = forecasting_engine.forecast_demand(horizon_days=f_horizon, category=q_f_cat)
+    daily_hist = forecasting_engine.get_daily_demand_series(category=q_f_cat)
+
+    pred_df = pd.DataFrame(forecast_res["daily_projections"])
+    pred_df["Date"] = pd.to_datetime(pred_df["date"])
+
+    fig_fc = go.Figure()
+    hist_slice = daily_hist.iloc[-90:]
+    fig_fc.add_trace(go.Scatter(x=hist_slice["Date"], y=hist_slice["units"], mode="lines", name="Historical Daily Demand", line=dict(color="#94a3b8", width=1.5)))
+    fig_fc.add_trace(go.Scatter(x=hist_slice["Date"], y=hist_slice["rolling_7d_mean"], mode="lines", name="Historical 7D Velocity", line=dict(color="#f59e0b", width=2)))
+
+    fig_fc.add_trace(go.Scatter(x=pred_df["Date"], y=pred_df["predicted_units"], mode="lines+markers", name="Point Forecast", line=dict(color="#38bdf8", width=2.5)))
+
+    fig_fc.add_trace(go.Scatter(
+        x=pd.concat([pred_df["Date"], pred_df["Date"][::-1]]),
+        y=pd.concat([pred_df["upper_bound_95"], pred_df["lower_bound_95"][::-1]]),
+        fill="toself",
+        fillcolor="rgba(56, 189, 248, 0.15)",
+        line=dict(color="rgba(255,255,255,0)"),
+        name="95% Conformal Prediction Interval",
+    ))
+
+    fig_fc.update_layout(
+        title=f"Multi-Horizon Forward Projection & Conformal Uncertainty: {f_cat_sel} ({f_horizon} Days)",
+        xaxis_title="Date",
+        yaxis_title="Units Demanded",
+        template="plotly_dark",
+        height=380,
+    )
+    st.plotly_chart(fig_fc, use_container_width=True)
+
+    st.markdown("##### 🚨 Historical Demand Surge & Volatility Spikes (Rolling Z-Score Anomaly Alerts)")
+    anomalies = forecasting_engine.detect_demand_anomalies(category=q_f_cat, z_threshold=2.2)
+    if anomalies:
+        st.dataframe(pd.DataFrame(anomalies).head(10), use_container_width=True)
+    else:
+        st.success("No critical demand anomalies detected at threshold Z >= 2.2.")
+
+
+# ----------------- TAB 16: STRATEGIC ACTION PLAN -----------------
 with tab_recs:
     st.subheader("Strategic Business Action Plan & Projected Financial Return")
     recommendations = BusinessRecommendationEngine.get_strategic_recommendations()

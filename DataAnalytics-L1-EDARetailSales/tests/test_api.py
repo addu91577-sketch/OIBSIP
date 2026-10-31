@@ -337,3 +337,142 @@ def test_at_risk_vips_endpoint(test_client):
     assert len(data) <= 5
     if len(data) > 0:
         assert data[0]["historical_spend"] >= 1000.0
+
+
+
+# ==========================================
+# DAY 11 API ENDPOINT TESTS
+# ==========================================
+
+def test_inventory_daily_metrics_endpoint(test_client):
+    """GET /api/v1/inventory/daily-metrics must return velocity and demand metrics."""
+    response = test_client.get("/api/v1/inventory/daily-metrics")
+    assert response.status_code == 200
+    data = response.json()
+    assert "daily_mean_units" in data
+    assert "daily_std_units" in data
+    assert data["total_units"] > 0
+
+
+def test_inventory_safety_stock_endpoint(test_client):
+    """POST /api/v1/inventory/safety-stock must calculate SS and ROP."""
+    payload = {"service_level": 0.95, "lead_time_days": 7.0, "category": "Clothing"}
+    response = test_client.post("/api/v1/inventory/safety-stock", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["safety_stock_units"] > 0
+    assert data["reorder_point_units"] >= data["safety_stock_units"]
+    assert data["z_score"] > 1.6
+
+
+def test_inventory_safety_stock_validation_error(test_client):
+    """POST /api/v1/inventory/safety-stock must reject invalid service level."""
+    payload = {"service_level": 1.5}
+    response = test_client.post("/api/v1/inventory/safety-stock", json=payload)
+    assert response.status_code == 422
+
+
+def test_inventory_eoq_endpoint(test_client):
+    """POST /api/v1/inventory/eoq must calculate EOQ and cycle duration."""
+    payload = {"order_cost": 60.0, "holding_cost_rate": 0.25, "category": "Electronics"}
+    response = test_client.post("/api/v1/inventory/eoq", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["eoq_units"] > 0
+    assert data["order_cycle_interval_days"] > 0.0
+
+
+def test_inventory_stockout_risk_endpoint(test_client):
+    """POST /api/v1/inventory/stockout-risk must simulate lost margin and fill rate."""
+    payload = {"service_level": 0.95, "category": "Beauty"}
+    response = test_client.post("/api/v1/inventory/stockout-risk", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["cycle_fill_rate_percentage"] > 90.0
+    assert data["annual_lost_gross_margin"] >= 0.0
+
+
+def test_inventory_abc_fsn_endpoint(test_client):
+    """GET /api/v1/inventory/abc-fsn must return multi-criteria classifications."""
+    response = test_client.get("/api/v1/inventory/abc-fsn")
+    assert response.status_code == 200
+    data = response.json()
+    assert "abc_distribution" in data
+    assert "fsn_distribution" in data
+    assert len(data["sku_stratifications"]) > 0
+
+
+def test_inventory_storewide_summary_endpoint(test_client):
+    """GET /api/v1/inventory/storewide-summary must aggregate working capital."""
+    response = test_client.get("/api/v1/inventory/storewide-summary?service_level=0.95")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_working_capital_committed"] > 0.0
+    assert "categories" in data
+
+
+def test_market_basket_affinity_endpoint(test_client):
+    """GET /api/v1/market-basket/affinity must return co-occurrence and lift."""
+    response = test_client.get("/api/v1/market-basket/affinity")
+    assert response.status_code == 200
+    data = response.json()
+    assert "rules" in data
+    assert len(data["rules"]) > 0
+
+
+def test_market_basket_rules_endpoint(test_client):
+    """GET /api/v1/market-basket/rules must filter rules meeting thresholds."""
+    response = test_client.get("/api/v1/market-basket/rules?min_support=0.01&min_lift=0.5")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+
+
+def test_market_basket_combos_endpoint(test_client):
+    """POST /api/v1/market-basket/combos must generate bundles with discounts."""
+    payload = {"target_category": "Electronics", "discount_rate": 0.10}
+    response = test_client.post("/api/v1/market-basket/combos", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)
+    assert len(data) > 0
+    assert data[0]["customer_savings"] > 0.0
+
+
+def test_market_basket_demographic_affinity_endpoint(test_client):
+    """GET /api/v1/market-basket/demographic-affinity must break down cohorts."""
+    response = test_client.get("/api/v1/market-basket/demographic-affinity")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["cohort_count"] > 0
+    assert "cohort_breakdown" in data
+
+
+def test_forecasting_predict_endpoint(test_client):
+    """POST /api/v1/forecasting/predict must return forward projection and conformal bounds."""
+    payload = {"horizon_days": 14, "category": "Clothing"}
+    response = test_client.post("/api/v1/forecasting/predict", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["forecast_horizon_days"] == 14
+    assert len(data["daily_projections"]) == 14
+    assert data["total_projected_units"] > 0.0
+
+
+def test_forecasting_accuracy_endpoint(test_client):
+    """GET /api/v1/forecasting/accuracy must evaluate holdout metrics."""
+    response = test_client.get("/api/v1/forecasting/accuracy?test_window_days=30")
+    assert response.status_code == 200
+    data = response.json()
+    assert "mae_units" in data
+    assert "rmse_units" in data
+    assert "conformal_95_coverage_percentage" in data
+
+
+def test_forecasting_anomalies_endpoint(test_client):
+    """GET /api/v1/forecasting/anomalies must return velocity outlier alerts."""
+    response = test_client.get("/api/v1/forecasting/anomalies?z_threshold=2.0")
+    assert response.status_code == 200
+    data = response.json()
+    assert isinstance(data, list)

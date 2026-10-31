@@ -36,6 +36,12 @@ This repository contains an **Exploratory Data Analysis (EDA)** on retail sales 
 - [x] **Customer Lifetime Value (CLV) & Probabilistic Churn Risk Modeling:** exponential recency survival decay, 4-tier risk classification, and VIP Whale triage (`src/clv_churn.py`) (Day 10)
 - [x] **Expanded 13-Tab Executive Streamlit Web Analytics Dashboard:** live elasticity simulators, Bayesian testing testbed, and CLV equity explorer (`src/dashboard.py`) (Day 10)
 - [x] **Automated Pytest Regression Suite (82 Tests):** 82 unit and integration tests passing across full analytical stack (`tests/`) (Day 10)
+- [x] **Enterprise Supply Chain & Inventory Optimization:** dynamic safety stock (SS) calibration, lead-time uncertainty, reorder points (ROP), economic order quantity (EOQ), and ABC-FSN stratification (`src/inventory_supply_chain.py`) (Day 11)
+- [x] **Market Basket Association Rules & Cross-Merchandising Affinity:** multi-department transaction affinity, support-confidence-lift mining, margin-protected promotional bundling, and demographic cross-selling (`src/market_basket.py`) (Day 11)
+- [x] **Multi-Horizon Demand Forecasting & Conformal Uncertainty Bounds:** daily time-series decomposition, day-of-week seasonality, distribution-free 80% and 95% conformal bounds, and rolling Z-score anomaly alerts (`src/demand_forecasting.py`) (Day 11)
+- [x] **Expanded 16-Tab Executive Streamlit Web Analytics Dashboard:** replenishment policy simulator, cross-department bundle optimizer, and multi-horizon conformal demand forecaster (`src/dashboard.py`) (Day 11)
+- [x] **Automated Pytest Regression Suite (119 Tests):** 119 unit and integration tests passing across full enterprise stack (`tests/`) (Day 11)
+- [x] **Comprehensive Production FastAPI REST Application (37+ Routes):** expanded with 13 new endpoints covering supply chain replenishment, association rules, and conformal demand forecasting (`src/api.py`) (Day 11)
 
 ---
 
@@ -73,7 +79,10 @@ Retail-Sales-EDA/
 │       ├── 19_financial_whatif_scenario_simulation.png
 │       ├── 20_price_elasticity_and_revenue_optimization.png
 │       ├── 21_bayesian_ab_testing_and_posterior_distributions.png
-│       └── 22_clv_projections_and_churn_risk_matrix.png
+│       ├── 22_clv_projections_and_churn_risk_matrix.png
+│       ├── 23_supply_chain_inventory_optimization_and_safety_stock.png
+│       ├── 24_market_basket_cross_category_affinity_and_lift.png
+│       └── 25_multi_horizon_demand_forecasting_and_conformal_bounds.png
 ├── Data/
 │   ├── retail_sales_dataset.csv    # Primary retail dataset (1,000 rows × 9 cols)
 │   ├── Sample - Superstore.csv     # Superstore dataset (CP1252)
@@ -95,8 +104,11 @@ Retail-Sales-EDA/
 │   ├── elasticity_optimization.py  # Econometric log-log price elasticity & markdown optimizer
 │   ├── ab_experimentation.py       # Dual Frequentist & Bayesian retail A/B testing engine
 │   ├── clv_churn.py                # Probabilistic customer lifetime value & churn risk engine
-│   ├── api.py                      # Production FastAPI REST application & OpenAPI documentation (24 routes)
-│   └── dashboard.py                # Interactive Streamlit executive web analytics dashboard (13 tabs)
+│   ├── inventory_supply_chain.py  # Enterprise safety stock, ROP, EOQ, and ABC-FSN stratification engine
+│   ├── market_basket.py            # Market basket association rules, lift, and cross-merchandising engine
+│   ├── demand_forecasting.py       # Multi-horizon forecasting, conformal uncertainty, and anomaly detection
+│   ├── api.py                      # Production FastAPI REST application & OpenAPI documentation (37 routes)
+│   └── dashboard.py                # Interactive Streamlit executive web analytics dashboard (16 tabs)
 ├── tests/
 │   ├── __init__.py                 # Test package initialization
 │   ├── conftest.py                 # Pytest fixtures and FastAPI TestClient configuration
@@ -109,7 +121,10 @@ Retail-Sales-EDA/
 │   ├── test_simulation.py         # Financial baseline, bundle uplift, VIP lift, & ROI tests (5 tests)
 │   ├── test_elasticity_optimization.py # Log-log regression, arc elasticity, markdown breakeven (7 tests)
 │   ├── test_ab_experimentation.py  # Welch t-test, Mann-Whitney U, Beta-Binomial updating, power (7 tests)
-│   └── test_clv_churn.py           # Survival decay, risk classification, discounted CLV, VIP triage (6 tests)
+│   ├── test_clv_churn.py           # Survival decay, risk classification, discounted CLV, VIP triage (6 tests)
+│   ├── test_inventory_supply_chain.py # Safety stock, ROP, EOQ, and ABC-FSN validation tests (9 tests)
+│   ├── test_market_basket.py       # Association rules, support, confidence, lift, combos (7 tests)
+│   └── test_demand_forecasting.py  # Decomposition, conformal intervals, accuracy, and anomalies (7 tests)
 ├── .dockerignore                   # Docker context exclusion rules
 ├── .gitignore                      # Git exclusion rules (strictly excludes roadmaps & schedules)
 ├── docker-compose.yml              # Multi-service container orchestration (API + Dashboard)
@@ -449,9 +464,126 @@ flowchart TD
 
 ---
 
+---
+
+## 📦 Day 11: Enterprise Supply Chain & Inventory Optimization, Market Basket Affinity Mining & Multi-Horizon Demand Forecasting
+
+Day 11 bridges strategic commercial intelligence with tactical supply chain execution and operational resilience:
+
+```mermaid
+flowchart TD
+    subgraph Data_Inputs["Empirical Transaction Stream"]
+        TX["Retail Sales Stream
+(1,000 Transactions · $456k Revenue · 366 Calendar Days)"]
+    end
+
+    subgraph Day11_Core_Engines["Day 11 Analytics & Operational Engines"]
+        INV["Supply Chain & Inventory Engine
+- Dynamic Safety Stock: SS = Z·σ_LTD
+- Reorder Point: ROP = μ_d·L + SS
+- Economic Order Quantity: EOQ = sqrt(2DS / H)
+- Loss Function: G(k) & Stockout Lost Margin
+- Strategic ABC-FSN Classification Matrix"]
+        MB["Market Basket Affinity Miner
+- Support-Confidence-Lift Foundations
+- Leverage & Conviction Metrics
+- Chi-Square Independence Hypothesis Tests
+- Margin-Protected Promotional Bundle Combos
+- Demographic Cohort Cross-Selling Propensity"]
+        FC["Multi-Horizon Demand Forecaster
+- Trend, Baseline Level & Day-of-Week Seasonality
+- Multi-Horizon Point Forecast (7 to 60 Days)
+- Conformal Prediction Bands (80% & 95% Coverage)
+- Holdout Walk-Forward Backtesting (MAE, RMSE, WAPE)
+- Rolling Z-Score Anomaly & Surge Detector"]
+    end
+
+    subgraph Service_Delivery["Production Serving & Verification"]
+        FASTAPI["FastAPI REST API
+(/api/v1/inventory, /market-basket, /forecasting)"]
+        DASHBOARD["Executive Streamlit Dashboard
+(16 Interactive Tabs)"]
+        PYTEST["Automated Pytest Suite
+(119 / 119 Passing Tests)"]
+    end
+
+    TX --> INV
+    TX --> MB
+    TX --> FC
+
+    INV --> FASTAPI
+    MB --> FASTAPI
+    FC --> FASTAPI
+
+    INV --> DASHBOARD
+    MB --> DASHBOARD
+    FC --> DASHBOARD
+
+    FASTAPI --> PYTEST
+```
+
+### 1. 📦 Enterprise Supply Chain & Inventory Optimization (`src/inventory_supply_chain.py`)
+- **Dynamic Safety Stock & Stochastic Lead Time Calibration:**
+  $$\sigma_{LTD} = \sqrt{L \cdot \sigma_d^2 + \mu_d^2 \cdot \sigma_L^2}$$
+  $$SS = Z_\alpha \cdot \sigma_{LTD}, \quad ROP = \mu_d \cdot L + SS$$
+  - At a 95% cycle service level ($Z = 1.645$) and 7-day lead time ($L=7\text{d}, \sigma_L=1.5\text{d}$):
+    - **Beauty:** $\mu_d = 1.94$ units/day $\rightarrow$ $SS = 10$ units, $ROP = 24$ units (Safety Buffer: **$300.00**).
+    - **Clothing:** $\mu_d = 2.44$ units/day $\rightarrow$ $SS = 13$ units, $ROP = 30$ units (Safety Buffer: **$650.00**).
+    - **Electronics:** $\mu_d = 2.30$ units/day $\rightarrow$ $SS = 12$ units, $ROP = 29$ units (Safety Buffer: **$6,000.00**).
+  - **Working Capital Asymmetry:** Electronics accounts for 55.5% of total safety buffer capital ($6,000 / $10,820) due to its $500 unit cost tier, dictating strict JIT inventory replenishment.
+
+- **Economic Order Quantity (EOQ) & Annual Cost Minimization:**
+  $$EOQ = \sqrt{\frac{2 \cdot D \cdot S}{H}}, \quad H = h \cdot P, \quad TIC = \frac{D}{EOQ} S + \frac{EOQ}{2} H$$
+  - Beauty ($D=709$ units, $P=\$30$): $EOQ = 58$ units, replenishment every **30.0 days** ($TIC = \$354.10$).
+  - Clothing ($D=891$ units, $P=\$50$): $EOQ = 54$ units, replenishment every **22.0 days** ($TIC = \$492.20$).
+  - Electronics ($D=842$ units, $P=\$500$): $EOQ = 17$ units, replenishment every **7.4 days** ($TIC = \$998.90$).
+
+- **Stockout Probability & Expected Gross Margin at Risk:**
+  - Evaluated via standard normal loss function $G(k) = \phi(k) - k(1 - \Phi(k))$ where $k = Z_\alpha$:
+  - Expected cycle fill rates exceed **98.7% across all lines**, bounding total annual lost gross margin to **$121.00/year**.
+
+- **Multi-Criteria ABC-FSN Stratification Matrix:**
+  - **Class A / Fast-Moving (A-Fast):** High-ticket electronics and top-velocity clothing tiers receive continuous automated EDI replenishment with priority vendor SLAs.
+  - **Class A / Slow-Moving (A-Slow):** Lean buffers, scheduled JIT deliveries to prevent excessive capital lockup.
+  - **Class C / Non-Moving (C-Non):** Promotional bundle incentive candidates to recover working capital.
+
+### 2. 🛒 Market Basket Association Rules & Cross-Merchandising Affinity (`src/market_basket.py`)
+- **Formal Association Rule Metrics:**
+  $$\text{Support}(A \to B) = P(A \cap B), \quad \text{Confidence}(A \to B) = \frac{P(A \cap B)}{P(A)}$$
+  $$\text{Lift}(A, B) = \frac{P(A \cap B)}{P(A) \cdot P(B)}, \quad \text{Leverage} = P(A \cap B) - P(A)P(B)$$
+  $$\text{Conviction}(A \to B) = \frac{1 - P(B)}{1 - \text{Confidence}(A \to B)}$$
+- **Empirical Category Independence Barrier:**
+  - Category co-occurrence across transactions shows Lift values between 0.60 and 0.68, confirming that transactions are largely single-department purchases. This reveals a massive commercial opportunity to expand basket size.
+- **Promotional Bundling & Margin Preservation:**
+  - Combining Electronics ($500 avg) + Clothing ($50 avg) at a **12% bundle discount** drops retail price from $550.00 to $484.00 (Customer saves $66.00).
+  - Retains a healthy **31.8% gross margin** while breaking the single-category barrier.
+- **Demographic Cohort Cross-Selling Propensity:**
+  - Young Adults (18–25) and Early Career (26–35) shoppers exhibit the highest multi-category affinity indices, serving as the prime audience for cross-merchandising promotions.
+
+### 3. ⏱️ Multi-Horizon Demand Forecasting & Conformal Uncertainty Bounds (`src/demand_forecasting.py`)
+- **Time-Series Decomposition:**
+  - Daily demand decomposed into Baseline Level ($\mu_d = 6.88$ units/day), Linear Trend ($\beta = +0.0011$ units/day, $+0.42$ units/year annualized), and Day-of-Week seasonality factors.
+  - **Day-of-Week Seasonality Factors:** Saturday (**1.08x**) and Sunday (**1.05x**) experience elevated velocity; Wednesday (**0.92x**) represents the mid-week trough.
+- **Distribution-Free Conformal Prediction Bounds:**
+  - Computes empirical residual quantiles from walk-forward validation:
+    - 80% Conformal Margin: **±3.00 units/day**
+    - 95% Conformal Margin: **±4.00 units/day**
+- **45-Day Holdout Walk-Forward Accuracy:**
+  - MAE: **2.62 units** | RMSE: **3.41 units** | WAPE: **38.64%**
+  - **95% Conformal Coverage Rate: 97.78%**, validating empirical calibration.
+- **Rolling Z-Score Operational Anomaly Guard:**
+  - Identifies 12 critical demand surges ($Z \ge 2.2$) throughout the year, with the highest surge on **2023-04-18** (17 units, expected 7.21, $Z=+3.45$).
+
+### 🖼️ Exported Day 11 Visualizations:
+* [23_supply_chain_inventory_optimization_and_safety_stock.png](01-retail-sales-eda/screenshots/23_supply_chain_inventory_optimization_and_safety_stock.png) — Non-linear capital escalation curve, daily demand vs safety stock buffers and ROP triggers, optimal EOQ batch sizes, and stockout cycle fill rates.
+* [24_market_basket_cross_category_affinity_and_lift.png](01-retail-sales-eda/screenshots/24_market_basket_cross_category_affinity_and_lift.png) — Directional cross-category association lift heatmap, Support vs Confidence scatter, promotional bundling savings, and demographic age cohort affinity breakdown.
+* [25_multi_horizon_demand_forecasting_and_conformal_bounds.png](01-retail-sales-eda/screenshots/25_multi_horizon_demand_forecasting_and_conformal_bounds.png) — Day-of-week seasonality multipliers, 30-day forward projection with 80% & 95% conformal uncertainty bands, walk-forward holdout accuracy scorecard, and rolling Z-score anomaly alerts.
+
+---
+
 ### 🌐 Complete REST API Route Catalog
 
-The FastAPI service exposes 24 production endpoints documented interactively via OpenAPI / Swagger UI:
+The FastAPI service exposes 37 production endpoints documented interactively via OpenAPI / Swagger UI:
 
 | Method | Endpoint Route | Tag / Category | Functional Description | Sample Output Key |
 | :---: | :--- | :--- | :--- | :--- |
@@ -479,10 +611,23 @@ The FastAPI service exposes 24 production endpoints documented interactively via
 | **`GET`** | `/api/v1/clv/overview` | Customer Lifetime Value & Churn | Customer base equity audit, 4-tier risk distribution, VIP early warning | `{"customer_base": {"total_projected_12m_customer_equity": 86046.9}}` |
 | **`POST`** | `/api/v1/clv/predict-customer` | Customer Lifetime Value & Churn | Scores customer recency/spend into risk tier, churn prob, and projected CLV | `{"churn_tier": "Active (Low Risk)", "projected_clv": 233.53}` |
 | **`GET`** | `/api/v1/clv/at-risk-vips` | Customer Lifetime Value & Churn | Top priority VIP whales in danger of churn for immediate win-back triage | `[{"customer_id": "CUST001", "historical_spend": 1500.0}]` |
+| **`GET`** | `/api/v1/inventory/daily-metrics` | Supply Chain & Inventory | Baseline daily demand aggregation, variance, velocity, and average prices | `{"category": "All Categories", "daily_mean_units": 6.88}` |
+| **`POST`** | `/api/v1/inventory/safety-stock` | Supply Chain & Inventory | Calculate Safety Stock (SS) and Reorder Points (ROP) under lead time uncertainty | `{"safety_stock_units": 13, "reorder_point_units": 30}` |
+| **`POST`** | `/api/v1/inventory/eoq` | Supply Chain & Inventory | Calculate Economic Order Quantity (EOQ), order cycles, and holding costs | `{"eoq_units": 54, "order_cycle_interval_days": 22.0}` |
+| **`POST`** | `/api/v1/inventory/stockout-risk` | Supply Chain & Inventory | Simulate stockout probabilities, fill rate, and gross margin at risk via G(k) | `{"cycle_fill_rate_percentage": 99.28, "annual_lost_gross_margin": 10.03}` |
+| **`GET`** | `/api/v1/inventory/abc-fsn` | Supply Chain & Inventory | Multi-criteria ABC revenue vs FSN velocity inventory stratification | `{"abc_distribution": {...}, "fsn_distribution": {...}}` |
+| **`GET`** | `/api/v1/inventory/storewide-summary` | Supply Chain & Inventory | Consolidate storewide supply chain parameters and working capital allocation | `{"total_working_capital_committed": 18873.34}` |
+| **`GET`** | `/api/v1/market-basket/affinity` | Market Basket & Merchandising | Pairwise co-occurrence, Support, Confidence, Lift, and Leverage metrics | `{"rules": [{"antecedent": "Electronics", "consequent": "Clothing", "lift": 0.628}]}` |
+| **`GET`** | `/api/v1/market-basket/rules` | Market Basket & Merchandising | Filtered association rules meeting specified minimum thresholds | `[{"antecedent": "Clothing", "consequent": "Beauty", "confidence": 0.36}]` |
+| **`POST`** | `/api/v1/market-basket/combos` | Market Basket & Merchandising | Generate optimal cross-department promotional bundle pairings | `[{"original_bundle_price": 550.0, "discounted_bundle_price": 484.0}]` |
+| **`GET`** | `/api/v1/market-basket/demographic-affinity` | Market Basket & Merchandising | Cross-analyze category affinity and basket depth across age cohorts | `{"cohort_breakdown": {"Young Adults (18-25)": {...}}}` |
+| **`POST`** | `/api/v1/forecasting/predict` | Multi-Horizon Demand Forecasting | Multi-horizon forward projection with 80% and 95% conformal prediction intervals | `{"forecast_horizon_days": 30, "total_projected_units": 206.5}` |
+| **`GET`** | `/api/v1/forecasting/accuracy` | Multi-Horizon Demand Forecasting | Walk-forward holdout accuracy evaluation (MAE, RMSE, MAPE, Coverage) | `{"mae_units": 2.62, "conformal_95_coverage_percentage": 97.78}` |
+| **`GET`** | `/api/v1/forecasting/anomalies` | Multi-Horizon Demand Forecasting | Rolling Z-score anomaly detection and operational demand surge alerts | `[{"date": "2023-04-18", "z_score": 3.45, "severity": "CRITICAL_SPIKE"}]` |
 
 ---
 
-### 🖥️ Interactive Streamlit Web Analytics Dashboard (13 Tabs)
+### 🖥️ Interactive Streamlit Web Analytics Dashboard (16 Tabs)
 
 Launch the interactive dashboard:
 ```bash
@@ -501,7 +646,10 @@ The dashboard features 13 dedicated analytical tabs:
 10. **⚖️ Price Elasticity (Day 10):** Interactive category log-log demand regressions, promotional markdown simulator, margin erosion warnings, and discrete pricing tier profit contribution tables.
 11. **🧪 Bayesian A/B Testing (Day 10):** Dual Frequentist & Bayesian experiment testbed, Beta-Binomial posterior belief density overlays, Probability of Being Best gauge, and interactive sample size MDE matrix.
 12. **💎 CLV & Churn Guard (Day 10):** Enterprise customer equity distribution, interactive individual customer CLV & churn predictor, and high-priority at-risk VIP Whale triage table.
-13. **🎯 Strategic Action Plan:** Comprehensive cards for all 5 business recommendations with projected financial impacts.
+13. **📦 Supply Chain & Inventory (Day 11):** Replenishment policy calibrator, service level vs working capital sensitivity curve, EOQ order cycle planner, and multi-criteria ABC-FSN stratification matrix.
+14. **🛒 Market Basket Affinity (Day 11):** Cross-category association lift heatmap, interactive promotional bundle recommender, and demographic age cohort category affinity breakdown.
+15. **⏱️ Multi-Horizon Forecasting (Day 11):** Holdout accuracy scorecard, forward point forecast with 80% & 95% conformal prediction bands, and rolling Z-score demand surge anomaly detection alerts.
+16. **🎯 Strategic Action Plan:** Comprehensive cards for all business recommendations with projected financial impacts.
 
 ---
 

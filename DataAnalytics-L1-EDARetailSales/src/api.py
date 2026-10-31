@@ -21,6 +21,9 @@ from src.simulation import FinancialWhatIfSimulator
 from src.elasticity_optimization import PriceElasticityOptimizer
 from src.ab_experimentation import RetailABTestingEngine
 from src.clv_churn import CustomerLifetimeValueEngine
+from src.inventory_supply_chain import InventorySupplyChainEngine
+from src.market_basket import MarketBasketAffinityEngine
+from src.demand_forecasting import MultiHorizonDemandForecaster
 
 # Global singletons
 analytics_engine: Optional[RetailAnalyticsEngine] = None
@@ -31,6 +34,9 @@ whatif_simulator: Optional[FinancialWhatIfSimulator] = None
 elasticity_optimizer: Optional[PriceElasticityOptimizer] = None
 ab_engine: Optional[RetailABTestingEngine] = None
 clv_engine: Optional[CustomerLifetimeValueEngine] = None
+inventory_engine: Optional[InventorySupplyChainEngine] = None
+market_basket_engine: Optional[MarketBasketAffinityEngine] = None
+forecasting_engine: Optional[MultiHorizonDemandForecaster] = None
 
 
 @asynccontextmanager
@@ -38,6 +44,7 @@ async def lifespan(app: FastAPI):
     """Initializes engines and loads/trains machine learning models on startup."""
     global analytics_engine, ml_manager, drift_detector, segmentation_engine, whatif_simulator
     global elasticity_optimizer, ab_engine, clv_engine
+    global inventory_engine, market_basket_engine, forecasting_engine
     analytics_engine = RetailAnalyticsEngine()
     ml_manager = RetailMLManager()
     ml_manager.load_or_train_models()
@@ -47,6 +54,9 @@ async def lifespan(app: FastAPI):
     elasticity_optimizer = PriceElasticityOptimizer()
     ab_engine = RetailABTestingEngine()
     clv_engine = CustomerLifetimeValueEngine()
+    inventory_engine = InventorySupplyChainEngine()
+    market_basket_engine = MarketBasketAffinityEngine()
+    forecasting_engine = MultiHorizonDemandForecaster()
     yield
 
 
@@ -230,6 +240,40 @@ class CustomerCLVRequest(BaseModel):
     )
 
 
+# --- DAY 11 SCHEMAS ---
+class SafetyStockRequest(BaseModel):
+    service_level: float = Field(default=0.95, ge=0.50, lt=1.0, description="Target cycle service level")
+    lead_time_days: Optional[float] = Field(default=None, gt=0.0, description="Supplier lead time in days")
+    lead_time_std: Optional[float] = Field(default=None, ge=0.0, description="Lead time standard deviation")
+    category: Optional[str] = Field(default=None, description="Merchandise category filter")
+
+
+class EOQRequest(BaseModel):
+    order_cost: Optional[float] = Field(default=50.0, gt=0.0, description="Fixed order setup cost ($)")
+    holding_cost_rate: Optional[float] = Field(default=0.20, gt=0.0, le=1.0, description="Annual holding cost rate")
+    category: Optional[str] = Field(default=None, description="Merchandise category filter")
+
+
+class StockoutRiskRequest(BaseModel):
+    service_level: float = Field(default=0.95, ge=0.50, lt=1.0, description="Target cycle service level")
+    lead_time_days: Optional[float] = Field(default=7.0, gt=0.0, description="Supplier lead time in days")
+    lead_time_std: Optional[float] = Field(default=1.5, ge=0.0, description="Lead time standard deviation")
+    category: Optional[str] = Field(default=None, description="Merchandise category filter")
+    gross_margin_pct: Optional[float] = Field(default=0.40, gt=0.0, lt=1.0, description="Gross profit margin percentage")
+
+
+class ComboRecommendationRequest(BaseModel):
+    target_category: str = Field(..., description="Target merchandise category")
+    discount_rate: Optional[float] = Field(default=0.12, ge=0.01, le=0.40, description="Bundle promotional discount rate")
+    gross_margin_pct: Optional[float] = Field(default=0.40, gt=0.0, lt=1.0, description="Gross profit margin percentage")
+
+
+class ForecastRequest(BaseModel):
+    horizon_days: int = Field(default=30, ge=1, le=180, description="Forward forecast horizon in days")
+    category: Optional[str] = Field(default=None, description="Merchandise category filter")
+    alpha_conformal: Optional[float] = Field(default=0.05, gt=0.0, lt=0.50, description="Conformal significance level")
+
+
 def get_analytics() -> RetailAnalyticsEngine:
     global analytics_engine
     if analytics_engine is None:
@@ -285,6 +329,27 @@ def get_clv() -> CustomerLifetimeValueEngine:
     if clv_engine is None:
         clv_engine = CustomerLifetimeValueEngine()
     return clv_engine
+
+
+def get_inventory() -> InventorySupplyChainEngine:
+    global inventory_engine
+    if inventory_engine is None:
+        inventory_engine = InventorySupplyChainEngine()
+    return inventory_engine
+
+
+def get_market_basket() -> MarketBasketAffinityEngine:
+    global market_basket_engine
+    if market_basket_engine is None:
+        market_basket_engine = MarketBasketAffinityEngine()
+    return market_basket_engine
+
+
+def get_forecasting() -> MultiHorizonDemandForecaster:
+    global forecasting_engine
+    if forecasting_engine is None:
+        forecasting_engine = MultiHorizonDemandForecaster()
+    return forecasting_engine
 
 
 # --- ROOT & HEALTH ---
@@ -713,3 +778,208 @@ def get_at_risk_vip_list(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"At-risk VIP query failed: {str(e)}",
         )
+
+
+# ==========================================
+# DAY 11: SUPPLY CHAIN & INVENTORY OPTIMIZATION
+# ==========================================
+
+@app.get("/api/v1/inventory/daily-metrics", tags=["Supply Chain & Inventory"])
+def get_daily_demand_metrics_endpoint(
+    category: Optional[str] = Query(None, description="Optional product category filter")
+) -> Dict[str, Any]:
+    """Calculates daily demand statistics, velocity, and average unit price."""
+    try:
+        engine = get_inventory()
+        return engine.get_daily_demand_metrics(category=category)
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/inventory/safety-stock", tags=["Supply Chain & Inventory"])
+def calculate_safety_stock_endpoint(payload: SafetyStockRequest) -> Dict[str, Any]:
+    """Calculates Safety Stock (SS) and Reorder Point (ROP) under lead time uncertainty."""
+    try:
+        engine = get_inventory()
+        return engine.calculate_safety_stock_and_rop(
+            service_level=payload.service_level,
+            lead_time_days=payload.lead_time_days,
+            lead_time_std=payload.lead_time_std,
+            category=payload.category,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/inventory/eoq", tags=["Supply Chain & Inventory"])
+def calculate_eoq_endpoint(payload: EOQRequest) -> Dict[str, Any]:
+    """Calculates Economic Order Quantity (EOQ), order cycles, and inventory holding costs."""
+    try:
+        engine = get_inventory()
+        return engine.calculate_eoq(
+            order_cost=payload.order_cost,
+            holding_cost_rate=payload.holding_cost_rate,
+            category=payload.category,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/inventory/stockout-risk", tags=["Supply Chain & Inventory"])
+def simulate_stockout_risk_endpoint(payload: StockoutRiskRequest) -> Dict[str, Any]:
+    """Simulates stockout probabilities and financial margin at risk using standard normal loss G(k)."""
+    try:
+        engine = get_inventory()
+        return engine.simulate_stockout_risk(
+            service_level=payload.service_level,
+            lead_time_days=payload.lead_time_days,
+            lead_time_std=payload.lead_time_std,
+            category=payload.category,
+            gross_margin_pct=payload.gross_margin_pct or 0.40,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/inventory/abc-fsn", tags=["Supply Chain & Inventory"])
+def get_abc_fsn_analysis_endpoint() -> Dict[str, Any]:
+    """Executes multi-criteria ABC-FSN strategic inventory stratification."""
+    try:
+        engine = get_inventory()
+        return engine.perform_abc_fsn_analysis()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/inventory/storewide-summary", tags=["Supply Chain & Inventory"])
+def get_storewide_inventory_summary_endpoint(
+    service_level: float = Query(0.95, ge=0.50, lt=1.0, description="Target service level")
+) -> Dict[str, Any]:
+    """Consolidates storewide supply chain parameters and working capital investments."""
+    try:
+        engine = get_inventory()
+        return engine.get_storewide_inventory_summary(service_level=service_level)
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+# ==========================================
+# DAY 11: MARKET BASKET & CROSS-MERCHANDISING
+# ==========================================
+
+@app.get("/api/v1/market-basket/affinity", tags=["Market Basket & Merchandising"])
+def get_market_basket_affinity_endpoint() -> Dict[str, Any]:
+    """Computes cross-category co-occurrence, association rule metrics, and statistical affinity."""
+    try:
+        engine = get_market_basket()
+        return engine.build_cooccurrence_and_affinity_matrix()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/market-basket/rules", tags=["Market Basket & Merchandising"])
+def get_association_rules_endpoint(
+    min_support: float = Query(0.05, ge=0.01, le=1.0, description="Minimum rule support"),
+    min_confidence: float = Query(0.20, ge=0.01, le=1.0, description="Minimum rule confidence"),
+    min_lift: float = Query(0.80, ge=0.0, le=10.0, description="Minimum rule lift"),
+) -> List[Dict[str, Any]]:
+    """Filters and ranks association rules meeting specified minimum thresholds."""
+    try:
+        engine = get_market_basket()
+        return engine.mine_association_rules(
+            min_support=min_support,
+            min_confidence=min_confidence,
+            min_lift=min_lift,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/market-basket/combos", tags=["Market Basket & Merchandising"])
+def get_merchandising_combos_endpoint(payload: ComboRecommendationRequest) -> List[Dict[str, Any]]:
+    """Generates optimal cross-department promotional bundle pairings for a target category."""
+    try:
+        engine = get_market_basket()
+        return engine.recommend_merchandising_combos(
+            target_category=payload.target_category,
+            discount_rate=payload.discount_rate or 0.12,
+            gross_margin_pct=payload.gross_margin_pct or 0.40,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/market-basket/demographic-affinity", tags=["Market Basket & Merchandising"])
+def get_demographic_affinity_endpoint() -> Dict[str, Any]:
+    """Cross-analyzes category preferences and joint affinities across demographic age cohorts."""
+    try:
+        engine = get_market_basket()
+        return engine.demographic_affinity_breakdown()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+# ==========================================
+# DAY 11: MULTI-HORIZON DEMAND FORECASTING
+# ==========================================
+
+@app.post("/api/v1/forecasting/predict", tags=["Multi-Horizon Demand Forecasting"])
+def predict_demand_forecast_endpoint(payload: ForecastRequest) -> Dict[str, Any]:
+    """Generates forward demand forecasts with conformal uncertainty prediction intervals."""
+    try:
+        engine = get_forecasting()
+        return engine.forecast_demand(
+            horizon_days=payload.horizon_days,
+            category=payload.category,
+            alpha_conformal=payload.alpha_conformal or 0.05,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/forecasting/accuracy", tags=["Multi-Horizon Demand Forecasting"])
+def get_forecast_accuracy_endpoint(
+    test_window_days: int = Query(45, ge=7, le=90, description="Holdout test window in days"),
+    category: Optional[str] = Query(None, description="Optional merchandise category filter"),
+) -> Dict[str, Any]:
+    """Executes holdout walk-forward backtesting to quantify empirical forecast accuracy (MAE, RMSE, MAPE)."""
+    try:
+        engine = get_forecasting()
+        return engine.evaluate_forecast_accuracy(
+            test_window_days=test_window_days,
+            category=category,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/forecasting/anomalies", tags=["Multi-Horizon Demand Forecasting"])
+def get_demand_anomalies_endpoint(
+    category: Optional[str] = Query(None, description="Optional merchandise category filter"),
+    z_threshold: float = Query(2.5, ge=1.5, le=5.0, description="Z-score outlier threshold"),
+) -> List[Dict[str, Any]]:
+    """Identifies demand spikes and operational velocity outliers using a rolling Z-score indicator."""
+    try:
+        engine = get_forecasting()
+        return engine.detect_demand_anomalies(
+            category=category,
+            z_threshold=z_threshold,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
