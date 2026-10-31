@@ -32,6 +32,9 @@ from .utils import (
     impute_chronological_dates_and_verify_completion,
     verify_day10_temporal_and_completion_integrity,
     plot_day10_temporal_and_completion_audit,
+    audit_and_resolve_duplicates,
+    verify_day11_duplicate_integrity,
+    plot_day11_duplicate_and_entity_integrity_audit,
 )
 
 __all__ = [
@@ -64,4 +67,7 @@ __all__ = [
     'impute_chronological_dates_and_verify_completion',
     'verify_day10_temporal_and_completion_integrity',
     'plot_day10_temporal_and_completion_audit',
+    'audit_and_resolve_duplicates',
+    'verify_day11_duplicate_integrity',
+    'plot_day11_duplicate_and_entity_integrity_audit',
 ]

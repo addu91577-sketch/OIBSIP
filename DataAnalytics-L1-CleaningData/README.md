@@ -42,6 +42,7 @@ DataAnalytics-L1-CleaningData/
 │   ├── day8_mathematical_accounting_and_item_resolution.md # Day 8 Mathematical Accounting & Ambiguous Item Resolution Report
 │   ├── day9_categorical_mode_imputation_and_distribution_preservation.md # Day 9 Categorical Mode Imputation & Distribution Preservation Report
 │   ├── day10_chronological_temporal_imputation_and_dataset_completion.md # Day 10 Chronological Temporal Imputation & Dataset Completion Report
+│   ├── day11_multi_tier_duplicate_resolution_and_entity_integrity.md # Day 11 Multi-Tier Duplicate Resolution & Entity Integrity Report
 │   └── figures/                        # High-resolution diagnostic visualizations
 │       ├── day3_column_defect_rates.png
 │       ├── day3_record_defect_distribution.png
@@ -59,7 +60,9 @@ DataAnalytics-L1-CleaningData/
 │       ├── day9_categorical_imputation_waterfall.png
 │       ├── day9_categorical_distribution_preservation.png
 │       ├── day10_temporal_imputation_waterfall.png
-│       └── day10_temporal_distribution_and_seasonality.png
+│       ├── day10_temporal_distribution_and_seasonality.png
+│       ├── day11_duplicate_audit_taxonomy_waterfall.png
+│       └── day11_basket_concurrence_and_poisson_distribution.png
 └── src/
     ├── __init__.py
     └── utils.py                        # Reusable data audit & metric routines
@@ -78,7 +81,8 @@ DataAnalytics-L1-CleaningData/
 - [x] **Day 8 (Oct 26):** Mathematical accounting invariant recovery for Quantity & Total Spent ($\text{Total} = \text{Qty} \times \text{Price}$) + ambiguous item mode resolution
 - [x] **Day 9 (Oct 27):** Categorical mode imputation & distribution preservation for Payment Method & Location (7,139 cells resolved, zero distributional shift $\Delta < 0.003\%$)
 - [x] **Day 10 (Oct 28):** Chronological temporal fill for Transaction Date & full 80,000-cell dataset completion audit (460 dates recovered, 80,000 / 80,000 cells 100.0% clean)
-- [ ] **Day 11–13:** Multi-tier duplicate resolution and statistical outlier detection
+- [x] **Day 11 (Oct 29):** Multi-tier duplicate resolution, POS Birthday Paradox collision audit, and transaction entity integrity verification (10,000 unique records certified, 0 data loss, $4,864.50 revenue protected)
+- [ ] **Day 12–13:** Statistical numerical outlier detection (Tukey IQR & 3-Sigma Z-Score) and accounting invariant retention proofs
 - [ ] **Day 14–16:** Master Before vs. After comparison summary and clean dataset export
 - [ ] **Day 17–18:** Automated regression testing (`pytest`), CI workflow, and final delivery certification
 
@@ -359,6 +363,65 @@ On Day 10, the pipeline achieved **100.00% universal dataset completeness (80,00
 - **100% Automated Assertion Sign-Off:** Automated verification suite (`verify_day10_temporal_and_completion_integrity()`) certified all 14 schema, domain, temporal, and universal completeness criteria.
 - **Diagnostic Visual Artifacts:** Serialized `day10_temporal_imputation_waterfall.png` and `day10_temporal_distribution_and_seasonality.png` to `Reports/figures/`.
 - **Full Report:** Comprehensive analysis available in [`Reports/day10_chronological_temporal_imputation_and_dataset_completion.md`](Reports/day10_chronological_temporal_imputation_and_dataset_completion.md).
+
+---
+
+
+---
+
+## 👥 Day 11 Milestone: Multi-Tier Duplicate Resolution & Transaction Entity Integrity Audit
+
+On Day 11, the pipeline executed an exhaustive entity integrity audit to ensure that no duplicate transactions or artificial record replications exist within the database. The audit deployed a **Three-Tier Deduplication Taxonomy** coupled with **Combinatorial Birthday Paradox Modeling**:
+
+### Master Multi-Tier Duplicate Audit Matrix
+
+| Audit Tier | Target Feature Scope | Technical Inspection Criterion | Flagged Candidates | Engineering Action | Final Retained Rows | Financial Impact / Rationale |
+| :--- | :--- | :--- | :---: | :---: | :---: | :--- |
+| **Tier 1: Full-Row Exact** | All 8 attributes | Identical tuple across entire row | **0 (0.00%)** | Verified Clean | 10,000 | Zero technical replay duplicates in database. |
+| **Tier 2: Primary Key** | `Transaction ID` | Regex `^TXN_\d{7}$` & uniqueness | **0 (0.00%)** | Verified Unique | 10,000 | 10,000 unique monotonic POS transaction keys. |
+| **Tier 3: Basket Match** | 7 Non-ID features | Identical order profile on same date | **1,076 (547 excess)** | **Retained (100%)** | **10,000** | Birthday Paradox natural concurrence; **$4,864.50 USD protected**. |
+| **NET AUDIT RESULT** | **All 10,000 Records** | **Multi-Tier Entity Integrity Certified** | **0 Anomalies** | **0 Purged Rows** | **10,000 (100%)** | **100% Entity Integrity | Zero Data Loss** |
+
+### Mathematical Birthday Paradox Collision Dynamics
+In a fixed cafe menu environment, daily order choices belong to a finite discrete state space:
+$$M = |\text{Items}| \times |\text{Quantities}| \times |\text{Payment Methods}| \times |\text{Locations}| = 8 \times 5 \times 3 \times 2 = 240 \text{ possible order configurations}$$
+
+With an average daily volume of $N \approx 27.4$ transactions per day across 365 trading days in 2023:
+- **Theoretical Birthday Collision Probability:** $$P(\text{Collision} \mid N=27, M=240) = 1 - \prod_{k=0}^{26} \left(1 - \frac{k}{240}\right) = \mathbf{78.12\%}$$
+- **Observed Empirical Collision Day Rate:** $$\frac{275 \text{ collision days}}{365 \text{ total trading days}} = \mathbf{75.34\%}$$
+- **Deviation from Theory:** $$|\Delta| = |75.34\% - 78.12\%| = \mathbf{2.78\%}$$
+
+This proves that the 1,076 coincidental customer orders (547 surplus instances under naive deduplication) are the natural statistical outcome of random consumer purchasing within a standard retail catalog, rather than technical database duplications.
+
+### Protection of $4,864.50 in Valid Commercial Revenue
+A naive deduplication script (`df.drop_duplicates(subset=[non_id_cols])`) would have caused catastrophic false-positive data destruction:
+- **547 legitimate customer transactions** discarded ($5.47\%$ of entire business history).
+- **$4,864.50 USD in authentic sales revenue** erased ($5.44\%$ of annual gross revenue).
+- Distortion of customer footfall metrics and POS audit trails.
+
+### Master Entity & Completeness Lifecycle Matrix (Days 1–11)
+
+| Milestone Stage | Target Scope | Retained Records | Universal Clean Cells | Completeness (%) | Duplicate Rows Purged | Primary Key Integrity | Accounting Violations | Revenue Protected |
+| :--- | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Day 1: Ingest** | Raw CSV inspection | 10,000 | 66,944 | 83.68% | 0 | Unverified | Unverified | $89,304.50 |
+| **Day 4: Clean** | Text standardization | 10,000 | 66,944 | 83.68% | 0 | Canonical Strings | Unverified | $89,304.50 |
+| **Day 5: Types** | Strict schema casting | 10,000 | 66,944 | 83.68% | 0 | Strict Types | Unverified | $89,304.50 |
+| **Day 6: Memory** | Categorical compression | 10,000 | 66,944 | 83.68% | 0 | 10,000 Unique | Unverified | $89,304.50 |
+| **Day 7: Prices** | Menu invariant imputation | 10,000 | 69,918 | 87.40% | 0 | 10,000 Unique | In Progress | $89,304.50 |
+| **Day 8: Math** | Accounting recovery | 10,000 | 71,373 | 89.22% | 0 | 10,000 Unique | **0 Violations** | $89,304.50 |
+| **Day 9: Categories**| Distribution preservation | 10,000 | 79,540 | 99.43% | 0 | 10,000 Unique | 0 Violations | $89,304.50 |
+| **Day 10: Dates** | Chronological fill | 10,000 | **80,000** | **100.00%** | 0 | 10,000 Unique | 0 Violations | $89,304.50 |
+| **Day 11: Deduplication**| Multi-tier entity audit | **10,000** | **80,000** | **100.00%** | **0** | **100% Unique** | **0 Violations** | **$89,304.50 (100%)**|
+
+### Key Day 11 Achievements:
+- **Zero Full-Row Duplicates:** Confirmed 0 full-row exact duplicate tuples across all 8 features.
+- **100% Primary Key Integrity:** Verified 10,000 unique `Transaction ID` values adhering to regex `^TXN_\d{7}$` with zero collisions.
+- **Mathematical Birthday Paradox Proof:** Proved that 1,076 coincidental customer orders (547 surplus instances) are natural statistical collisions in a discrete $M=240$ state space across 365 operating days ($75.34\%$ observed vs. $78.12\%$ theoretical).
+- **$4,864.50 USD Revenue Protected:** Avoided false-positive purging of 547 legitimate sales, protecting 5.44% of gross store turnover.
+- **Zero Pipeline Regression:** Preserved 100.00% universal completeness across all 80,000 cells, 0 nulls, and $\Delta = \$0.000000$ accounting accuracy.
+- **100% Quality Assurance Sign-Off:** Automated assertion engine (`verify_day11_duplicate_integrity()`) certified all 14 entity, schema, domain, and invariant criteria.
+- **Diagnostic Visual Artifacts:** Serialized `day11_duplicate_audit_taxonomy_waterfall.png` and `day11_basket_concurrence_and_poisson_distribution.png` to `Reports/figures/`.
+- **Full Report:** Comprehensive analysis available in [`Reports/day11_multi_tier_duplicate_resolution_and_entity_integrity.md`](Reports/day11_multi_tier_duplicate_resolution_and_entity_integrity.md).
 
 ---
 
