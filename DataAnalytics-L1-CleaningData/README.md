@@ -43,6 +43,7 @@ DataAnalytics-L1-CleaningData/
 │   ├── day9_categorical_mode_imputation_and_distribution_preservation.md # Day 9 Categorical Mode Imputation & Distribution Preservation Report
 │   ├── day10_chronological_temporal_imputation_and_dataset_completion.md # Day 10 Chronological Temporal Imputation & Dataset Completion Report
 │   ├── day11_multi_tier_duplicate_resolution_and_entity_integrity.md # Day 11 Multi-Tier Duplicate Resolution & Entity Integrity Report
+│   ├── day12_statistical_outlier_detection_and_moment_profiling.md # Day 12 Statistical Outlier Detection & Moment Profiling Report
 │   └── figures/                        # High-resolution diagnostic visualizations
 │       ├── day3_column_defect_rates.png
 │       ├── day3_record_defect_distribution.png
@@ -62,7 +63,9 @@ DataAnalytics-L1-CleaningData/
 │       ├── day10_temporal_imputation_waterfall.png
 │       ├── day10_temporal_distribution_and_seasonality.png
 │       ├── day11_duplicate_audit_taxonomy_waterfall.png
-│       └── day11_basket_concurrence_and_poisson_distribution.png
+│       ├── day11_basket_concurrence_and_poisson_distribution.png
+│       ├── day12_statistical_outlier_detection_fences.png
+│       └── day12_distributional_moments_and_spend_tails.png
 └── src/
     ├── __init__.py
     └── utils.py                        # Reusable data audit & metric routines
@@ -82,7 +85,8 @@ DataAnalytics-L1-CleaningData/
 - [x] **Day 9 (Oct 27):** Categorical mode imputation & distribution preservation for Payment Method & Location (7,139 cells resolved, zero distributional shift $\Delta < 0.003\%$)
 - [x] **Day 10 (Oct 28):** Chronological temporal fill for Transaction Date & full 80,000-cell dataset completion audit (460 dates recovered, 80,000 / 80,000 cells 100.0% clean)
 - [x] **Day 11 (Oct 29):** Multi-tier duplicate resolution, POS Birthday Paradox collision audit, and transaction entity integrity verification (10,000 unique records certified, 0 data loss, $4,864.50 revenue protected)
-- [ ] **Day 12–13:** Statistical numerical outlier detection (Tukey IQR & 3-Sigma Z-Score) and accounting invariant retention proofs
+- [x] **Day 12 (Oct 30):** Statistical numerical outlier detection (Tukey IQR Fences & 3-Sigma Z-Score), distributional moment profiling, and candidate boundary isolation (271 mild IQR flags at $25.00, 0 extreme outliers, 0 Z-score outliers, $6,775.00 revenue audited)
+- [ ] **Day 13:** Domain outlier treatment decisioning, sensitivity modeling, and accounting invariant retention proofs
 - [ ] **Day 14–16:** Master Before vs. After comparison summary and clean dataset export
 - [ ] **Day 17–18:** Automated regression testing (`pytest`), CI workflow, and final delivery certification
 
@@ -422,6 +426,46 @@ A naive deduplication script (`df.drop_duplicates(subset=[non_id_cols])`) would 
 - **100% Quality Assurance Sign-Off:** Automated assertion engine (`verify_day11_duplicate_integrity()`) certified all 14 entity, schema, domain, and invariant criteria.
 - **Diagnostic Visual Artifacts:** Serialized `day11_duplicate_audit_taxonomy_waterfall.png` and `day11_basket_concurrence_and_poisson_distribution.png` to `Reports/figures/`.
 - **Full Report:** Comprehensive analysis available in [`Reports/day11_multi_tier_duplicate_resolution_and_entity_integrity.md`](Reports/day11_multi_tier_duplicate_resolution_and_entity_integrity.md).
+
+---
+
+## 📈 Day 12 Milestone: Statistical Numerical Outlier Detection & Moment Profiling
+
+On Day 12, the pipeline deployed a **Dual-Paradigm Statistical Outlier Detection Engine** combining non-parametric **Tukey's Fences** with parametric **3-Sigma Standardized Z-Scores**, alongside **Higher-Order Distributional Moment Profiling** across all numeric attributes (`Quantity`, `Price Per Unit`, `Total Spent`):
+
+### Master Parametric & Non-Parametric Outlier Audit Matrix
+
+| Attribute | Observed Range | Mean ($\mu$) | Std ($\sigma$) | Median ($Q_2$) | IQR | Tukey Inner Fence (1.5xIQR) | Tukey Mild Outliers | Tukey Outer Fence (3.0xIQR) | Tukey Extreme Outliers | 3-Sigma Outliers ($|Z| > 3$) | Max $|Z|$ | Diagnostic Assessment |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **`Quantity`** | 1 – 5 units | 3.0278 | 1.4211 | 3.0000 | 2.0000 | [-1.00, 7.00] | **0 (0.00%)** | [-4.00, 10.00] | **0 (0.00%)** | **0 (0.00%)** | 1.4270 | **In-Domain (100% Valid)** |
+| **`Price Per Unit`** | \$1.00 – \$5.00 | \$2.9474 | \$1.2798 | \$3.0000 | \$2.0000 | [-\$1.00, \$7.00] | **0 (0.00%)** | [-\$4.00, \$10.00] | **0 (0.00%)** | **0 (0.00%)** | 1.6038 | **In-Domain (100% Valid)** |
+| **`Total Spent`** | \$1.00 – \$25.00 | \$8.9395 | \$6.0101 | \$8.0000 | \$8.0000 | [-\$8.00, **\$24.00**] | **271 (2.71%)** | [-\$20.00, **\$36.00**] | **0 (0.00%)** | **0 (0.00%)** | **2.6722** | **Mild Boundary Candidate** |
+
+### Higher-Order Distributional Moments & Tail Asymmetry Analysis
+
+| Attribute | Mean ($\mu$) | Std ($\sigma$) | Fisher-Pearson Skewness ($g_1$) | Skewness Profile | Excess Kurtosis ($g_2$) | Tail Weight Profile | D'Agostino-Pearson $K^2$ | $p$-value |
+| :--- | :---: | :---: | :---: | :--- | :---: | :--- | :---: | :---: |
+| **`Quantity`** | 3.0278 | 1.4211 | -0.0076 | Symmetric | -1.3143 | Platykurtic (Light Uniform Tails) | 56,842.43 | $0.0000$ |
+| **`Price Per Unit`** | 2.9474 | 1.2798 | +0.0076 | Symmetric | -1.1586 | Platykurtic (Light Uniform Tails) | 6,157.05 | $0.0000$ |
+| **`Total Spent`** | 8.9395 | 6.0101 | **+0.8193** | **Moderately Right-Skewed** | **-0.1540** | **Mesokurtic / Light Tails** | 881.04 | $4.84 \times 10^{-192}$ |
+
+### Candidate Cohort Forensic Audit ($25.00 Orders)
+An exhaustive forensic investigation into the 271 transactions flagged by Tukey's inner upper fence ($> \$24.00$) revealed:
+- **100% Price & Product Homogeneity:** All 271 orders represent **5 units of Salad at \$5.00 each**.
+- **100% Accounting Identity Adherence:** $5 \times \$5.00 = \$25.00$ holds without exception (maximum error $\Delta = \$0.000000$).
+- **Parametric Normal Range Compliance:** Maximum standardized Z-score is $+2.6722 < 3.0000$; zero records violate the 3-sigma fence.
+- **Zero Extreme Rogue Outliers:** With Tukey's outer fence at $\$36.00$ ($Q_3 + 3.0 \times \text{IQR}$), exactly 0 records exist beyond this boundary, confirming the total absence of decimal corruptions (e.g., $\$250.00$) or arbitrary entry faults.
+- **Commercial Exposure:** The candidate cohort represents **\$6,775.00 USD in valid gross revenue (7.58% of annual turnover)**. Naive capping (Winsorization) to $\$24.00$ would inject $\$271.00$ in accounting discrepancies, while deletion would inflict severe survivorship bias.
+- **Temporal & Operational Uniformity:** Orders occurred steadily across all 12 calendar months of 2023 (mean 22.6 orders/month) with tender and fulfillment distributions mirroring broader store baselines.
+
+### Key Day 12 Achievements:
+1. **Primary Dimension Invariance:** Confirmed 0 IQR outliers and 0 Z-score outliers in `Quantity` ($[1, 5]$) and `Price Per Unit` ($[\$1.00, \$5.00]$).
+2. **Mild Candidate Boundary Isolated:** Identified exactly 271 transactions ($2.71\%$) at $\text{Total Spent} = \$25.00$ ($> \$24.00$ fence).
+3. **Zero Extreme Anomalies Confirmed:** Proved 0 records exceeding $\$36.00$ outer fence and 0 records exceeding $|Z| > 3.0$.
+4. **100% Mathematical Invariant Preservation:** Verified that all candidate orders satisfy $\text{Total} = \text{Quantity} \times \text{Price}$ ($\Delta = \$0.000000$).
+5. **Two Diagnostic Figures Serialized:** Rendered `day12_statistical_outlier_detection_fences.png` and `day12_distributional_moments_and_spend_tails.png` at 300 DPI.
+6. **100% QA Sign-Off:** Certified all 19 structural, statistical, and domain assertions via `verify_day12_outlier_integrity()`.
+7. Detailed report available in [`Reports/day12_statistical_outlier_detection_and_moment_profiling.md`](Reports/day12_statistical_outlier_detection_and_moment_profiling.md).
 
 ---
 
