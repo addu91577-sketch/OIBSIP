@@ -38,6 +38,7 @@ from src.predictive_modeling import PlayStorePredictiveEngine
 from src.simulation_engine import PlayStoreSimulationEngine
 from src.recommendation_engine import PlayStoreRecommendationEngine
 from src.aso_intelligence_engine import ASOReviewIntelligenceEngine
+from src.retention_churn_ltv_engine import RetentionChurnLTVEngine
 
 
 # ============================================================================
@@ -565,6 +566,116 @@ class AppHealthDiagnosticResponse(BaseModel):
     prescriptions: List[str]
 
 
+# ----------------------------------------------------------------------------
+# Day 13 Schemas: Retention, Churn, LTV & Portfolio Optimization
+# ----------------------------------------------------------------------------
+
+class RetentionCurveRequest(BaseModel):
+    """Payload to project parametric cohort retention curves."""
+    app_or_category: str = Field(..., json_schema_extra={"example": "GAME"})
+    is_category: bool = Field(False, json_schema_extra={"example": True})
+    model_type: str = Field("power_law", json_schema_extra={"example": "power_law"})
+    custom_rating: Optional[float] = Field(None, ge=1.0, le=5.0, json_schema_extra={"example": 4.5})
+    custom_polarity: Optional[float] = Field(None, ge=-1.0, le=1.0, json_schema_extra={"example": 0.25})
+    days: int = Field(360, ge=7, le=720, json_schema_extra={"example": 360})
+
+
+class RetentionCurveResponse(BaseModel):
+    """Parametric cohort retention trajectory and milestone metrics."""
+    target_name: str
+    category: str
+    model_type: str
+    baseline_d1: float
+    decay_parameter: float
+    retention_auc: float
+    milestones: Dict[str, float]
+    daily_retention_sample: List[float]
+
+
+class LTVForecastRequest(BaseModel):
+    """Payload to forecast Customer Lifetime Value and unit economics."""
+    app_name: str = Field(..., json_schema_extra={"example": "Subway Surfers"})
+    custom_price: Optional[float] = Field(None, ge=0.0, json_schema_extra={"example": 0.0})
+    custom_arpdau: Optional[float] = Field(None, ge=0.0, json_schema_extra={"example": 0.15})
+    custom_cac: Optional[float] = Field(None, ge=0.0, json_schema_extra={"example": 2.10})
+    annual_discount_rate: float = Field(0.10, ge=0.0, le=0.50, json_schema_extra={"example": 0.10})
+    days: int = Field(360, ge=30, le=720, json_schema_extra={"example": 360})
+
+
+class LTVForecastResponse(BaseModel):
+    """Comprehensive Lifetime Value forecasting and payback response."""
+    app_name: str
+    category: str
+    price: float
+    installs: int
+    arpdau: float
+    cac: float
+    annual_discount_rate: float
+    ltv_30d: float
+    ltv_90d: float
+    ltv_180d: float
+    ltv_360d: float
+    ltv_cac_ratio: float
+    payback_period_days: Optional[int]
+    economic_tier: str
+    verdict: str
+
+
+class ChurnRiskRequest(BaseModel):
+    """Payload to diagnose app churn risk."""
+    app_name: str = Field(..., json_schema_extra={"example": "Duolingo: Learn Languages Free"})
+
+
+class ChurnRiskResponse(BaseModel):
+    """App Churn Risk Scorecard, attribution, and prescriptive playbook."""
+    app_name: str
+    category: str
+    rating: float
+    installs: int
+    churn_risk_score: float
+    churn_risk_tier: str
+    days_since_update: int
+    sentiment_polarity: float
+    stagnancy_risk: float
+    sentiment_risk: float
+    rating_risk: float
+    volatility_risk: float
+    size_risk: float
+    primary_churn_driver: str
+    prescriptive_playbook: List[str]
+
+
+class DeveloperLifecycleItem(BaseModel):
+    """Single app developer lifecycle metric."""
+    app_name: str
+    category: str
+    last_updated: str
+    days_since_update: int
+    lifecycle_tier: str
+    abandonware_probability: float
+    compatibility_risk: str
+    maintenance_score: float
+
+
+class PortfolioOptimizerRequest(BaseModel):
+    """Payload for Modern Portfolio Theory capital allocation."""
+    portfolio_items: List[str] = Field(
+        default=["GAME", "FINANCE", "TOOLS", "HEALTH_AND_FITNESS", "EDUCATION"],
+        json_schema_extra={"example": ["GAME", "FINANCE", "TOOLS", "HEALTH_AND_FITNESS", "EDUCATION"]}
+    )
+    risk_free_rate: float = Field(0.03, ge=0.0, le=0.20, json_schema_extra={"example": 0.03})
+
+
+class PortfolioOptimizerResponse(BaseModel):
+    """Markowitz Modern Portfolio Theory capital allocation response."""
+    portfolio_items: List[str]
+    optimal_weights: Dict[str, float]
+    expected_annual_return: float
+    portfolio_volatility: float
+    sharpe_ratio: float
+    diversification_verdict: str
+
+
 # ============================================================================
 # Engine Singleton & Lifespan Management
 # ============================================================================
@@ -574,6 +685,7 @@ _predictive_engine_instance: Optional[PlayStorePredictiveEngine] = None
 _simulation_engine_instance: Optional[PlayStoreSimulationEngine] = None
 _recommendation_engine_instance: Optional[PlayStoreRecommendationEngine] = None
 _aso_engine_instance: Optional[ASOReviewIntelligenceEngine] = None
+_retention_engine_instance: Optional[RetentionChurnLTVEngine] = None
 _server_start_time: float = time.time()
 
 
@@ -619,6 +731,14 @@ def get_aso_engine() -> ASOReviewIntelligenceEngine:
     if _aso_engine_instance is None:
         _aso_engine_instance = ASOReviewIntelligenceEngine()
     return _aso_engine_instance
+
+
+def get_retention_engine() -> RetentionChurnLTVEngine:
+    """Retrieve or initialize the singleton RetentionChurnLTVEngine instance."""
+    global _retention_engine_instance
+    if _retention_engine_instance is None:
+        _retention_engine_instance = RetentionChurnLTVEngine()
+    return _retention_engine_instance
 
 
 @asynccontextmanager
@@ -1306,6 +1426,101 @@ def create_app() -> FastAPI:
         aso_engine = get_aso_engine()
         diag = aso_engine.evaluate_app_health(app_name=request_body.app_name)
         return AppHealthDiagnosticResponse(**diag.to_dict())
+
+    # ------------------------------------------------------------------------
+    # Day 13 Endpoints: Retention, Churn Risk & LTV Forecasting
+    # ------------------------------------------------------------------------
+
+    @app.post(
+        "/api/v1/retention/predict-curve",
+        response_model=RetentionCurveResponse,
+        summary="Predict Parametric Cohort Retention Curve and Milestone Rates",
+        tags=["Cohort Retention, Churn Risk & LTV Intelligence"]
+    )
+    async def retention_predict_curve_endpoint(request_body: RetentionCurveRequest) -> RetentionCurveResponse:
+        """Forecast power-law or Weibull retention trajectory across 360-day lifecycle."""
+        ret_engine = get_retention_engine()
+        res = ret_engine.estimate_retention_curve(
+            app_or_category=request_body.app_or_category,
+            is_category=request_body.is_category,
+            model_type=request_body.model_type,
+            custom_rating=request_body.custom_rating,
+            custom_polarity=request_body.custom_polarity,
+            days=request_body.days
+        )
+        return RetentionCurveResponse(**res.to_dict())
+
+    @app.post(
+        "/api/v1/retention/ltv-forecast",
+        response_model=LTVForecastResponse,
+        summary="Forecast Customer Lifetime Value (LTV) and Unit Economics Payback",
+        tags=["Cohort Retention, Churn Risk & LTV Intelligence"]
+    )
+    async def retention_ltv_forecast_endpoint(request_body: LTVForecastRequest) -> LTVForecastResponse:
+        """Calculate discounted cumulative LTV, CAC breakeven payback period, and economic viability."""
+        ret_engine = get_retention_engine()
+        res = ret_engine.forecast_ltv(
+            app_name=request_body.app_name,
+            custom_price=request_body.custom_price,
+            custom_arpdau=request_body.custom_arpdau,
+            custom_cac=request_body.custom_cac,
+            annual_discount_rate=request_body.annual_discount_rate,
+            days=request_body.days
+        )
+        return LTVForecastResponse(**res.to_dict())
+
+    @app.post(
+        "/api/v1/retention/churn-risk-score",
+        response_model=ChurnRiskResponse,
+        summary="Evaluate 0-100 App Churn Risk Score and Prescriptive Recourse",
+        tags=["Cohort Retention, Churn Risk & LTV Intelligence"]
+    )
+    async def retention_churn_risk_endpoint(request_body: ChurnRiskRequest) -> ChurnRiskResponse:
+        """Diagnose multi-dimensional churn risk across stagnancy, negative reviews, ratings, and APK bloat."""
+        ret_engine = get_retention_engine()
+        res = ret_engine.evaluate_churn_risk(app_name=request_body.app_name)
+        return ChurnRiskResponse(**res.to_dict())
+
+    @app.get(
+        "/api/v1/retention/developer-lifecycle",
+        summary="Audit Developer Maintenance Cadence, Freshness & Abandonware Risk",
+        tags=["Cohort Retention, Churn Risk & LTV Intelligence"]
+    )
+    async def retention_developer_lifecycle_endpoint(
+        app_name: Optional[str] = Query(None, description="Optional target app to evaluate")
+    ):
+        """Audit app update recency, abandonware hazard, and maintenance health."""
+        ret_engine = get_retention_engine()
+        if app_name:
+            res = ret_engine.audit_developer_lifecycle(app_name=app_name)
+            if isinstance(res, pd.DataFrame):
+                return JSONResponse(content=res.to_dict(orient="records"))
+            return JSONResponse(content=res.to_dict())
+        else:
+            df_life = ret_engine.audit_developer_lifecycle()
+            summary = df_life["Lifecycle_Tier"].value_counts().to_dict()
+            total_apps = len(df_life)
+            pcts = {k: round(v / total_apps * 100.0, 2) for k, v in summary.items()}
+            return JSONResponse(content={
+                "total_apps": total_apps,
+                "tier_counts": summary,
+                "tier_percentages": pcts
+            })
+
+    @app.post(
+        "/api/v1/retention/portfolio-optimizer",
+        response_model=PortfolioOptimizerResponse,
+        summary="Modern Portfolio Theory (Markowitz) App Capital Allocation",
+        tags=["Cohort Retention, Churn Risk & LTV Intelligence"]
+    )
+    async def retention_portfolio_optimizer_endpoint(request_body: PortfolioOptimizerRequest) -> PortfolioOptimizerResponse:
+        """Solve quadratic mean-variance optimization to maximize portfolio Sharpe ratio."""
+        ret_engine = get_retention_engine()
+        res = ret_engine.optimize_app_portfolio(
+            portfolio_items=request_body.portfolio_items,
+            risk_free_rate=request_body.risk_free_rate
+        )
+        return PortfolioOptimizerResponse(**res.to_dict())
 
     return app
 

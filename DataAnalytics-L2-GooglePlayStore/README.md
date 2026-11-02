@@ -655,7 +655,8 @@ Continuous integration pipeline via GitHub Actions (`.github/workflows/ci.yml`) 
 - Day 10: Counterfactual Simulation & A/B Testing (`tests/test_simulation_ab_testing.py`) — **14 passed**
 - Day 11: Multi-Modal App Recommendation & Discovery (`tests/test_recommendation_engine.py`) — **17 passed**
 - Day 12: ASO Keyword Gap & Aspect Review Intelligence (`tests/test_aso_aspect_intelligence.py`) — **20 passed**
-- **Total Suite Coverage**: **130 passed tests (100% pass rate)**.
+│   └── test_retention_churn_ltv.py        # Day 13: Retention, churn & LTV suite (22 passed)
+- **Total Suite Coverage**: **152 passed tests (100% pass rate)**.
 
 ---
 
@@ -973,6 +974,107 @@ $$\text{App Health Index} = 0.30 S_{\text{rating}} + 0.25 S_{\text{sentiment}} +
 
 #### Figure 25: ASO Competitor Keyword Gap, Review Authenticity & App Health Diagnostics
 ![Day 12 ASO Keyword Gap & App Health](reports/figures/25_aso_competitor_keyword_gap_and_app_health.png)
+│       ├── 26_retention_decay_and_cohort_survival.png # Day 13: Power-law decay, milestones & LTV trajectory
+│       └── 27_churn_risk_and_developer_lifecycle.png  # Day 13: Stagnancy quadrant, abandonware & Markowitz frontier
+
+---
+
+## 📈 Day 13 Milestones & Deliverables (App Cohort Retention, Churn Risk & Lifetime Value Forecasting Engine)
+
+Day 13 elevates the platform into enterprise-grade mobile decision science, deploying survival decay modeling, discounted cash flow Customer Lifetime Value (LTV) forecasting, developer abandonware risk surveillance, and Markowitz Modern Portfolio Theory (MPT) capital allocation.
+
+### 1. Parametric User Retention Decay & Cohort Survival Modeling
+Models the temporal attrition of mobile app user cohorts across 33 categories using empirical parametric hazard functions:
+- **Power-Law Retention Curve**:
+  $$R(t) = R_0 \cdot t^{-\alpha}, \quad t \ge 1$$
+  where $R_0$ represents baseline Day 1 retention ($10\% \le R_0 \le 65\%$), and $\alpha$ is retention decay elasticity ($0.18 \le \alpha \le 0.70$).
+- **Weibull Survival Hazard Model**:
+  $$S(t) = \exp\left(-\left(\frac{t}{\lambda}\right)^\beta\right)$$
+  capturing infant mortality effects ($\beta < 1$) where user attrition hazard is highest immediately post-install.
+- **Dynamic Quality Modifiers**:
+  App store rating and sentiment polarity actively adjust retention baselines: high ratings ($\ge 4.3$) and positive sentiment ($> +0.20$) boost Day 1 retention by up to $+15\%$ and flatten the decay curve.
+- **Cohort Retention Milestones Matrix**:
+  Evaluates $D_1, D_7, D_{14}, D_{30}, D_{60}, D_{90}, D_{180}, D_{360}$ retention rates and Cumulative User-Days Area Under Curve ($AUC = \sum_{t=1}^T R(t)$).
+
+| Category Vertical | Baseline $D_1$ (%) | $D_7$ Retention (%) | $D_{30}$ Retention (%) | $D_{90}$ Retention (%) | $D_{360}$ Retention (%) | Decay Elasticity ($\alpha$) | Cumulative Active Days ($AUC_{360}$) |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| `GAME` | 32.0% | 11.6% | 5.4% | 3.1% | 1.5% | 0.52 | 26.8 |
+| `SOCIAL` | 42.0% | 24.3% | 16.2% | 11.9% | 8.1% | 0.28 | 58.4 |
+| `COMMUNICATION` | 44.0% | 26.5% | 18.2% | 13.7% | 9.5% | 0.26 | 65.2 |
+| `FINANCE` | 35.0% | 19.5% | 12.6% | 9.1% | 6.0% | 0.30 | 46.1 |
+| `TOOLS` | 26.0% | 12.4% | 7.2% | 4.7% | 2.8% | 0.38 | 29.5 |
+| `HEALTH_AND_FITNESS` | 31.0% | 13.7% | 7.5% | 4.7% | 2.6% | 0.42 | 28.3 |
+| `EDUCATION` | 29.0% | 14.4% | 8.6% | 5.8% | 3.5% | 0.36 | 32.9 |
+
+---
+
+### 2. Customer Lifetime Value (LTV) Forecasting & Unit Economics
+Computes discounted cash flow capitalization combining upfront application purchase pricing, in-app ad monetization, and in-app purchase (IAP) yield:
+- **Daily Discounted LTV Capitalization Formula**:
+  $$LTV(T) = \text{Net Upfront Price} + \sum_{t=1}^T \frac{R(t) \times \text{ARPDAU}}{\left(1 + \frac{d}{365}\right)^t}$$
+  where $\text{Net Upfront Price} = \text{Price} \times 0.95$ (accounting for 5% refund/chargeback reserve), $d = 0.10$ (10% annual cost of capital discount rate), and $\text{ARPDAU}$ reflects category monetization yield ($0.03/day to $0.22/day).
+- **Unit Economics & Payback Period**:
+  - Compares projected 360-day LTV against category Customer Acquisition Cost ($CAC$).
+  - Evaluates $LTV / CAC$ ratio and computes exact payback period ($T_{\text{payback}} = \min \{ t : \text{Cumulative Revenue}(t) \ge CAC \}$).
+  - Categorizes economic health into 4 tiers: `VIABLE_EXPANSION` ($\ge 3.0\times$), `SUSTAINABLE` ($1.5\times - 3.0\times$), `BREAKEVEN` ($1.0\times - 1.5\times$), `UNSUSTAINABLE` ($< 1.0\times$).
+
+---
+
+### 3. Developer Maintenance Lifecycle & Abandonware Risk Audit
+Audits maintenance cadence across all 9,659 store applications relative to dataset baseline (`2018-08-08`):
+- **Recency Distribution**: Mean 281.0 days since last update; median 96.0 days; 75th percentile 366.0 days.
+- **Catalog Lifecycle Tier Breakdown**:
+  - `VIBRANT_ACTIVE` ($\le 90$ days since update): **4,717 apps (48.84%)** — Healthy ongoing development, low compatibility hazard.
+  - `MATURE_SUSTAINED` ($91 - 365$ days): **2,525 apps (26.14%)** — Stable product, periodic updates.
+  - `STAGNANT_RISK` ($366 - 730$ days): **1,332 apps (13.79%)** — Attrition risk, potential Android SDK deprecation.
+  - `ZOMBIE_ABANDONWARE` ($> 730$ days / $> 2$ years dormant): **1,085 apps (11.23%)** — Severe abandonware hazard, security vulnerabilities.
+
+---
+
+### 4. Composite App Churn Risk Diagnostic & Prescriptive Playbook
+Synthesizes multi-pillar risk factors into a unified $0 - 100$ Churn Risk Score:
+$$\text{Churn Risk} = 0.30 S_{\text{stagnancy}} + 0.25 S_{\text{sentiment}} + 0.20 S_{\text{rating}} + 0.15 S_{\text{volatility}} + 0.10 S_{\text{size}} \in [0, 100]$$
+- **Sub-Risk Attribution**:
+  - *Stagnancy Risk (30%)*: Penalizes dormant release cadence.
+  - *Sentiment Risk (25%)*: Penalizes negative polarity bursts and review complaints.
+  - *Rating Risk (20%)*: Penalizes underperformance relative to category rating baseline.
+  - *Volatility Risk (15%)*: Assesses review-to-install engagement velocity.
+  - *Size Bloat Risk (10%)*: Penalizes APK file bloat without feature justification.
+- **Risk Tiers**:
+  - `LOW_CHURN_DEFENSIVE` ($[0, 25]$) | `MODERATE_CHURN_STABLE` ($(25, 50]$) | `ELEVATED_CHURN_ATTENTION` ($(50, 75]$) | `CRITICAL_CHURN_INTERVENTION` ($(75, 100]$).
+- **Automated Prescriptive Mitigation Playbook**:
+  Dynamically emits tailored developer interventions (e.g., compatibility patch, 1-star review triage, dynamic App Bundle migration, Day 3 push notifications).
+
+---
+
+### 5. Markowitz Modern Portfolio Theory (MPT) Capital Allocation Optimizer
+Formulates app publisher capital allocation as a quadratic mean-variance optimization problem:
+$$\max_{\mathbf{w}} \frac{\mathbf{w}^T \boldsymbol{\mu} - R_f}{\sqrt{\mathbf{w}^T \boldsymbol{\Sigma} \mathbf{w}}} \quad \text{s.t.} \quad \sum_{i=1}^n w_i = 1, \quad 0.03 \le w_i \le 0.70$$
+- Balances high-cash-flow but volatile verticals (`GAME`, `DATING`) against steady, low-churn defensive verticals (`FINANCE`, `TOOLS`, `EDUCATION`).
+- Generates optimal asset weights, expected annual portfolio return ($E[R_p]$), portfolio volatility ($\sigma_p$), and maximized Sharpe ratio ($S_p$).
+
+---
+
+### 6. Production REST API Endpoints (Day 13 Additions)
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/retention/predict-curve` | Computes parametric Power-Law or Weibull retention trajectory and milestone rates |
+| `POST` | `/api/v1/retention/ltv-forecast` | Forecasts discounted cumulative LTV, CAC payback duration, and economic viability |
+| `POST` | `/api/v1/retention/churn-risk-score` | Diagnoses 0-100 Churn Risk Score, primary risk driver, and prescriptive playbook |
+| `GET` | `/api/v1/retention/developer-lifecycle` | Audits catalog-wide or single-app release freshness, abandonware hazard, and maintenance score |
+| `POST` | `/api/v1/retention/portfolio-optimizer` | Solves Markowitz quadratic mean-variance optimization to maximize portfolio Sharpe ratio |
+
+---
+
+### 7. Publication Visualizations (Figures 26 & 27)
+
+#### Figure 26: Cohort Retention Decay, Survival Milestones & Discounted LTV Trajectory
+![Day 13 Retention Decay & LTV](reports/figures/26_retention_decay_and_cohort_survival.png)
+
+#### Figure 27: Developer Maintenance Lifecycle, Churn Risk & Markowitz Capital Frontier
+![Day 13 Churn Risk & Developer Lifecycle](reports/figures/27_churn_risk_and_developer_lifecycle.png)
+
 
 ---
 
@@ -1008,7 +1110,8 @@ Google Playstore Analysis/
 │   ├── 09_predictive_modeling_and_mlops_drift.ipynb    # Day 9: Predictive Modeling & MLOps Drift Analytics
 │   ├── 10_counterfactual_simulation_and_ab_testing.ipynb # Day 10: Counterfactual Simulation & A/B Testing
 │   ├── 11_app_recommendation_and_discovery_engine.ipynb  # Day 11: Multi-Modal App Recommendation & Discovery
-│   └── 12_aso_intelligence_and_aspect_sentiment.ipynb    # Day 12: ASO Keyword Gap & Aspect Review Intelligence
+│   ├── 12_aso_intelligence_and_aspect_sentiment.ipynb    # Day 12: ASO Keyword Gap & Aspect Review Intelligence
+│   └── 13_cohort_retention_churn_and_ltv_forecasting.ipynb # Day 13: Cohort Retention, Churn & LTV Forecasting
 ├── presentation/
 │   └── index.html                      # Day 8: Interactive 14-slide executive HTML5 presentation deck
 ├── reports/
@@ -1043,6 +1146,10 @@ Google Playstore Analysis/
 │   ├── lda_topic_clusters.csv              # Day 12: Latent Dirichlet Allocation (LDA) review topic clusters
 │   ├── app_health_scorecard.csv            # Day 12: 360-degree App Health Index & prescriptive recourse
 │   ├── aso_keyword_opportunity_matrix.csv  # Day 12: Category keyword gap & metadata copy recommendations
+│   ├── category_retention_benchmarks.csv   # Day 13: Category retention decay alphas & milestone rates
+│   ├── sample_ltv_projections.csv          # Day 13: Discounted LTV, CAC payback & economic tiers
+│   ├── app_churn_risk_scorecard.csv        # Day 13: Composite churn risk scores & driver attribution
+│   ├── developer_lifecycle_summary.csv     # Day 13: Catalog maintenance & abandonware distribution
 │   └── figures/
 │       ├── 01_category_distribution.png    # Saturated vs niche categories bar chart (Day 2)
 │       ├── 02_rating_distributions.png     # Rating KDE & top 20 category box plots (Day 2)
@@ -1174,11 +1281,12 @@ python src/recommendation_engine.py
 
 # Day 12 ASO Keyword Gap & Aspect Review Intelligence Pipeline
 python src/aso_intelligence_engine.py
+│   └── retention_churn_ltv_engine.py      # Day 13: Cohort retention, churn risk & LTV forecasting engine
 ```
 
 ### 6. Run Automated Pytest Regression Suite
 ```bash
-# Execute entire test suite (130 passed across all modules, 100% pass rate)
+# Execute entire test suite (152 passed across all modules, 100% pass rate)
 pytest tests/ -v
 ```
 
@@ -1196,6 +1304,7 @@ jupyter notebook notebooks/09_predictive_modeling_and_mlops_drift.ipynb
 jupyter notebook notebooks/10_counterfactual_simulation_and_ab_testing.ipynb
 jupyter notebook notebooks/11_app_recommendation_and_discovery_engine.ipynb
 jupyter notebook notebooks/12_aso_intelligence_and_aspect_sentiment.ipynb
+jupyter notebook notebooks/13_cohort_retention_churn_and_ltv_forecasting.ipynb
 ```
 
 

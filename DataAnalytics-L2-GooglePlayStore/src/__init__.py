@@ -57,6 +57,15 @@ from src.aso_intelligence_engine import (
     ASOGapAnalysisResult,
     AppHealthDiagnosticResult,
 )
+from src.retention_churn_ltv_engine import (
+    RetentionChurnLTVEngine,
+    RetentionMilestones,
+    RetentionCurveResult,
+    LTVProjectionResult,
+    DeveloperLifecycleResult,
+    ChurnRiskDiagnosticResult,
+    PortfolioAllocationResult,
+)
 
 __all__ = [
     "clean_playstore_apps",
@@ -97,5 +106,12 @@ __all__ = [
     "ReviewAuthenticityReport",
     "KeywordOpportunityItem",
     "ASOGapAnalysisResult",
-    "AppHealthDiagnosticResult"
+    "AppHealthDiagnosticResult",
+    "RetentionChurnLTVEngine",
+    "RetentionMilestones",
+    "RetentionCurveResult",
+    "LTVProjectionResult",
+    "DeveloperLifecycleResult",
+    "ChurnRiskDiagnosticResult",
+    "PortfolioAllocationResult"
 ]

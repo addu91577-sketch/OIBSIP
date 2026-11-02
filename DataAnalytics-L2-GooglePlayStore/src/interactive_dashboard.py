@@ -29,6 +29,7 @@ if str(_PROJECT_ROOT) not in sys.path:
 from src.master_pipeline import GooglePlaystoreMasterEngine
 from src.recommendation_engine import PlayStoreRecommendationEngine
 from src.aso_intelligence_engine import ASOReviewIntelligenceEngine
+from src.retention_churn_ltv_engine import RetentionChurnLTVEngine
 
 
 # ============================================================================
@@ -160,9 +161,16 @@ def load_aso_engine() -> ASOReviewIntelligenceEngine:
     return ASOReviewIntelligenceEngine()
 
 
+@st.cache_resource(show_spinner="Initializing Day 13 Retention, Churn & LTV Engine...")
+def load_retention_engine() -> RetentionChurnLTVEngine:
+    """Initialize and cache the retention, churn & LTV engine singleton."""
+    return RetentionChurnLTVEngine()
+
+
 engine = load_master_engine()
 rec_engine = load_recommendation_engine()
 aso_engine = load_aso_engine()
+ret_engine = load_retention_engine()
 
 
 # ============================================================================
@@ -220,13 +228,14 @@ st.markdown("---")
 # Interactive Multi-Tab Workspace
 # ============================================================================
 
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
     "📊 Market Intelligence & Category Radar",
     "💡 Developer Concept Feasibility Calculator",
     "⌨️ Real-Time Smart Keyboard Assistant",
     "🧠 Review Linguistics & Executive Scorecard",
     "🎯 App Recommendation & Personalized Discovery",
-    "🔍 ASO & Review Aspect Intelligence"
+    "🔍 ASO & Review Aspect Intelligence",
+    "📈 Cohort Retention, Churn Risk & LTV Engine"
 ])
 
 
@@ -829,3 +838,263 @@ with tab6:
             st.markdown("#### 🛠️ Actionable Prescriptive Growth & Quality Recourse:")
             for p in diag.prescriptions:
                 st.markdown(f"- 💡 {p}")
+
+
+# ----------------------------------------------------------------------------
+# TAB 7: Cohort Retention, Churn Risk & Lifetime Value (LTV) Engine (Day 13)
+# ----------------------------------------------------------------------------
+with tab7:
+    st.subheader("📈 Cohort Retention, Churn Risk & Customer Lifetime Value (LTV) Engine")
+    st.markdown(
+        "Parametric survival modeling, discounted cash flow LTV forecasting, developer abandonware auditing, "
+        "and Markowitz Modern Portfolio Theory capital allocation."
+    )
+
+    ret_sub1, ret_sub2, ret_sub3, ret_sub4 = st.tabs([
+        "📉 Cohort Retention & Decay Simulator",
+        "💰 LTV Forecasting & Unit Economics",
+        "🛡️ 360° Churn Risk Diagnostic",
+        "🏢 Markowitz Portfolio Capital Allocator"
+    ])
+
+    with ret_sub1:
+        st.markdown("#### Parametric User Retention Decay & Milestone Projections")
+        r_col1, r_col2 = st.columns([1, 2])
+
+        with r_col1:
+            ret_cat_choice = st.selectbox(
+                "Select App Category",
+                sorted(list(ret_engine.category_baselines.keys())),
+                index=sorted(list(ret_engine.category_baselines.keys())).index("GAME") if "GAME" in ret_engine.category_baselines else 0,
+                key="ret_cat_select"
+            )
+            model_choice = st.radio(
+                "Retention Decay Function",
+                ["power_law", "weibull"],
+                format_func=lambda x: "Power-Law (R0 · t^-α)" if x == "power_law" else "Weibull Survival (exp(-(t/λ)^β))",
+                key="ret_model_select"
+            )
+            sim_rating = st.slider("Simulated App Rating", 1.0, 5.0, 4.2, 0.1, key="ret_rating_slider")
+            sim_polarity = st.slider("Simulated Review Sentiment Polarity", -1.0, 1.0, 0.20, 0.05, key="ret_pol_slider")
+            horizon_days = st.slider("Projection Horizon (Days)", 30, 360, 180, 30, key="ret_days_slider")
+
+            ret_res = ret_engine.estimate_retention_curve(
+                app_or_category=ret_cat_choice,
+                is_category=True,
+                model_type=model_choice,
+                custom_rating=sim_rating,
+                custom_polarity=sim_polarity,
+                days=horizon_days
+            )
+
+        with r_col2:
+            t_days = np.arange(1, horizon_days + 1)
+            if model_choice == "weibull":
+                beta = ret_res.decay_parameter
+                calib_d1 = ret_res.baseline_d1
+                lam = float(1.0 / ((-np.log(max(calib_d1, 0.001))) ** (1.0 / beta)))
+                curve_vals = np.exp(-((t_days / lam) ** beta)) * 100.0
+            else:
+                curve_vals = (ret_res.baseline_d1 * (t_days ** (-ret_res.decay_parameter))) * 100.0
+
+            fig_ret = go.Figure()
+            fig_ret.add_trace(go.Scatter(
+                x=t_days,
+                y=curve_vals,
+                mode="lines",
+                name=f"{ret_cat_choice} Decay Curve",
+                line=dict(color="#2563EB", width=3)
+            ))
+            # Milestone markers
+            m_days = [1, 7, 14, 30, 60, 90, 180]
+            m_valid = [d for d in m_days if d <= horizon_days]
+            m_vals = [curve_vals[d - 1] for d in m_valid]
+            fig_ret.add_trace(go.Scatter(
+                x=m_valid,
+                y=m_vals,
+                mode="markers+text",
+                name="Milestones",
+                text=[f"D{d}: {v:.1f}%" for d, v in zip(m_valid, m_vals)],
+                textposition="top right",
+                marker=dict(color="#EF4444", size=9)
+            ))
+            fig_ret.update_layout(
+                title=f"Predicted Retention Trajectory ({ret_cat_choice})",
+                xaxis_title="Days Elapsed Since Install (t)",
+                yaxis_title="Cohort Retention Rate (%)",
+                height=380,
+                margin=dict(l=20, r=20, t=40, b=20)
+            )
+            st.plotly_chart(fig_ret, use_container_width=True)
+
+        m_c1, m_c2, m_c3, m_c4, m_c5, m_c6 = st.columns(6)
+        with m_c1:
+            st.metric("Day 1 (D1)", f"{ret_res.milestones.day_1 * 100:.1f}%")
+        with m_c2:
+            st.metric("Day 7 (D7)", f"{ret_res.milestones.day_7 * 100:.1f}%")
+        with m_c3:
+            st.metric("Day 14 (D14)", f"{ret_res.milestones.day_14 * 100:.1f}%")
+        with m_c4:
+            st.metric("Day 30 (D30)", f"{ret_res.milestones.day_30 * 100:.1f}%")
+        with m_c5:
+            st.metric("Day 90 (D90)", f"{ret_res.milestones.day_90 * 100:.1f}%")
+        with m_c6:
+            st.metric("Cumulative Active Days", f"{ret_res.retention_auc:.1f}")
+
+    with ret_sub2:
+        st.markdown("#### Customer Lifetime Value (LTV) Forecasting & Payback Calculator")
+        ltv_c1, ltv_c2 = st.columns([1, 2])
+
+        with ltv_c1:
+            ltv_app_choice = st.selectbox(
+                "Select Representative App",
+                sorted(ret_engine.df_apps["App_Clean"].unique().tolist()),
+                index=0,
+                key="ltv_app_select"
+            )
+            base_ltv = ret_engine.forecast_ltv(ltv_app_choice)
+
+            user_price = st.number_input("Upfront App Price ($)", min_value=0.0, max_value=400.0, value=float(base_ltv.price), step=0.99)
+            user_arpdau = st.slider("Daily ARPDAU ($/user/day)", 0.01, 1.00, float(base_ltv.arpdau), 0.01)
+            user_cac = st.slider("Customer Acquisition Cost ($ CAC)", 0.10, 10.00, float(base_ltv.cac), 0.10)
+            user_disc = st.slider("Annual Discount Rate (%)", 0.0, 30.0, float(base_ltv.annual_discount_rate * 100.0), 1.0) / 100.0
+
+            ltv_calc = ret_engine.forecast_ltv(
+                app_name=ltv_app_choice,
+                custom_price=user_price,
+                custom_arpdau=user_arpdau,
+                custom_cac=user_cac,
+                annual_discount_rate=user_disc,
+                days=360
+            )
+
+        with ltv_c2:
+            t_ltv = np.arange(1, 361)
+            r_c = ret_engine.estimate_retention_curve(ltv_app_choice, days=360)
+            daily_rev = np.array([r_c.baseline_d1 * (t ** (-r_c.decay_parameter)) * user_arpdau for t in t_ltv])
+            cum_curve = (user_price * 0.95) + np.cumsum(daily_rev / ((1.0 + user_disc / 365.0) ** t_ltv))
+
+            fig_ltv = go.Figure()
+            fig_ltv.add_trace(go.Scatter(
+                x=t_ltv,
+                y=cum_curve,
+                mode="lines",
+                name="Discounted Cumulative LTV ($)",
+                line=dict(color="#10B981", width=3)
+            ))
+            fig_ltv.add_hline(
+                y=user_cac,
+                line_dash="dash",
+                line_color="#EF4444",
+                annotation_text=f"CAC Breakeven (${user_cac:.2f})",
+                annotation_position="bottom right"
+            )
+            if ltv_calc.payback_period_days is not None:
+                fig_ltv.add_vline(
+                    x=ltv_calc.payback_period_days,
+                    line_dash="dot",
+                    line_color="#F59E0B",
+                    annotation_text=f"Payback: Day {ltv_calc.payback_period_days}",
+                    annotation_position="top left"
+                )
+            fig_ltv.update_layout(
+                title=f"360-Day Discounted LTV Curve vs. Acquisition Cost ({ltv_app_choice[:25]}...)",
+                xaxis_title="Days Post Acquisition",
+                yaxis_title="LTV ($)",
+                height=380,
+                margin=dict(l=20, r=20, t=40, b=20)
+            )
+            st.plotly_chart(fig_ltv, use_container_width=True)
+
+        k1, k2, k3, k4, k5 = st.columns(5)
+        with k1:
+            st.metric("30-Day LTV", f"${ltv_calc.ltv_30d:.2f}")
+        with k2:
+            st.metric("90-Day LTV", f"${ltv_calc.ltv_90d:.2f}")
+        with k3:
+            st.metric("360-Day LTV", f"${ltv_calc.ltv_360d:.2f}")
+        with k4:
+            st.metric("LTV / CAC Ratio", f"{ltv_calc.ltv_cac_ratio:.2f}x")
+        with k5:
+            pay_str = f"{ltv_calc.payback_period_days} Days" if ltv_calc.payback_period_days is not None else "Never"
+            st.metric("Payback Period", pay_str)
+
+        st.info(f"💡 **Economic Viability [{ltv_calc.economic_tier}]**: {ltv_calc.verdict}")
+
+    with ret_sub3:
+        st.markdown("#### 360° App Churn Risk Diagnostic & Prescriptive Playbook")
+        churn_app_select = st.selectbox(
+            "Select App for Churn Risk Audit",
+            sorted(ret_engine.df_apps["App_Clean"].unique().tolist()),
+            index=0,
+            key="churn_app_select"
+        )
+
+        churn_diag = ret_engine.evaluate_churn_risk(churn_app_select)
+        tier_badges = {
+            "LOW_CHURN_DEFENSIVE": "green",
+            "MODERATE_CHURN_STABLE": "blue",
+            "ELEVATED_CHURN_ATTENTION": "orange",
+            "CRITICAL_CHURN_INTERVENTION": "red"
+        }
+        b_color = tier_badges.get(churn_diag.churn_risk_tier, "blue")
+        st.markdown(
+            f"### Composite Churn Risk: **:{b_color}[{churn_diag.churn_risk_score:.1f} / 100]** ({churn_diag.churn_risk_tier})"
+        )
+        st.caption(f"Primary Vulnerability Driver: **{churn_diag.primary_churn_driver}**")
+
+        cr_c1, cr_c2, cr_c3, cr_c4, cr_c5 = st.columns(5)
+        with cr_c1:
+            st.metric("Release Stagnancy (30%)", f"{churn_diag.stagnancy_risk:.1f}/100", f"{churn_diag.days_since_update}d stale")
+        with cr_c2:
+            st.metric("Negative Sentiment (25%)", f"{churn_diag.sentiment_risk:.1f}/100", f"Pol: {churn_diag.sentiment_polarity:.2f}")
+        with cr_c3:
+            st.metric("Rating Gap Risk (20%)", f"{churn_diag.rating_risk:.1f}/100", f"Rating: {churn_diag.rating:.1f}")
+        with cr_c4:
+            st.metric("Engagement Volatility (15%)", f"{churn_diag.volatility_risk:.1f}/100")
+        with cr_c5:
+            st.metric("Binary Bloat Risk (10%)", f"{churn_diag.size_risk:.1f}/100")
+
+        st.markdown("#### 🛠️ Tailored Prescriptive Mitigation Playbook:")
+        for action in churn_diag.prescriptive_playbook:
+            st.markdown(f"- 🚀 {action}")
+
+    with ret_sub4:
+        st.markdown("#### Modern Portfolio Theory (Markowitz) App Capital Allocator")
+        st.markdown("Calculate optimal publisher capital allocation weights maximizing risk-adjusted Sharpe ratio.")
+
+        all_cats = sorted(list(ret_engine.category_baselines.keys()))
+        selected_portfolio = st.multiselect(
+            "Select Portfolio Verticals (Categories)",
+            all_cats,
+            default=["GAME", "FINANCE", "TOOLS", "HEALTH_AND_FITNESS", "EDUCATION"],
+            key="port_multiselect"
+        )
+        risk_free = st.slider("Risk-Free Benchmark Yield (%)", 1.0, 8.0, 3.0, 0.5, key="rf_slider") / 100.0
+
+        if selected_portfolio:
+            port_result = ret_engine.optimize_app_portfolio(selected_portfolio, risk_free_rate=risk_free)
+
+            p_col1, p_col2 = st.columns([1, 1])
+            with p_col1:
+                labels = list(port_result.optimal_weights.keys())
+                weights = [v * 100.0 for v in port_result.optimal_weights.values()]
+                fig_port = go.Figure(data=[go.Pie(
+                    labels=labels,
+                    values=weights,
+                    hole=0.45,
+                    textinfo="label+percent"
+                )])
+                fig_port.update_layout(
+                    title="Optimal Markowitz Capital Allocation Weights",
+                    height=350,
+                    margin=dict(l=20, r=20, t=40, b=20)
+                )
+                st.plotly_chart(fig_port, use_container_width=True)
+
+            with p_col2:
+                st.markdown("#### Portfolio Risk-Return Profile:")
+                st.metric("Expected Annual LTV Yield", f"{port_result.expected_annual_return * 100:.1f}%")
+                st.metric("Portfolio Volatility (σ)", f"{port_result.portfolio_volatility * 100:.1f}%")
+                st.metric("Maximized Sharpe Ratio", f"{port_result.sharpe_ratio:.2f}")
+                st.info(f"📊 **Diversification Verdict**: {port_result.diversification_verdict}")

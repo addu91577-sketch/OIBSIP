@@ -1,0 +1,17 @@
+App,Category,Rating,Installs,Days_Since_Update,Churn_Risk_Score,Churn_Risk_Tier,Primary_Churn_Driver,Stagnancy_Risk,Sentiment_Risk,Rating_Risk
+Duolingo: Learn Languages Free,FAMILY,4.7,100000000,2,19.1,LOW_CHURN_DEFENSIVE,Negative Review Sentiment Spikes,10.4,36.4,5.0
+Subway Surfers,GAME,4.5,1000000000,27,27.4,MODERATE_CHURN_STABLE,Low Engagement Volatility,14.8,38.0,17.1
+Clash of Clans,GAME,4.6,100000000,24,23.3,LOW_CHURN_DEFENSIVE,Negative Review Sentiment Spikes,14.3,48.4,10.1
+Candy Crush Saga,GAME,4.4,500000000,34,32.5,MODERATE_CHURN_STABLE,Negative Review Sentiment Spikes,16.1,55.8,24.1
+WhatsApp Messenger,COMMUNICATION,4.4,1000000000,5,21.7,LOW_CHURN_DEFENSIVE,Negative Review Sentiment Spikes,10.9,38.0,15.5
+Instagram,SOCIAL,4.5,1000000000,8,22.4,LOW_CHURN_DEFENSIVE,Negative Review Sentiment Spikes,11.4,38.0,17.3
+Facebook,SOCIAL,4.1,1000000000,5,31.5,MODERATE_CHURN_STABLE,Negative Review Sentiment Spikes,10.9,55.3,45.3
+Roblox,FAMILY,4.5,100000000,8,24.2,LOW_CHURN_DEFENSIVE,Low Engagement Volatility,11.4,38.0,12.8
+Uber Driver,BUSINESS,4.4,10000000,5,18.0,LOW_CHURN_DEFENSIVE,Negative Review Sentiment Spikes,10.9,38.0,13.9
+Dropbox,PRODUCTIVITY,4.4,500000000,7,30.9,MODERATE_CHURN_STABLE,Binary Size / APK Bloat,11.2,34.8,19.8
+Photo Editor & Candy Camera & Grid & ScrapBook,ART_AND_DESIGN,4.1,10000,213,44.5,MODERATE_CHURN_STABLE,Low Engagement Volatility,47.9,38.0,53.2
+Calorie Counter - MyFitnessPal,HEALTH_AND_FITNESS,4.6,50000000,8,22.3,LOW_CHURN_DEFENSIVE,Low Engagement Volatility,11.4,35.1,10.0
+Headspace: Meditation & Mindfulness,HEALTH_AND_FITNESS,4.6,10000000,16,25.8,MODERATE_CHURN_STABLE,Low Engagement Volatility,12.8,30.0,10.0
+Minecraft,FAMILY,4.5,10000000,15,18.1,LOW_CHURN_DEFENSIVE,Negative Review Sentiment Spikes,12.7,38.0,12.8
+Grand Theft Auto: San Andreas,GAME,4.4,1000000,1236,46.7,MODERATE_CHURN_STABLE,Release Stagnancy (Outdated Build),100.0,38.0,24.1
+Bloons TD 5,FAMILY,4.6,1000000,26,19.8,LOW_CHURN_DEFENSIVE,Negative Review Sentiment Spikes,14.6,38.0,5.8
