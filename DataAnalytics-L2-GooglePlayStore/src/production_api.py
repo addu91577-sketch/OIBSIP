@@ -39,6 +39,7 @@ from src.simulation_engine import PlayStoreSimulationEngine
 from src.recommendation_engine import PlayStoreRecommendationEngine
 from src.aso_intelligence_engine import ASOReviewIntelligenceEngine
 from src.retention_churn_ltv_engine import RetentionChurnLTVEngine
+from src.fraud_anomaly_surveillance_engine import PlayStoreFraudSurveillanceEngine
 
 
 # ============================================================================
@@ -676,6 +677,58 @@ class PortfolioOptimizerResponse(BaseModel):
     diversification_verdict: str
 
 
+# ----------------------------------------------------------------------------
+# Day 14 Schemas: App Fraud, Anomaly & Review Manipulation Surveillance
+# ----------------------------------------------------------------------------
+
+class FraudAuditRequest(BaseModel):
+    """Payload to perform a full trust, safety and anomaly audit for an app."""
+    app_name: str = Field(..., json_schema_extra={"example": "Subway Surfers"})
+    category: Optional[str] = Field(None, json_schema_extra={"example": "GAME"})
+    rating: Optional[float] = Field(None, ge=1.0, le=5.0, json_schema_extra={"example": 4.5})
+    reviews: Optional[int] = Field(None, ge=0, json_schema_extra={"example": 100000})
+    installs: Optional[int] = Field(None, ge=0, json_schema_extra={"example": 1000000})
+    price: Optional[float] = Field(None, ge=0.0, json_schema_extra={"example": 0.0})
+    size_mb: Optional[float] = Field(None, ge=0.0, json_schema_extra={"example": 35.0})
+
+
+class FraudAuditResponse(BaseModel):
+    """Trust and Integrity audit scorecard with prescriptive enforcement."""
+    app_name: str
+    category: str
+    rating: float
+    reviews: int
+    installs: int
+    price: float
+    trust_score: float
+    trust_tier: str
+    benford_penalty: float
+    dissonance_penalty: float
+    anomaly_penalty: float
+    security_penalty: float
+    compliance_action: str
+    audit_triggers: List[str]
+
+
+class BenfordTestRequest(BaseModel):
+    """Payload to execute first-digit Benford's Law goodness-of-fit testing."""
+    values: List[float] = Field(..., min_length=1, json_schema_extra={"example": [100, 250, 310, 480, 520, 150, 190, 220, 380, 105, 120, 290]})
+    metric_name: Optional[str] = Field("Values", json_schema_extra={"example": "Daily_Active_Users"})
+
+
+class BenfordTestResponse(BaseModel):
+    """Benford's Law Chi-Square and Kolmogorov-Smirnov test results."""
+    metric_name: str
+    sample_size: int
+    chi2_stat: float
+    p_value: float
+    ks_stat: float
+    is_conformant: bool
+    conformance_tier: str
+    observed_dist: Dict[str, float]
+    expected_dist: Dict[str, float]
+
+
 # ============================================================================
 # Engine Singleton & Lifespan Management
 # ============================================================================
@@ -686,6 +739,7 @@ _simulation_engine_instance: Optional[PlayStoreSimulationEngine] = None
 _recommendation_engine_instance: Optional[PlayStoreRecommendationEngine] = None
 _aso_engine_instance: Optional[ASOReviewIntelligenceEngine] = None
 _retention_engine_instance: Optional[RetentionChurnLTVEngine] = None
+_fraud_engine_instance: Optional[PlayStoreFraudSurveillanceEngine] = None
 _server_start_time: float = time.time()
 
 
@@ -739,6 +793,14 @@ def get_retention_engine() -> RetentionChurnLTVEngine:
     if _retention_engine_instance is None:
         _retention_engine_instance = RetentionChurnLTVEngine()
     return _retention_engine_instance
+
+
+def get_fraud_engine() -> PlayStoreFraudSurveillanceEngine:
+    """Retrieve or initialize the singleton PlayStoreFraudSurveillanceEngine instance."""
+    global _fraud_engine_instance
+    if _fraud_engine_instance is None:
+        _fraud_engine_instance = PlayStoreFraudSurveillanceEngine()
+    return _fraud_engine_instance
 
 
 @asynccontextmanager
@@ -1521,6 +1583,80 @@ def create_app() -> FastAPI:
             risk_free_rate=request_body.risk_free_rate
         )
         return PortfolioOptimizerResponse(**res.to_dict())
+
+    # ------------------------------------------------------------------------
+    # Day 14 Endpoints: App Fraud, Anomaly & Review Manipulation Surveillance
+    # ------------------------------------------------------------------------
+
+    @app.post(
+        "/api/v1/fraud/audit-app",
+        response_model=FraudAuditResponse,
+        summary="Audit App Trust, Fraud Risk, Benford Conformity & Compliance Directive",
+        tags=["Fraud, Anomaly & Review Surveillance"]
+    )
+    async def fraud_audit_app_endpoint(request_body: FraudAuditRequest) -> FraudAuditResponse:
+        """Run complete 4-pillar Trust and Integrity audit for an existing or custom app."""
+        fraud_engine = get_fraud_engine()
+        res = fraud_engine.audit_app_trust(
+            app_name=request_body.app_name,
+            custom_category=request_body.category,
+            custom_rating=request_body.rating,
+            custom_reviews=request_body.reviews,
+            custom_installs=request_body.installs,
+            custom_price=request_body.price,
+            custom_size=request_body.size_mb
+        )
+        return FraudAuditResponse(**res.to_dict())
+
+    @app.post(
+        "/api/v1/fraud/benford-test",
+        response_model=BenfordTestResponse,
+        summary="Execute Benford's Law Chi-Square & KS Goodness-of-Fit Test",
+        tags=["Fraud, Anomaly & Review Surveillance"]
+    )
+    async def fraud_benford_test_endpoint(request_body: BenfordTestRequest) -> BenfordTestResponse:
+        """Evaluate first-digit distribution against Newcomb-Benford logarithmic law."""
+        fraud_engine = get_fraud_engine()
+        res = fraud_engine.test_benfords_law(
+            values=request_body.values,
+            metric_name=request_body.metric_name or "Values"
+        )
+        # Convert integer keys to strings for JSON schema conformance
+        d = res.to_dict()
+        d["observed_dist"] = {str(k): v for k, v in d["observed_dist"].items()}
+        d["expected_dist"] = {str(k): v for k, v in d["expected_dist"].items()}
+        return BenfordTestResponse(**d)
+
+    @app.get(
+        "/api/v1/fraud/category-benchmarks",
+        summary="Retrieve Category Integrity Benchmarks & Benford Conformity",
+        tags=["Fraud, Anomaly & Review Surveillance"]
+    )
+    async def fraud_category_benchmarks_endpoint(
+        category: Optional[str] = Query(None, description="Optional specific category filter")
+    ):
+        """Retrieve category-level anomaly rates, Benford conformance, and average trust score."""
+        fraud_engine = get_fraud_engine()
+        benchmarks = fraud_engine.generate_category_benchmarks()
+        if category:
+            cat_match = benchmarks[benchmarks["Category"] == category.upper()]
+            if not cat_match.empty:
+                return JSONResponse(content=cat_match.to_dict(orient="records")[0])
+            return JSONResponse(status_code=404, content={"detail": f"Category {category} not found."})
+        return JSONResponse(content=benchmarks.to_dict(orient="records"))
+
+    @app.get(
+        "/api/v1/fraud/suspicious-apps",
+        summary="Retrieve Top Suspicious Apps Flagged for Trust & Safety Audit",
+        tags=["Fraud, Anomaly & Review Surveillance"]
+    )
+    async def fraud_suspicious_apps_endpoint(
+        limit: int = Query(25, ge=1, le=100, description="Maximum number of flagged apps to return")
+    ):
+        """Retrieve top lowest-trust apps requiring manual Play Store review or immediate action."""
+        fraud_engine = get_fraud_engine()
+        suspicious = fraud_engine.get_top_suspicious_apps(n=limit)
+        return JSONResponse(content=suspicious.to_dict(orient="records"))
 
     return app
 

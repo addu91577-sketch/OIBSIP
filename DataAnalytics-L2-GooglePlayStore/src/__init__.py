@@ -66,6 +66,15 @@ from src.retention_churn_ltv_engine import (
     ChurnRiskDiagnosticResult,
     PortfolioAllocationResult,
 )
+from src.fraud_anomaly_surveillance_engine import (
+    PlayStoreFraudSurveillanceEngine,
+    BenfordTestResult,
+    ReviewDissonanceResult,
+    MultivariateAnomalyResult,
+    AppTrustScoreResult,
+    CategoryIntegrityBenchmark,
+    BENFORD_THEORETICAL
+)
 
 __all__ = [
     "clean_playstore_apps",
@@ -113,5 +122,12 @@ __all__ = [
     "LTVProjectionResult",
     "DeveloperLifecycleResult",
     "ChurnRiskDiagnosticResult",
-    "PortfolioAllocationResult"
+    "PortfolioAllocationResult",
+    "PlayStoreFraudSurveillanceEngine",
+    "BenfordTestResult",
+    "ReviewDissonanceResult",
+    "MultivariateAnomalyResult",
+    "AppTrustScoreResult",
+    "CategoryIntegrityBenchmark",
+    "BENFORD_THEORETICAL"
 ]

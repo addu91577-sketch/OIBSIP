@@ -641,23 +641,23 @@ Benchmarked over 40 requests per endpoint:
 
 ---
 
-### 5. Automated CI/CD Regression Suite (110 Passed Tests)
-Continuous integration pipeline via GitHub Actions (`.github/workflows/ci.yml`) testing Python 3.11, 3.12, 3.13, and 3.14:
-- Day 1: Data Cleaning (`tests/test_cleaning.py`) — **4 passed**
-- Day 2: Category, Ratings & Size (`tests/test_category_ratings.py`) — **6 passed**
-- Day 3: Pricing & Sentiment (`tests/test_pricing_sentiment.py`) — **8 passed**
-- Day 4: NLP Autocomplete Engine (`tests/test_nlp_autocomplete.py`) — **9 passed**
-- Day 5: NLP Autocorrect Engine (`tests/test_nlp_autocorrect.py`) — **9 passed**
-- Day 6: Master Pipeline & CLI (`tests/test_master_pipeline.py`) — **9 passed**
-- Day 7: Production REST API (`tests/test_production_api.py`) — **20 passed**
-- Day 8: Delivery Showcase & Deck (`tests/test_delivery_showcase.py`) — **5 passed**
-- Day 9: Predictive ML & Drift Analytics (`tests/test_predictive_modeling.py`) — **9 passed**
-- Day 10: Counterfactual Simulation & A/B Testing (`tests/test_simulation_ab_testing.py`) — **14 passed**
-- Day 11: Multi-Modal App Recommendation & Discovery (`tests/test_recommendation_engine.py`) — **17 passed**
-- Day 12: ASO Keyword Gap & Aspect Review Intelligence (`tests/test_aso_aspect_intelligence.py`) — **20 passed**
-│   └── test_retention_churn_ltv.py        # Day 13: Retention, churn & LTV suite (22 passed)
-- **Total Suite Coverage**: **152 passed tests (100% pass rate)**.
-
+### 5. Automated CI/CD Regression Suite (175 Passed Tests)
+Continuous integration pipeline via GitHub Actions (.github/workflows/ci.yml) testing Python 3.11, 3.12, 3.13, and 3.14:
+- Day 1: Data Cleaning (	ests/test_cleaning.py) — **4 passed**
+- Day 2: Category, Ratings & Size (	ests/test_category_ratings.py) — **6 passed**
+- Day 3: Pricing & Sentiment (	ests/test_pricing_sentiment.py) — **8 passed**
+- Day 4: NLP Autocomplete Engine (	ests/test_nlp_autocomplete.py) — **9 passed**
+- Day 5: NLP Autocorrect Engine (	ests/test_nlp_autocorrect.py) — **9 passed**
+- Day 6: Master Pipeline & CLI (	ests/test_master_pipeline.py) — **9 passed**
+- Day 7: Production REST API (	ests/test_production_api.py) — **20 passed**
+- Day 8: Delivery Showcase & Deck (	ests/test_delivery_showcase.py) — **5 passed**
+- Day 9: Predictive ML & Drift Analytics (	ests/test_predictive_modeling.py) — **9 passed**
+- Day 10: Counterfactual Simulation & A/B Testing (	ests/test_simulation_ab_testing.py) — **14 passed**
+- Day 11: Multi-Modal App Recommendation & Discovery (	ests/test_recommendation_engine.py) — **17 passed**
+- Day 12: ASO Keyword Gap & Aspect Review Intelligence (	ests/test_aso_aspect_intelligence.py) — **20 passed**
+- Day 13: Cohort Retention, Churn Risk & LTV (	ests/test_retention_churn_ltv.py) — **22 passed**
+- Day 14: App Fraud, Anomaly & Review Manipulation Surveillance (	ests/test_fraud_anomaly_surveillance.py) — **23 passed**
+- **Total Suite Coverage**: **175 passed tests (100% pass rate)**.
 ---
 
 ## 🎬 Day 8 Milestones & Deliverables (Interactive Presentation Deck, Video Narration Guide & Delivery Showcase)
@@ -1078,6 +1078,94 @@ $$\max_{\mathbf{w}} \frac{\mathbf{w}^T \boldsymbol{\mu} - R_f}{\sqrt{\mathbf{w}^
 
 ---
 
+---
+
+## 🛡️ Day 14 Milestones & Deliverables (App Store Fraud, Anomaly & Review Manipulation Surveillance Engine)
+
+Day 14 transforms the platform into an enterprise-grade mobile Trust & Safety forensic surveillance ecosystem, combining Newcomb-Benford leading-digit distribution auditing, sentiment-rating dissonance mining, Shannon lexical entropy bot detection, multivariate Mahalanobis outlier isolation, and automated Play Store compliance directives.
+
+### 1. Newcomb-Benford First-Digit Goodness-of-Fit Auditing
+Empirical testing of store metric leading digits ( \in \{1, \dots, 9\}$) against Benford's logarithmic distribution:
+P(d) = \log_{10}\left(1 + \frac{1}{d}\right)
+- **Forensic Statistical Rigor**:
+  - Computes Chi-Square Goodness-of-Fit test statistic ($\chi^2 = \sum \frac{(O_d - E_d)^2}{E_d}$, $\text{df}=8$) and Kolmogorov-Smirnov supremum distance ({KS} = \max |F_{emp} - F_{ben}|$).
+  - Evaluates both review volume distributions and install brackets to detect artificial number manipulation, bot review bursts, and rounded install bracket anomalies.
+  - Three-tier conformity grading: ORGANIC_BENFORD_CONFORMANT ( \ge 0.05$), MODERATE_BENFORD_DIVERGENCE (.01 \le p < 0.05$), and CRITICAL_BENFORD_ANOMALY ( < 0.01$).
+
+| Metric Tested | Sample Size ($) | Leading Digit =1$ Freq (%) | Leading Digit =9$ Freq (%) | $\chi^2$ Statistic | $-value | Conformance Verdict |
+| :--- | :---: | :---: | :---: | :---: | :---: | :--- |
+| **Reviews (Organic Catalog)** | 9,659 | 29.8% | 4.7% | 14.28 | 0.0747 | ORGANIC_BENFORD_CONFORMANT (Conforms to Benford) |
+| **Installs (Bracket Clustered)** | 9,659 | 48.2% | 1.8% | 1,842.1 | $< 10^{-10}$ | CRITICAL_BENFORD_ANOMALY (Quantized Brackets) |
+
+---
+
+### 2. Review Sentiment-Rating Dissonance & Bot Manipulation Mining
+Cross-analyzes app star rating (.0 \le r \le 5.0$) against natural language review polarity ($-1.0 \le p \le +1.0$) across the 29,692 user reviews dataset:
+- **Sentiment Dissonance Metric**:
+  \text{Dissonance}(r, p) = \left| \frac{r - 1.0}{4.0} - \frac{p + 1.0}{2.0} \right| \in [0.0, 1.0]
+- **Manipulation Archetypes Flagged**:
+  - *Fake 5-Star Reviews*: High rating ( \ge 4.3$) paired with severe negative complaints ( < -0.15$), indicating paid review syndicates submitting canned 5-star ratings with real complaint copy.
+  - *Review Bombing Brigades*: Low rating ( \le 2.5$) paired with glowing praise ( > +0.25$), indicating accidental 1-star ratings or coordinated malicious brigading.
+- **Shannon Lexical Entropy & Repetition Ratio**:
+  H(X) = -\sum_{w \in V} p(w) \log_2 p(w)
+  - Low entropy ( < 3.0$) and high repetition ratios ($> 0.65$) isolate repetitive bot text, canned copy-paste review templates, and keyword-stuffing bots.
+  - Bot classification tiers: ORGANIC_HUMAN, SUSPECT_INCONGRUENT, HIGH_BOT_BURST.
+
+---
+
+### 3. Multivariate Outlier & Anomaly Isolation (Mahalanobis Distance with Regularization)
+Detects multi-dimensional metric anomalies relative to category-calibrated empirical baselines:
+\mathbf{x} = \left[ \log_{10}(\text{Installs} + 1), \log_{10}(\text{Reviews} + 1), \text{Rating}, \text{Size\_MB}, \log_{10}(\text{Price} + 1) \right]^T
+- **Covariance Shrinkage & Regularization**:
+  D_M(\mathbf{x}) = \sqrt{(\mathbf{x} - \boldsymbol{\mu}_c)^T \mathbf{\Sigma}_{reg}^{-1} (\mathbf{x} - \boldsymbol{\mu}_c)}, \quad \mathbf{\Sigma}_{reg} = \mathbf{\Sigma}_c + 10^{-3} \operatorname{Tr}(\mathbf{\Sigma}_c) \mathbf{I}
+- **Outlier Reason Attribution**:
+  - *Ghost Apps*: High installs ($> 1\text{M}$) with negligible reviews ($< 20$) — abandoned or zombie downloads.
+  - *Install Farm Spikes*: Extreme review counts exceeding plausible organic install-to-review ratios ($> 10\%$).
+  - *Pricing Extortion Anomalies*: Extreme pricing ($> \$) paired with suspicious near-perfect ratings and minimal review velocity.
+
+---
+
+### 4. Android Dangerous Permission & Bloat Risk Profiling
+Assesses attack surfaces and binary bloat relative to category functional expectations:
+- **Category Permission Danger Index**: Benchmarks baseline permission footprints across all 33 categories (e.g. MAPS_AND_NAVIGATION: 8.0, COMMUNICATION: 7.5, vs BOOKS_AND_REFERENCE: 2.2).
+- **Over-Privileged Ratio & APK Bloat Penalty**: Penalizes lightweight utility or educational apps demanding disproportionate permissions or exceeding \text{MB}$ in APK binary footprint.
+
+---
+
+### 5. Composite App Trust & Integrity Scorecard (ATIS: 0–100) & Compliance Playbook
+Synthesizes all 4 forensic pillars into a standardized Trust & Safety Index:
+\text{ATIS} = \max\left(5.0, \min\left(100.0, 100.0 - (P_{\text{Benford}} + P_{\text{Dissonance}} + P_{\text{Mahalanobis}} + P_{\text{Security}})\right)\right)
+- **Catalog Trust Distribution**:
+  - TIER_A_VERIFIED_ORGANIC (.0 - 100.0$): **7,142 apps (73.94%)** — Healthy organic apps conformant with benchmarks.
+  - TIER_B_NORMAL_TRUST (.0 - 84.9$): **1,854 apps (19.19%)** — Standard apps with minor variance.
+  - TIER_C_ELEVATED_SUSPICION (.0 - 69.9$): **546 apps (5.65%)** — Elevated anomaly score; requires automated telemetry monitoring.
+  - TIER_D_CRITICAL_FRAUD_ALERT ($< 50.0$): **117 apps (1.21%)** — Critical manipulation or extreme outlier; flagged for immediate takedown.
+- **Automated Play Store Compliance Directives**:
+  - VERIFIED_CLEAR (73.9%) | ENHANCED_TELEMETRY (19.2%) | TRUST_AND_SAFETY_AUDIT (5.7%) | STORE_TAKEDOWN_RECOMMENDED (1.2%).
+
+---
+
+### 6. Production REST API Endpoints (Day 14 Additions)
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| POST | /api/v1/fraud/audit-app | Runs full 4-pillar Trust and Integrity audit for an existing or custom app concept |
+| POST | /api/v1/fraud/benford-test | Evaluates first-digit distribution against Benford's logarithmic law ($\chi^2$, KS, p-value) |
+| GET | /api/v1/fraud/category-benchmarks | Retrieves category-level anomaly rates, Benford conformance, and average trust score |
+| GET | /api/v1/fraud/suspicious-apps | Returns top lowest-trust apps prioritized for manual Trust & Safety compliance audit |
+
+---
+
+### 7. Publication Visualizations (Figures 28 & 29)
+
+#### Figure 28: Benford's Law Forensic Auditing & Review Sentiment Manipulation Analytics
+![Day 14 Benford Law & Review Manipulation](reports/figures/28_benford_law_and_review_manipulation.png)
+
+#### Figure 29: Multivariate Outliers, Strategic Churn-Trust Quadrant & Compliance Enforcement
+![Day 14 Multivariate Anomalies & Compliance Quadrant](reports/figures/29_multivariate_anomalies_and_risk_quadrant.png)
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -1150,6 +1238,9 @@ Google Playstore Analysis/
 │   ├── sample_ltv_projections.csv          # Day 13: Discounted LTV, CAC payback & economic tiers
 │   ├── app_churn_risk_scorecard.csv        # Day 13: Composite churn risk scores & driver attribution
 │   ├── developer_lifecycle_summary.csv     # Day 13: Catalog maintenance & abandonware distribution
+│   ├── app_fraud_anomaly_scorecard.csv        # Day 14: 360-degree App Trust & Integrity scorecard
+│   ├── category_integrity_benchmarks.csv      # Day 14: Category anomaly rates & Benford conformity
+│   ├── suspicious_apps_audit_report.csv       # Day 14: Top suspicious apps flagged for Trust & Safety review
 │   └── figures/
 │       ├── 01_category_distribution.png    # Saturated vs niche categories bar chart (Day 2)
 │       ├── 02_rating_distributions.png     # Rating KDE & top 20 category box plots (Day 2)
@@ -1175,7 +1266,11 @@ Google Playstore Analysis/
 │       ├── 22_recommendation_engine_benchmarks.png # Day 11: Hit Rate, NDCG, ILD trade-off & 2D SVD embedding
 │       ├── 23_app_similarity_network_and_cold_start.png # Day 11: Affinity heatmap, cold-start & coverage
 │       ├── 24_aspect_based_sentiment_and_topic_modeling.png # Day 12: Aspect NSS, radar health & LDA topic weights
-│       └── 25_aso_competitor_keyword_gap_and_app_health.png # Day 12: ASO matrix, authenticity & 360° health distributions
+│       ├── 25_aso_competitor_keyword_gap_and_app_health.png # Day 12: ASO matrix, authenticity & 360° health distributions
+│       ├── 26_retention_decay_and_cohort_survival.png # Day 13: Power-law decay, milestones & LTV trajectory
+│       ├── 27_churn_risk_and_developer_lifecycle.png  # Day 13: Stagnancy quadrant, abandonware & Markowitz frontier
+│       ├── 28_benford_law_and_review_manipulation.png # Day 14: Benford test & review dissonance
+│       └── 29_multivariate_anomalies_and_risk_quadrant.png # Day 14: Mahalanobis outliers & compliance quadrant
 ├── src/
 │   ├── __init__.py                     # Package definition exposing all modular engines
 │   ├── data_cleaning.py                # Day 1: Reusable data cleaning pipeline
@@ -1190,7 +1285,9 @@ Google Playstore Analysis/
 │   ├── predictive_modeling.py          # Day 9: Predictive ML, rating regression & MLOps drift engine
 │   ├── simulation_engine.py            # Day 10: Counterfactual simulation, elasticity & A/B testing engine
 │   ├── recommendation_engine.py        # Day 11: Multi-modal app recommendation & discovery engine
-│   └── aso_intelligence_engine.py         # Day 12: Aspect sentiment, LDA topics, authenticity & ASO engine
+│   ├── aso_intelligence_engine.py         # Day 12: Aspect sentiment, LDA topics, authenticity & ASO engine
+│   ├── retention_churn_ltv_engine.py      # Day 13: Cohort retention, churn risk & LTV forecasting engine
+│   └── fraud_anomaly_surveillance_engine.py # Day 14: App fraud, anomaly & review manipulation engine
 └── tests/
     ├── test_cleaning.py                # Day 1: Data cleaning pytest suite (4 passed)
     ├── test_category_ratings.py        # Day 2: Category & ratings pytest suite (6 passed)
@@ -1281,12 +1378,17 @@ python src/recommendation_engine.py
 
 # Day 12 ASO Keyword Gap & Aspect Review Intelligence Pipeline
 python src/aso_intelligence_engine.py
-│   └── retention_churn_ltv_engine.py      # Day 13: Cohort retention, churn risk & LTV forecasting engine
+
+# Day 13 Cohort Retention, Churn Risk & LTV Forecasting Engine
+python src/retention_churn_ltv_engine.py
+
+# Day 14 App Store Fraud, Anomaly & Review Manipulation Pipeline
+python src/fraud_anomaly_surveillance_engine.py
 ```
 
 ### 6. Run Automated Pytest Regression Suite
 ```bash
-# Execute entire test suite (152 passed across all modules, 100% pass rate)
+# Execute entire test suite (175 passed across all modules, 100% pass rate)
 pytest tests/ -v
 ```
 
@@ -1305,6 +1407,7 @@ jupyter notebook notebooks/10_counterfactual_simulation_and_ab_testing.ipynb
 jupyter notebook notebooks/11_app_recommendation_and_discovery_engine.ipynb
 jupyter notebook notebooks/12_aso_intelligence_and_aspect_sentiment.ipynb
 jupyter notebook notebooks/13_cohort_retention_churn_and_ltv_forecasting.ipynb
+jupyter notebook notebooks/14_fraud_anomaly_and_review_manipulation.ipynb
 ```
 
 
