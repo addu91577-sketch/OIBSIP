@@ -44,6 +44,7 @@ DataAnalytics-L1-CleaningData/
 │   ├── day10_chronological_temporal_imputation_and_dataset_completion.md # Day 10 Chronological Temporal Imputation & Dataset Completion Report
 │   ├── day11_multi_tier_duplicate_resolution_and_entity_integrity.md # Day 11 Multi-Tier Duplicate Resolution & Entity Integrity Report
 │   ├── day12_statistical_outlier_detection_and_moment_profiling.md # Day 12 Statistical Outlier Detection & Moment Profiling Report
+│   ├── day13_domain_outlier_treatment_and_sensitivity_analysis.md # Day 13 Domain Outlier Treatment Decisioning & Sensitivity Analysis Report
 │   └── figures/                        # High-resolution diagnostic visualizations
 │       ├── day3_column_defect_rates.png
 │       ├── day3_record_defect_distribution.png
@@ -65,7 +66,9 @@ DataAnalytics-L1-CleaningData/
 │       ├── day11_duplicate_audit_taxonomy_waterfall.png
 │       ├── day11_basket_concurrence_and_poisson_distribution.png
 │       ├── day12_statistical_outlier_detection_fences.png
-│       └── day12_distributional_moments_and_spend_tails.png
+│       ├── day12_distributional_moments_and_spend_tails.png
+│       ├── day13_treatment_policy_sensitivity_tradeoffs.png
+│       └── day13_retention_policy_and_domain_proofs.png
 └── src/
     ├── __init__.py
     └── utils.py                        # Reusable data audit & metric routines
@@ -86,7 +89,7 @@ DataAnalytics-L1-CleaningData/
 - [x] **Day 10 (Oct 28):** Chronological temporal fill for Transaction Date & full 80,000-cell dataset completion audit (460 dates recovered, 80,000 / 80,000 cells 100.0% clean)
 - [x] **Day 11 (Oct 29):** Multi-tier duplicate resolution, POS Birthday Paradox collision audit, and transaction entity integrity verification (10,000 unique records certified, 0 data loss, $4,864.50 revenue protected)
 - [x] **Day 12 (Oct 30):** Statistical numerical outlier detection (Tukey IQR Fences & 3-Sigma Z-Score), distributional moment profiling, and candidate boundary isolation (271 mild IQR flags at $25.00, 0 extreme outliers, 0 Z-score outliers, $6,775.00 revenue audited)
-- [ ] **Day 13:** Domain outlier treatment decisioning, sensitivity modeling, and accounting invariant retention proofs
+- [x] **Day 13 (Oct 31):** Domain outlier treatment decisioning, multi-scenario sensitivity modeling, and accounting invariant retention proofs (Policy C certified: 10,000 / 10,000 records retained, 100% accounting invariant compliance, $6,775.00 commercial revenue protected)
 - [ ] **Day 14–16:** Master Before vs. After comparison summary and clean dataset export
 - [ ] **Day 17–18:** Automated regression testing (`pytest`), CI workflow, and final delivery certification
 
@@ -466,6 +469,51 @@ An exhaustive forensic investigation into the 271 transactions flagged by Tukey'
 5. **Two Diagnostic Figures Serialized:** Rendered `day12_statistical_outlier_detection_fences.png` and `day12_distributional_moments_and_spend_tails.png` at 300 DPI.
 6. **100% QA Sign-Off:** Certified all 19 structural, statistical, and domain assertions via `verify_day12_outlier_integrity()`.
 7. Detailed report available in [`Reports/day12_statistical_outlier_detection_and_moment_profiling.md`](Reports/day12_statistical_outlier_detection_and_moment_profiling.md).
+
+---
+
+
+## ⚖️ Day 13 Milestone: Domain Outlier Treatment Decisioning & Sensitivity Modeling
+
+On Day 13, the pipeline evaluated three candidate engineering policies for treating the **271 mild outlier records ($25.00 spend)** isolated on Day 12:
+- **Policy A: Naive Deletion / Listwise Dropping** (purging all 271 records $> \$24.00$)
+- **Policy B: Winsorization / Fence Capping** (clamping `Total Spent` from $\$25.00$ down to $\$24.00$)
+- **Policy C: Certified Domain-Informed Retention** (retaining all 271 records with verified authentic commercial validity)
+
+### Master Multi-Scenario Sensitivity Modeling Matrix
+
+| Metric Dimension | Baseline / Policy C (Retention - Prod) | Policy B (Winsorization) | Policy A (Naive Deletion) | Sensitivity Shift (C $	o$ A) | Operational Assessment |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Transaction Records ($N$)** | **10,000** | 10,000 | 9,729 | **-271 (-2.71%)** | Destructive record purging |
+| **Gross Store Revenue ($)** | **\$89,395.00** | \$89,124.00 | \$82,620.00 | **-\$6,775.00 (-7.58%)** | Erases 7.58% annual gross turnover |
+| **Average Order Value (AOV)** | **\$8.9395** | \$8.9124 | \$8.4921 | **-\$0.4474 (-5.00%)** | Depresses average ticket size |
+| **Median Spend ($)** | **\$8.0000** | \$8.0000 | \$7.5000 | -\$0.5000 (-6.25%) | Shifts median downward |
+| **Spend Variance ($\sigma^2$)** | **36.1214** | 35.2772 | 29.7418 | **-6.3796 (-17.66%)** | Suppresses stochastic retail dispersion |
+| **Fisher-Pearson Skewness ($g_1$)** | **+0.8193** | +0.7686 | +0.6623 | **-0.1570 (-19.16%)** | Unnatural upper tail truncation |
+| **Excess Kurtosis ($g_2$)** | **-0.1540** | -0.3308 | -0.6037 | -0.4497 (+292% plat) | Distorts tail profile |
+| **Salad Units Sold** | **3,834 units** | 3,834 units | 2,479 units | **-1,355 units (-35.34%)**| Cripples inventory forecasting |
+| **Salad Category Revenue** | **\$19,170.00** | \$18,899.00 | \$12,395.00 | **-\$6,775.00 (-35.34%)**| Erases 35.34% of product turnover |
+| **Accounting Invariant Violations** | **0 (0.00%)** | **271 (2.71%)** | 0 (in subset) | 0 vs 271 breaches | Policy B causes fatal relational breach |
+| **Total Invariant Discrepancy** | **\$0.000000** | **\$271.00** | \$0.00 | +\$271.00 error | Policy B introduces unreconciled error |
+
+### Relational Accounting Invariant Preservation Proof
+The fundamental transactional invariant dictates:
+$$\text{Total Spent} \equiv \text{Quantity} \times \text{Price Per Unit}$$
+
+- **Under Policy B (Winsorization):** Clamping $\text{Total Spent} = \$24.00$ for orders with $\text{Quantity} = 5$ and $\text{Price Per Unit} = \$5.00$ creates an irreconcilable relational breach:
+  $$5 \times \$5.00 = \$25.00 \ne \$24.00 \quad (\Delta = \$1.00 \text{ per order})$$
+  Across 271 candidate transactions, Policy B injects **$\$271.00 in ledger error (2.71% violation rate)**, corrupting database consistency.
+- **Under Policy A (Naive Deletion):** Deletion eliminates **$\$6,775.00 in valid commercial turnover** and **35.34% of Salad unit volume demand**, severely misleading supply chain procurement.
+- **Under Policy C (Certified Retention):** Retains 100.0% of records, achieves **$\Delta = \$0.000000$ accounting fidelity**, preserves **$\$89,395.00** in gross revenue, and maintains 100.00% universal cell completeness ($80,000 / 80,000$ non-null cells).
+
+### Key Day 13 Achievements:
+1. **Mathematical Invariant Invalidation:** Formulated the formal proof demonstrating that Winsorization injects 271 accounting discrepancies ($\$271.00$ error).
+2. **Commercial & Inventory Defense:** Proved that Policy A deletion destroys $35.34\%$ of Salad demand ($1,355$ units) and $\$6,775.00$ in annual sales.
+3. **Multi-Scenario Sensitivity Matrix:** Evaluated 15 macroeconomic, statistical, and domain metrics across all three policies.
+4. **Policy C Formally Certified:** Production sign-off on 10,000 / 10,000 retained records with 100.00% zero-data-loss integrity.
+5. **Two Diagnostic Figures Serialized:** Rendered `day13_treatment_policy_sensitivity_tradeoffs.png` and `day13_retention_policy_and_domain_proofs.png` at 300 DPI.
+6. **100% QA Sign-Off:** Certified all 20 structural, mathematical, and domain assertions via `verify_day13_treatment_integrity()`.
+7. Detailed report available in [`Reports/day13_domain_outlier_treatment_and_sensitivity_analysis.md`](Reports/day13_domain_outlier_treatment_and_sensitivity_analysis.md).
 
 ---
 

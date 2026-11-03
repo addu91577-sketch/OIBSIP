@@ -35,6 +35,12 @@ from .utils import (
     audit_and_resolve_duplicates,
     verify_day11_duplicate_integrity,
     plot_day11_duplicate_and_entity_integrity_audit,
+    audit_and_detect_numerical_outliers,
+    verify_day12_outlier_integrity,
+    plot_day12_outlier_and_distribution_audit,
+    evaluate_outlier_treatment_policies,
+    verify_day13_treatment_integrity,
+    plot_day13_treatment_and_sensitivity_audit,
 )
 
 __all__ = [
@@ -70,4 +76,10 @@ __all__ = [
     'audit_and_resolve_duplicates',
     'verify_day11_duplicate_integrity',
     'plot_day11_duplicate_and_entity_integrity_audit',
+    'audit_and_detect_numerical_outliers',
+    'verify_day12_outlier_integrity',
+    'plot_day12_outlier_and_distribution_audit',
+    'evaluate_outlier_treatment_policies',
+    'verify_day13_treatment_integrity',
+    'plot_day13_treatment_and_sensitivity_audit',
 ]
