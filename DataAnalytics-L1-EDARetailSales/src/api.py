@@ -24,6 +24,9 @@ from src.clv_churn import CustomerLifetimeValueEngine
 from src.inventory_supply_chain import InventorySupplyChainEngine
 from src.market_basket import MarketBasketAffinityEngine
 from src.demand_forecasting import MultiHorizonDemandForecaster
+from src.attribution_marketing import AttributionMarketingEngine
+from src.gmroi_assortment import GMROIAssortmentEngine
+from src.cohort_retention import CohortRetentionSurvivalEngine
 
 # Global singletons
 analytics_engine: Optional[RetailAnalyticsEngine] = None
@@ -37,6 +40,9 @@ clv_engine: Optional[CustomerLifetimeValueEngine] = None
 inventory_engine: Optional[InventorySupplyChainEngine] = None
 market_basket_engine: Optional[MarketBasketAffinityEngine] = None
 forecasting_engine: Optional[MultiHorizonDemandForecaster] = None
+attribution_engine: Optional[AttributionMarketingEngine] = None
+gmroi_engine: Optional[GMROIAssortmentEngine] = None
+cohort_engine: Optional[CohortRetentionSurvivalEngine] = None
 
 
 @asynccontextmanager
@@ -45,6 +51,7 @@ async def lifespan(app: FastAPI):
     global analytics_engine, ml_manager, drift_detector, segmentation_engine, whatif_simulator
     global elasticity_optimizer, ab_engine, clv_engine
     global inventory_engine, market_basket_engine, forecasting_engine
+    global attribution_engine, gmroi_engine, cohort_engine
     analytics_engine = RetailAnalyticsEngine()
     ml_manager = RetailMLManager()
     ml_manager.load_or_train_models()
@@ -57,6 +64,9 @@ async def lifespan(app: FastAPI):
     inventory_engine = InventorySupplyChainEngine()
     market_basket_engine = MarketBasketAffinityEngine()
     forecasting_engine = MultiHorizonDemandForecaster()
+    attribution_engine = AttributionMarketingEngine()
+    gmroi_engine = GMROIAssortmentEngine()
+    cohort_engine = CohortRetentionSurvivalEngine()
     yield
 
 
@@ -274,6 +284,22 @@ class ForecastRequest(BaseModel):
     alpha_conformal: Optional[float] = Field(default=0.05, gt=0.0, lt=0.50, description="Conformal significance level")
 
 
+class BudgetOptimizationRequest(BaseModel):
+    total_budget: Optional[float] = Field(default=None, gt=0.0, description="Total marketing budget to allocate")
+    risk_aversion: float = Field(default=0.5, ge=0.0, le=2.0, description="Risk penalty coefficient")
+
+
+class CapitalReallocationRequest(BaseModel):
+    reallocation_pct: float = Field(default=0.35, ge=0.05, le=0.90, description="Fraction of capital to reallocate")
+    source_quadrant: str = Field(default="Dead Stock / Capital Traps", description="Source quadrant to divest from")
+    target_quadrant: str = Field(default="Stars", description="Target quadrant to reinvest in")
+
+
+class RetentionCampaignRequest(BaseModel):
+    intervention_cost_per_user: float = Field(default=12.0, gt=0.0, le=200.0, description="Cost per retention intervention")
+    expected_churn_reduction_pct: float = Field(default=0.25, ge=0.01, le=0.80, description="Expected churn reduction fraction")
+
+
 def get_analytics() -> RetailAnalyticsEngine:
     global analytics_engine
     if analytics_engine is None:
@@ -350,6 +376,27 @@ def get_forecasting() -> MultiHorizonDemandForecaster:
     if forecasting_engine is None:
         forecasting_engine = MultiHorizonDemandForecaster()
     return forecasting_engine
+
+
+def get_attribution() -> AttributionMarketingEngine:
+    global attribution_engine
+    if attribution_engine is None:
+        attribution_engine = AttributionMarketingEngine()
+    return attribution_engine
+
+
+def get_gmroi() -> GMROIAssortmentEngine:
+    global gmroi_engine
+    if gmroi_engine is None:
+        gmroi_engine = GMROIAssortmentEngine()
+    return gmroi_engine
+
+
+def get_cohort_retention() -> CohortRetentionSurvivalEngine:
+    global cohort_engine
+    if cohort_engine is None:
+        cohort_engine = CohortRetentionSurvivalEngine()
+    return cohort_engine
 
 
 # --- ROOT & HEALTH ---
@@ -981,5 +1028,172 @@ def get_demand_anomalies_endpoint(
             category=category,
             z_threshold=z_threshold,
         )
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+# ==========================================
+# DAY 12: OMNICHANNEL MARKETING ATTRIBUTION
+# ==========================================
+
+@app.get("/api/v1/attribution/models", tags=["Omnichannel Marketing Attribution"])
+def get_heuristic_attribution_models_endpoint(
+    half_life_days: float = Query(7.0, gt=0.0, le=90.0, description="Half-life decay constant in days for time-decay model"),
+) -> Dict[str, Any]:
+    """Compares 5 standard heuristic multi-touch attribution models (First, Last, Linear, Time-Decay, Position)."""
+    try:
+        engine = get_attribution()
+        engine.half_life_days = half_life_days
+        return engine.get_heuristic_attribution_summary()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/attribution/markov", tags=["Omnichannel Marketing Attribution"])
+def get_markov_attribution_endpoint() -> Dict[str, Any]:
+    """Computes algorithmic First-Order Markov Chain attribution with channel removal effects."""
+    try:
+        engine = get_attribution()
+        return engine.compute_markov_attribution()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/attribution/shapley", tags=["Omnichannel Marketing Attribution"])
+def get_shapley_attribution_endpoint() -> Dict[str, Any]:
+    """Computes cooperative Game-Theoretic Shapley Value Attribution across channel coalitions."""
+    try:
+        engine = get_attribution()
+        return engine.compute_shapley_attribution()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/attribution/optimize-budget", tags=["Omnichannel Marketing Attribution"])
+def optimize_marketing_budget_endpoint(payload: BudgetOptimizationRequest) -> Dict[str, Any]:
+    """Executes Markowitz Modern Portfolio Theory (MPT) quadratic optimization to maximize storewide ROAS."""
+    try:
+        engine = get_attribution()
+        return engine.optimize_marketing_budget(
+            total_budget=payload.total_budget,
+            risk_aversion=payload.risk_aversion,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+# ==========================================
+# DAY 12: GMROI & ASSORTMENT RATIONALIZATION
+# ==========================================
+
+@app.get("/api/v1/gmroi/overview", tags=["GMROI & Assortment Rationalization"])
+def get_category_gmroi_overview_endpoint() -> Dict[str, Any]:
+    """Computes category and storewide Gross Margin Return on Investment (GMROI) and capital productivity."""
+    try:
+        engine = get_gmroi()
+        return engine.calculate_category_gmroi()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/gmroi/quadrant-matrix", tags=["GMROI & Assortment Rationalization"])
+def get_margin_turn_quadrant_matrix_endpoint() -> Dict[str, Any]:
+    """Profiles catalog price tiers on the Margin-Turn 4-Quadrant Strategic Assortment Matrix."""
+    try:
+        engine = get_gmroi()
+        return engine.compute_margin_turn_matrix()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/gmroi/rationalization", tags=["GMROI & Assortment Rationalization"])
+def get_assortment_rationalization_endpoint() -> Dict[str, Any]:
+    """Diagnoses SKU assortment productivity, capital drag, and identifies rationalization/delisting candidates."""
+    try:
+        engine = get_gmroi()
+        return engine.evaluate_assortment_rationalization()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/gmroi/reallocate-capital", tags=["GMROI & Assortment Rationalization"])
+def reallocate_working_capital_endpoint(payload: CapitalReallocationRequest) -> Dict[str, Any]:
+    """Simulates commercial yield and profit uplift from shifting capital from dead stock to stars."""
+    try:
+        engine = get_gmroi()
+        return engine.simulate_working_capital_reallocation(
+            reallocation_pct=payload.reallocation_pct,
+            source_quadrant=payload.source_quadrant,
+            target_quadrant=payload.target_quadrant,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+# ==========================================
+# DAY 12: CUSTOMER COHORT RETENTION & SURVIVAL
+# ==========================================
+
+@app.get("/api/v1/cohorts/retention-matrix", tags=["Customer Cohort Retention & Survival"])
+def get_cohort_retention_matrix_endpoint() -> Dict[str, Any]:
+    """Builds the monthly customer acquisition cohort retention triangle matrix (Month 0 to Month 11)."""
+    try:
+        engine = get_cohort_retention()
+        return engine.compute_cohort_retention_matrix()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/cohorts/survival-analysis", tags=["Customer Cohort Retention & Survival"])
+def get_kaplan_meier_survival_endpoint(
+    segment_by: Optional[str] = Query(None, description="Optional segment breakdown: gender, age_cohort, or category"),
+) -> Dict[str, Any]:
+    """Calculates non-parametric Kaplan-Meier customer survival curves with Greenwood 95% confidence bands."""
+    try:
+        engine = get_cohort_retention()
+        return engine.compute_kaplan_meier_survival(segment_by=segment_by)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/cohorts/log-rank-test", tags=["Customer Cohort Retention & Survival"])
+def get_log_rank_test_endpoint(
+    segment_col: str = Query("gender", description="Feature column to compare: gender, age_cohort, or category"),
+) -> Dict[str, Any]:
+    """Executes Log-Rank statistical hypothesis test comparing survival trajectories between groups."""
+    try:
+        engine = get_cohort_retention()
+        return engine.compute_log_rank_test(segment_col=segment_col)
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/cohorts/hazard-cliffs", tags=["Customer Cohort Retention & Survival"])
+def get_churn_hazard_cliffs_endpoint(
+    interval_days: int = Query(15, ge=5, le=60, description="Chronological tenure interval in days"),
+) -> Dict[str, Any]:
+    """Profiles the empirical hazard rate function lambda(t) and pinpoints acute churn cliffs."""
+    try:
+        engine = get_cohort_retention()
+        return engine.detect_churn_hazard_cliffs(interval_days=interval_days)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/cohorts/retention-campaign", tags=["Customer Cohort Retention & Survival"])
+def calculate_retention_campaign_roi_endpoint(payload: RetentionCampaignRequest) -> Dict[str, Any]:
+    """Calculates the financial business case and projected ROI of proactive retention interventions."""
+    try:
+        engine = get_cohort_retention()
+        return engine.calculate_retention_campaign_roi(
+            intervention_cost_per_user=payload.intervention_cost_per_user,
+            expected_churn_reduction_pct=payload.expected_churn_reduction_pct,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))

@@ -476,3 +476,158 @@ def test_forecasting_anomalies_endpoint(test_client):
     assert response.status_code == 200
     data = response.json()
     assert isinstance(data, list)
+
+
+# ==========================================
+# DAY 12: OMNICHANNEL MARKETING ATTRIBUTION
+# ==========================================
+
+def test_attribution_models_endpoint(test_client):
+    """GET /api/v1/attribution/models must compare 5 heuristic models."""
+    response = test_client.get("/api/v1/attribution/models?half_life_days=7.0")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_transactions"] == 1000
+    assert "models" in data
+    assert "First-Touch" in data["models"]
+    assert "Last-Touch" in data["models"]
+    assert "Time-Decay" in data["models"]
+
+
+def test_attribution_markov_endpoint(test_client):
+    """GET /api/v1/attribution/markov must return Markov removal effects."""
+    response = test_client.get("/api/v1/attribution/markov")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["baseline_conversion_probability"] > 0
+    assert len(data["channel_attribution"]) == 5
+    assert data["channel_attribution"][0]["removal_effect"] >= 0
+
+
+def test_attribution_shapley_endpoint(test_client):
+    """GET /api/v1/attribution/shapley must return cooperative Shapley values."""
+    response = test_client.get("/api/v1/attribution/shapley")
+    assert response.status_code == 200
+    data = response.json()
+    assert "total_attributed_revenue" in data
+    assert len(data["shapley_attribution"]) == 5
+
+
+def test_attribution_optimize_budget_endpoint(test_client):
+    """POST /api/v1/attribution/optimize-budget must execute Markowitz MPT allocation."""
+    payload = {"total_budget": 75000.0, "risk_aversion": 0.5}
+    response = test_client.post("/api/v1/attribution/optimize-budget", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_budget"] == 75000.0
+    assert data["projected_optimal_revenue"] > 0
+    assert len(data["channel_allocations"]) == 5
+
+
+# ==========================================
+# DAY 12: GMROI & ASSORTMENT RATIONALIZATION
+# ==========================================
+
+def test_gmroi_overview_endpoint(test_client):
+    """GET /api/v1/gmroi/overview must return category GMROI benchmarks."""
+    response = test_client.get("/api/v1/gmroi/overview")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["store_blended_gmroi"] > 0
+    assert len(data["categories"]) == 3
+
+
+def test_gmroi_quadrant_matrix_endpoint(test_client):
+    """GET /api/v1/gmroi/quadrant-matrix must classify SKUs into 4 quadrants."""
+    response = test_client.get("/api/v1/gmroi/quadrant-matrix")
+    assert response.status_code == 200
+    data = response.json()
+    assert "quadrant_summary" in data
+    assert "Stars" in data["quadrant_summary"]
+    assert "classified_skus" in data
+
+
+def test_gmroi_rationalization_endpoint(test_client):
+    """GET /api/v1/gmroi/rationalization must diagnose capital drag."""
+    response = test_client.get("/api/v1/gmroi/rationalization")
+    assert response.status_code == 200
+    data = response.json()
+    assert "candidates" in data
+    assert data["total_capital_at_risk"] >= 0
+
+
+def test_gmroi_reallocate_capital_endpoint(test_client):
+    """POST /api/v1/gmroi/reallocate-capital must simulate capital shift to stars."""
+    payload = {
+        "reallocation_pct": 0.30,
+        "source_quadrant": "Dead Stock / Capital Traps",
+        "target_quadrant": "Stars"
+    }
+    response = test_client.post("/api/v1/gmroi/reallocate-capital", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["reallocation_pct"] == 30.0
+    assert data["projected_store_gmroi"] >= data["baseline_store_gmroi"]
+
+
+def test_gmroi_reallocate_capital_validation_error(test_client):
+    """POST /api/v1/gmroi/reallocate-capital must reject out-of-bound allocation."""
+    payload = {"reallocation_pct": 0.99}
+    response = test_client.post("/api/v1/gmroi/reallocate-capital", json=payload)
+    assert response.status_code == 422
+
+
+# ==========================================
+# DAY 12: CUSTOMER COHORT RETENTION & SURVIVAL
+# ==========================================
+
+def test_cohort_retention_matrix_endpoint(test_client):
+    """GET /api/v1/cohorts/retention-matrix must return monthly cohort matrix."""
+    response = test_client.get("/api/v1/cohorts/retention-matrix")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_customers"] == 1000
+    assert len(data["cohort_matrix"]) >= 12
+
+
+def test_cohort_survival_analysis_endpoint(test_client):
+    """GET /api/v1/cohorts/survival-analysis must return Kaplan-Meier curves."""
+    response = test_client.get("/api/v1/cohorts/survival-analysis?segment_by=gender")
+    assert response.status_code == 200
+    data = response.json()
+    assert "overall_survival" in data
+    assert "segmented_curves" in data
+    assert len(data["overall_survival"]["timeline"]) > 0
+
+
+def test_cohort_log_rank_test_endpoint(test_client):
+    """GET /api/v1/cohorts/log-rank-test must execute hypothesis test."""
+    response = test_client.get("/api/v1/cohorts/log-rank-test?segment_col=gender")
+    assert response.status_code == 200
+    data = response.json()
+    assert "chi_square_statistic" in data
+    assert "p_value" in data
+    assert data["degrees_of_freedom"] == 1
+
+
+def test_cohort_hazard_cliffs_endpoint(test_client):
+    """GET /api/v1/cohorts/hazard-cliffs must detect acute churn cliff windows."""
+    response = test_client.get("/api/v1/cohorts/hazard-cliffs?interval_days=15")
+    assert response.status_code == 200
+    data = response.json()
+    assert "hazard_curve" in data
+    assert len(data["hazard_curve"]) > 0
+
+
+def test_cohort_retention_campaign_endpoint(test_client):
+    """POST /api/v1/cohorts/retention-campaign must project business case ROI."""
+    payload = {
+        "intervention_cost_per_user": 14.0,
+        "expected_churn_reduction_pct": 0.20
+    }
+    response = test_client.post("/api/v1/cohorts/retention-campaign", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["target_population"] > 0
+    assert data["projected_saved_customers"] > 0
+    assert "campaign_roi_pct" in data

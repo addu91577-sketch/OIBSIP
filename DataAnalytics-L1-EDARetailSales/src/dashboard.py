@@ -32,6 +32,9 @@ from src.clv_churn import CustomerLifetimeValueEngine
 from src.inventory_supply_chain import InventorySupplyChainEngine
 from src.market_basket import MarketBasketAffinityEngine
 from src.demand_forecasting import MultiHorizonDemandForecaster
+from src.attribution_marketing import AttributionMarketingEngine
+from src.gmroi_assortment import GMROIAssortmentEngine
+from src.cohort_retention import CohortRetentionSurvivalEngine
 
 st.set_page_config(
     page_title="Retail Sales Analytics & Predictive Intelligence Suite",
@@ -56,7 +59,10 @@ def load_engines():
     inventory = InventorySupplyChainEngine()
     market_basket = MarketBasketAffinityEngine()
     forecasting = MultiHorizonDemandForecaster()
-    return analytics, ml, drift, segmentation, sim, elasticity, ab_test, clv, inventory, market_basket, forecasting
+    attribution = AttributionMarketingEngine()
+    gmroi = GMROIAssortmentEngine()
+    cohort_retention = CohortRetentionSurvivalEngine()
+    return analytics, ml, drift, segmentation, sim, elasticity, ab_test, clv, inventory, market_basket, forecasting, attribution, gmroi, cohort_retention
 
 
 analytics, ml, drift_engine, segmentation_engine, sim_engine, elasticity_engine, ab_engine, clv_engine, inventory_engine, market_basket_engine, forecasting_engine = load_engines()
@@ -1067,7 +1073,225 @@ with tab_forecasting:
         st.success("No critical demand anomalies detected at threshold Z >= 2.2.")
 
 
-# ----------------- TAB 16: STRATEGIC ACTION PLAN -----------------
+
+# ----------------- TAB 16: MARKETING ATTRIBUTION & ROAS -----------------
+with tab_attribution:
+    st.subheader("🎯 Omnichannel Multi-Touch Attribution & Marketing ROAS Optimization")
+    st.markdown(
+        "Evaluate marketing channel contribution across 5 heuristic models, First-Order Markov removal effects, "
+        "and execute Markowitz Modern Portfolio Theory (MPT) optimal advertising budget allocation."
+    )
+
+    attr_heuristics = attribution_engine.get_heuristic_attribution_summary()
+    attr_markov = attribution_engine.compute_markov_attribution()
+
+    col_att1, col_att2, col_att3, col_att4 = st.columns(4)
+    with col_att1:
+        st.metric("Total Conversion Events", f"{attr_heuristics['total_transactions']:,}")
+    with col_att2:
+        st.metric("Attributed Revenue", f"${attr_heuristics['total_revenue']:,.2f}")
+    with col_att3:
+        st.metric("Markov Baseline Conversion", f"{attr_markov['baseline_conversion_probability']*100:.2f}%")
+    with col_att4:
+        st.metric("Evaluated Channels", f"{attr_markov['channels_evaluated']}")
+
+    st.markdown("---")
+    st.markdown("##### 📊 Cross-Model Attributed Revenue Comparison ($)")
+    sel_model = st.selectbox(
+        "Select Attribution Model to Inspect",
+        ["First-Touch", "Last-Touch", "Linear", "Time-Decay", "Position-Based"],
+        index=3,
+        key="sel_attr_model",
+    )
+
+    model_channels = attr_heuristics["models"][sel_model]
+    df_model = pd.DataFrame(model_channels)
+
+    fig_attr = px.bar(
+        df_model,
+        x="channel",
+        y="attributed_revenue",
+        color="roas",
+        color_continuous_scale="Viridis",
+        title=f"Attributed Revenue & ROAS by Channel: {sel_model}",
+        labels={"attributed_revenue": "Attributed Revenue ($)", "channel": "Marketing Channel", "roas": "ROAS (x)"},
+        text_auto=".2s",
+        template="plotly_dark",
+    )
+    st.plotly_chart(fig_attr, use_container_width=True)
+
+    st.markdown("##### 🔬 First-Order Markov Chain Removal Effects & Efficiency Frontier")
+    df_markov = pd.DataFrame(attr_markov["channel_attribution"])
+    st.dataframe(df_markov, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("##### 💼 Markowitz Portfolio Optimal Marketing Budget Allocation")
+    col_bg1, col_bg2 = st.columns(2)
+    with col_bg1:
+        slider_budget = st.slider("Total Advertising Budget ($)", min_value=30000.0, max_value=150000.0, value=80000.0, step=5000.0)
+    with col_bg2:
+        slider_risk = st.slider("Risk Aversion Parameter (Gamma)", min_value=0.0, max_value=1.5, value=0.5, step=0.1)
+
+    opt_budget_res = attribution_engine.optimize_marketing_budget(total_budget=slider_budget, risk_aversion=slider_risk)
+
+    m1, m2, m3, m4 = st.columns(4)
+    with m1:
+        st.metric("Baseline Revenue", f"${opt_budget_res['baseline_revenue']:,.2f}")
+    with m2:
+        st.metric("Optimized Projected Revenue", f"${opt_budget_res['projected_optimal_revenue']:,.2f}")
+    with m3:
+        st.metric("Projected Revenue Uplift", f"+${opt_budget_res['projected_revenue_uplift']:,.2f}", f"+{opt_budget_res['uplift_pct']:.1f}%")
+    with m4:
+        st.metric("Projected Blended ROAS", f"{opt_budget_res['projected_blended_roas']:.2f}x", f"vs {opt_budget_res['baseline_blended_roas']:.2f}x")
+
+    st.dataframe(pd.DataFrame(opt_budget_res["channel_allocations"]), use_container_width=True)
+
+
+# ----------------- TAB 17: GMROI & ASSORTMENT RATIONALIZER -----------------
+with tab_gmroi:
+    st.subheader("💎 Gross Margin Return on Investment (GMROI) & Merchandise Assortment")
+    st.markdown(
+        "Evaluate inventory capital productivity, diagnose the Margin-Turn 4-Quadrant Matrix, "
+        "and simulate capital reallocation from dead stock to high-performing Stars."
+    )
+
+    gmroi_cat = gmroi_engine.calculate_category_gmroi()
+    g1, g2, g3, g4 = st.columns(4)
+    with g1:
+        st.metric("Store Total Gross Profit", f"${gmroi_cat['store_total_gross_profit']:,.2f}")
+    with g2:
+        st.metric("Store Blended Gross Margin", f"{gmroi_cat['store_blended_gross_margin_pct']:.1f}%")
+    with g3:
+        st.metric("Total Inventory Capital Tied Up", f"${gmroi_cat['store_total_inventory_investment']:,.2f}")
+    with g4:
+        st.metric("Store Blended GMROI", f"{gmroi_cat['store_blended_gmroi']:.2f}x")
+
+    st.markdown("---")
+    st.markdown("##### 📊 Margin-Turn Strategic 4-Quadrant Matrix")
+    matrix_data = gmroi_engine.compute_margin_turn_matrix()
+    sku_df = pd.DataFrame(matrix_data["classified_skus"])
+
+    fig_matrix = px.scatter(
+        sku_df,
+        x="inventory_turns",
+        y="gross_margin_pct",
+        size="revenue",
+        color="quadrant",
+        hover_data=["sku_id", "category", "price_tier", "gmroi", "merchandising_action"],
+        title="Merchandise Portfolio Matrix: Turns vs Gross Margin % (Bubble Size = Annual Revenue)",
+        labels={"inventory_turns": "Annual Inventory Turns", "gross_margin_pct": "Gross Margin %", "quadrant": "Strategic Quadrant"},
+        color_discrete_map={
+            "Stars": "#22c55e",
+            "High-Yield Specialists": "#38bdf8",
+            "Traffic Drivers": "#f59e0b",
+            "Dead Stock / Capital Traps": "#ef4444",
+        },
+        template="plotly_dark",
+    )
+    fig_matrix.add_vline(x=matrix_data["thresholds"]["median_inventory_turns"], line_dash="dash", line_color="gray")
+    fig_matrix.add_hline(y=matrix_data["thresholds"]["median_gross_margin_pct"], line_dash="dash", line_color="gray")
+    st.plotly_chart(fig_matrix, use_container_width=True)
+
+    st.markdown("##### 🚨 SKU Assortment Rationalization Candidates (Capital Drag Diagnostics)")
+    diag_data = gmroi_engine.evaluate_assortment_rationalization()
+    st.dataframe(pd.DataFrame(diag_data["candidates"]), use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("##### 🔄 Working Capital Reallocation Simulator")
+    realloc_pct = st.slider("Reallocate Inventory Capital from Dead Stock to Stars (%)", min_value=10, max_value=70, value=35, step=5)
+    realloc_sim = gmroi_engine.simulate_working_capital_reallocation(reallocation_pct=realloc_pct / 100.0)
+
+    rc1, rc2, rc3 = st.columns(3)
+    with rc1:
+        st.metric("Capital Reallocated", f"${realloc_sim['capital_reallocated_dollars']:,.2f}")
+    with rc2:
+        st.metric("Incremental Gross Profit", f"+${realloc_sim['incremental_gross_profit']:,.2f}", f"+{realloc_sim['profit_uplift_pct']:.1f}%")
+    with rc3:
+        st.metric("Projected Store GMROI", f"{realloc_sim['projected_store_gmroi']:.2f}x", f"+{realloc_sim['gmroi_delta']:.2f}x")
+
+
+# ----------------- TAB 18: COHORT RETENTION & SURVIVAL -----------------
+with tab_cohorts:
+    st.subheader("⏳ Customer Cohort Retention Dynamics & Non-Parametric Survival Analysis")
+    st.markdown(
+        "Track monthly customer acquisition cohort decay, estimate Kaplan-Meier survival curves S(t), "
+        "execute demographic log-rank hypothesis tests, and pinpoint acute churn cliff horizons."
+    )
+
+    cohort_res = cohort_engine.compute_cohort_retention_matrix()
+    km_res = cohort_engine.compute_kaplan_meier_survival(segment_by="gender")
+    hazard_res = cohort_engine.detect_churn_hazard_cliffs(interval_days=20)
+
+    ch1, ch2, ch3, ch4 = st.columns(4)
+    with ch1:
+        st.metric("Total Monitored Cohorts", f"{cohort_res['total_cohorts']}")
+    with ch2:
+        st.metric("Median Customer Survival", f"{km_res['overall_survival']['median_survival_days']} days")
+    with ch3:
+        st.metric("Median Churn Hazard Rate", f"{hazard_res['median_hazard_rate']:.4f}")
+    with ch4:
+        st.metric("Acute Churn Cliffs Detected", f"{hazard_res['critical_churn_cliffs_detected']}")
+
+    st.markdown("---")
+    st.markdown("##### 📈 Kaplan-Meier Survival Functions S(t) with Greenwood 95% Confidence Band")
+
+    km_overall = pd.DataFrame(km_res["overall_survival"]["timeline"])
+    fig_km = go.Figure()
+    fig_km.add_trace(go.Scatter(
+        x=km_overall["day"],
+        y=km_overall["survival_probability"],
+        mode="lines",
+        name="Overall Kaplan-Meier S(t)",
+        line=dict(color="#38bdf8", width=3),
+    ))
+    fig_km.add_trace(go.Scatter(
+        x=pd.concat([km_overall["day"], km_overall["day"][::-1]]),
+        y=pd.concat([km_overall["ci_upper_95"], km_overall["ci_lower_95"][::-1]]),
+        fill="toself",
+        fillcolor="rgba(56, 189, 248, 0.2)",
+        line=dict(color="rgba(255,255,255,0)"),
+        name="95% Greenwood Confidence Band",
+    ))
+    fig_km.update_layout(
+        title="Kaplan-Meier Customer Survival Function S(t)",
+        xaxis_title="Tenure (Days Since Acquisition)",
+        yaxis_title="Estimated Survival Probability",
+        template="plotly_dark",
+        height=380,
+    )
+    st.plotly_chart(fig_km, use_container_width=True)
+
+    st.markdown("##### ⚖️ Demographic Log-Rank Hypothesis Test")
+    sel_seg = st.selectbox("Select Segment to Compare", ["gender", "category"], key="sel_logrank_seg")
+    lr_res = cohort_engine.compute_log_rank_test(segment_col=sel_seg)
+    if "error" not in lr_res:
+        st.info(f"**Log-Rank Comparison:** `{lr_res['comparison']}` | **Chi-Square Stat:** `{lr_res['chi_square_statistic']}` | **p-value:** `{lr_res['p_value']}` | **Verdict:** {lr_res['conclusion']}")
+
+    st.markdown("---")
+    st.markdown("##### 💰 Proactive Retention Campaign ROI Calculator")
+    col_ret1, col_ret2 = st.columns(2)
+    with col_ret1:
+        cost_per_touch = st.number_input("Intervention Cost per Customer ($)", min_value=1.0, max_value=100.0, value=12.0, step=1.0)
+    with col_ret2:
+        churn_reduc_pct = st.slider("Expected Churn Reduction Rate (%)", min_value=5, max_value=60, value=25, step=5)
+
+    ret_roi = cohort_engine.calculate_retention_campaign_roi(
+        intervention_cost_per_user=cost_per_touch,
+        expected_churn_reduction_pct=churn_reduc_pct / 100.0,
+    )
+
+    r1, r2, r3, r4 = st.columns(4)
+    with r1:
+        st.metric("Target Population", f"{ret_roi['target_population']:,}")
+    with r2:
+        st.metric("Total Campaign Cost", f"${ret_roi['total_campaign_cost']:,.2f}")
+    with r3:
+        st.metric("Projected Saved Shoppers", f"{ret_roi['projected_saved_customers']:.1f}")
+    with r4:
+        st.metric("Net Commercial Gain", f"+${ret_roi['net_commercial_gain']:,.2f}", f"{ret_roi['campaign_roi_pct']:.1f}% ROI")
+
+
+# ----------------- TAB 19: STRATEGIC ACTION PLAN -----------------
 with tab_recs:
     st.subheader("Strategic Business Action Plan & Projected Financial Return")
     recommendations = BusinessRecommendationEngine.get_strategic_recommendations()

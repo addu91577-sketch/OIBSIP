@@ -14,8 +14,11 @@ from src.clv_churn import CustomerLifetimeValueEngine
 from src.inventory_supply_chain import InventorySupplyChainEngine
 from src.market_basket import MarketBasketAffinityEngine
 from src.demand_forecasting import MultiHorizonDemandForecaster
+from src.attribution_marketing import AttributionMarketingEngine
+from src.gmroi_assortment import GMROIAssortmentEngine
+from src.cohort_retention import CohortRetentionSurvivalEngine
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 
 __all__ = [
     "RetailAnalyticsEngine",
@@ -32,4 +35,7 @@ __all__ = [
     "InventorySupplyChainEngine",
     "MarketBasketAffinityEngine",
     "MultiHorizonDemandForecaster",
+    "AttributionMarketingEngine",
+    "GMROIAssortmentEngine",
+    "CohortRetentionSurvivalEngine",
 ]
