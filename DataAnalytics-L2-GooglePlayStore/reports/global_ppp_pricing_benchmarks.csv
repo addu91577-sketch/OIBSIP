@@ -1,0 +1,11 @@
+Region_ID,Region_Name,PPP_Factor,Currency,Market_Share_Potential_Pct,Elasticity_Exponent,Sample_US_499_Localized,Expansion_Priority
+US_TIER1,United States & Canada (Tier 1),1.0,USD,28.0,0.45,4.99,TIER_1_EXPANSION
+EU_WESTERN,"Western Europe (UK, Germany, France)",0.92,EUR/GBP,22.0,0.45,4.59,TIER_1_EXPANSION
+JP_KR_EAST_ASIA,"East Asia Developed (Japan, South Korea)",0.85,JPY/KRW,14.0,0.4,4.24,HIGH_POTENTIAL
+OCEANIA,"Oceania (Australia, New Zealand)",0.95,AUD/NZD,5.0,0.42,4.74,HIGH_POTENTIAL
+MENA_GULF,"Middle East Gulf (UAE, Saudi Arabia, Qatar)",0.88,AED/SAR,6.0,0.48,4.39,HIGH_POTENTIAL
+LATAM_BRAZIL_MEXICO,"Latin America (Brazil, Mexico, Colombia)",0.42,BRL/MXN,9.0,0.55,2.1,HIGH_POTENTIAL
+EASTERN_EUROPE,"Eastern Europe (Poland, Romania, Turkey)",0.45,PLN/TRY,5.0,0.5,2.25,MODERATE_POTENTIAL
+SEA_EMERGING,"Southeast Asia (Indonesia, Vietnam, Philippines)",0.32,IDR/VND,6.0,0.58,1.6,MODERATE_POTENTIAL
+SOUTH_ASIA_INDIA,"South Asia (India, Pakistan, Bangladesh)",0.28,INR/PKR,4.0,0.62,1.4,OPPORTUNISTIC
+AFRICA_SUB_SAHARAN,"Sub-Saharan Africa (Nigeria, Kenya, South Africa)",0.25,NGN/ZAR,1.0,0.65,1.25,OPPORTUNISTIC

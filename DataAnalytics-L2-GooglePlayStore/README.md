@@ -657,7 +657,8 @@ Continuous integration pipeline via GitHub Actions (.github/workflows/ci.yml) te
 - Day 12: ASO Keyword Gap & Aspect Review Intelligence (	ests/test_aso_aspect_intelligence.py) — **20 passed**
 - Day 13: Cohort Retention, Churn Risk & LTV (	ests/test_retention_churn_ltv.py) — **22 passed**
 - Day 14: App Fraud, Anomaly & Review Manipulation Surveillance (	ests/test_fraud_anomaly_surveillance.py) — **23 passed**
-- **Total Suite Coverage**: **175 passed tests (100% pass rate)**.
+- **Day 15: Strategic Market Expansion, Moats & PPP Monetization** (`tests/test_strategic_market_expansion.py`) → **29 passed**
+- **Total Suite Coverage**: **204 passed tests (100% pass rate)**.
 ---
 
 ## 🎬 Day 8 Milestones & Deliverables (Interactive Presentation Deck, Video Narration Guide & Delivery Showcase)
@@ -1166,6 +1167,108 @@ Synthesizes all 4 forensic pillars into a standardized Trust & Safety Index:
 
 ---
 
+---
+
+## 🌐 Day 15 Milestones & Deliverables (Strategic Market Expansion, Competitive Moats (HHI), Cannibalization Risk & Global Monetization Optimizer)
+
+Day 15 elevates the platform into an enterprise C-suite strategic decision and monetization intelligence suite, combining Herfindahl-Hirschman market concentration metrics, Gini inequality indices, individual app competitive moat scorecards, pairwise cannibalization displacement models, World Bank Purchasing Power Parity (PPP) pricing arbitrage, multi-model hybrid monetization yield simulations, and quantitative RICE product roadmaps.
+
+### 1. Category Market Concentration (HHI) & Industrial Contestability
+Empirical evaluation of market power and dominance across all 33 Play Store sectors using the Herfindahl-Hirschman Index:
+$$HHI = \sum_{i=1}^N s_i^2, \quad s_i = \left(\frac{\text{Installs}_i}{\sum_{k=1}^N \text{Installs}_k}\right) \times 100$$
+$$HHI^* = \frac{(HHI / 10000) - (1/N)}{1 - (1/N)} \in [0.0, 1.0]$$
+- **DOJ & FTC Regulatory Antitrust Standards**:
+  - *Unconcentrated / Highly Competitive* ($HHI < 1,500$): Free, diversified market dynamics (e.g. `GAME`, `FAMILY`).
+  - *Moderately Concentrated* ($1,500 \le HHI < 2,500$): Emerging oligopoly (e.g. `BEAUTY`, `HEALTH_AND_FITNESS`).
+  - *Highly Concentrated / Oligopolistic* ($HHI \ge 2,500$): Fortified market power dominated by top incumbents (e.g. `BOOKS_AND_REFERENCE`, `NEWS_AND_MAGAZINES`).
+- **Gini Coefficient of Install Inequality**:
+  $$G = \frac{2 \sum_{i=1}^n i \cdot x_i}{n \sum_{i=1}^n x_i} - \frac{n + 1}{n} \in [0.0, 1.0]$$
+- **Category Contestability Index (CCI $\in [0, 100]$)**:
+  Quantifies the feasibility for new entrants to penetrate and disrupt incumbent market shares.
+
+| Category | Apps ($N$) | Total Installs | HHI Index | Normalized $HHI^*$ | Gini Inequality ($G$) | CR4 Share (%) | Contestability (CCI) | Entry Barrier |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- |
+| **BOOKS_AND_REFERENCE** | 222 | 1.66B | 3,754.9 | 0.3726 | 0.9412 | 78.0% | 22.4 | EXTREME |
+| **NEWS_AND_MAGAZINES** | 254 | 2.37B | 2,681.0 | 0.2652 | 0.9634 | 86.5% | 26.8 | HIGH |
+| **TRAVEL_AND_LOCAL** | 219 | 2.89B | 2,437.8 | 0.2403 | 0.9481 | 76.0% | 31.5 | HIGH |
+| **ART_AND_DESIGN** | 61 | 114.4M | 2,324.1 | 0.2198 | 0.8872 | 70.6% | 38.2 | HIGH |
+| **HEALTH_AND_FITNESS** | 288 | 1.14B | 2,034.0 | 0.2006 | 0.9125 | 57.7% | 42.1 | MODERATE |
+| **GAME** | 946 | 13.46B | 148.6 | 0.0138 | 0.8405 | 18.6% | 76.4 | LOW |
+
+---
+
+### 2. App-Level Competitive Moat Scorecard & Strategic Archetypes
+Multi-pillar defense assessment combining install dominance, relative rating alpha ($\Delta r = r_{app} - \bar{r}_{cat}$), review social proof depth, and monetization power into a unified **Competitive Moat Score (CMS: 0–100)**:
+- **Archetype Positioning**:
+  - `MARKET_LEADER` (CMS $\ge 80$, Share $\ge 5\%$ or Installs $\ge 500\text{M}$): Dominant incumbents defending category leadership (e.g. Subway Surfers, Candy Crush Saga).
+  - `AGGRESSIVE_CHALLENGER` (Rating $\ge 4.3$, Reviews $\ge 5\text{K}$): Fast-scaling challengers primed to displace legacy players.
+  - `NICHE_SPECIALIST` (Share $< 3\%$, Rating $\ge 4.4$): High-reputation players monetizing focused target verticals.
+  - `VULNERABLE_INCUMBENT` (High installs, Rating $< 4.0$): Legacy giants vulnerable to churn and competitive disruption.
+  - `MARGINAL_FOLLOWER`: Undifferentiated catalog followers requiring feature pivots.
+
+---
+
+### 3. Pairwise Cannibalization Risk & Audience Displacement Modeling
+Evaluates portfolio redundancy and cannibalization between existing apps or prospective concept launches:
+- **Cannibalization Risk Score (CRS: 0–100)**:
+  - 40% Category Overlap + 25% Genre Jaccard Similarity + 15% Token Lexical Overlap + 10% Price Bracket Proximity + 10% Content Rating Match.
+- **Displacement Probability ($P_{displacement}$)**:
+  Measures the probability that downloads of App B siphon directly from App A rather than expanding total addressable category demand.
+- **Automated Prescriptive Remedies**: Distinct price tier segmentation, companion app positioning, or ASO keyword coordination.
+
+---
+
+### 4. Purchasing Power Parity (PPP) Regional Pricing Arbitrage
+Calibrated against World Bank / Big Mac PPP exchange factors across 10 global economic zones:
+$$\text{Price}_{local} = \text{round}(\text{Price}_{base} \times \text{PPP\_Factor}), \quad \Delta \text{Conversion} = \left(\frac{1}{\text{PPP\_Factor}}\right)^{\epsilon}$$
+- **Revenue Uplift Arbitrage**:
+  Lowering upfront pricing to local purchasing power in emerging regions (LATAM, SEA, South Asia) expands volume conversion significantly, generating **+25% to +45% net revenue uplift** compared to static flat USD pricing.
+- **Global Expansion Readiness Index (GERI: 0–100)**:
+  Assesses APK binary download friendliness (cellular bandwidth threshold), rating resilience, and pricing headroom.
+
+---
+
+### 5. Multi-Model Hybrid Monetization Yield Simulation
+Simulates annual ARPU (Average Revenue Per Active User) and gross yield per 100k active users across 4 business models:
+- **Pure Paid**: High upfront friction, zero ad fatigue ($1.50–$3.50 ARPU).
+- **Freemium + IAP**: Consumable virtual goods and gacha mechanics ($2.45 ARPU, optimal for Gaming).
+- **Ad-Supported**: High-reach mass casual apps with capped interstitial impressions ($1.25 ARPU).
+- **Hybrid Subscription**: Recurring cloud sync, VIP perks, and recurring membership ($3.85 ARPU, optimal for Productivity/Utility).
+
+---
+
+### 6. Quantitative RICE Strategic Product Roadmap
+Standardized feature investment scoring using the quantitative RICE framework:
+$$\text{RICE Score} = \frac{\text{Reach} \times \text{Impact} \times \text{Confidence}}{\text{Effort}}$$
+- **P0 Priority**: Global PPP Regional Pricing Rollout (RICE = 21.60, +28% to +45% international paid gross uplift).
+- **P1 Priority**: APK Binary Bloat Reduction (RICE = 22.80, +18% download completion in emerging markets).
+- **P1 Priority**: Rewarded-Video Ad-Load Yield Optimization (RICE = 12.64, +32% ad eCPM retention).
+
+---
+
+### 7. Production REST API Endpoints (Day 15 Additions)
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `POST` | `/api/v1/strategy/market-concentration` | Computes category HHI, Gini inequality, CR4/CR8 share, and contestability index |
+| `POST` | `/api/v1/strategy/moat-scorecard` | Evaluates app competitive moat score (0-100), moat tier, and strategic archetype |
+| `POST` | `/api/v1/strategy/cannibalization-risk` | Evaluates audience overlap, genre Jaccard similarity, and displacement probability |
+| `POST` | `/api/v1/strategy/ppp-pricing-optimizer` | Recommends localized regional pricing and elasticity revenue uplift across 10 PPP zones |
+| `POST` | `/api/v1/strategy/monetization-recommendation` | Recommends optimal hybrid monetization mix and simulates annual ARPU yields |
+| `GET` | `/api/v1/strategy/category-concentration-benchmarks` | Retrieves full 33-category concentration benchmarks and barrier-to-entry metrics |
+
+---
+
+### 8. Publication Visualizations (Figures 30 & 31)
+
+#### Figure 30: Category Market Concentration (HHI), Gini Inequality & Competitive Moats
+![Day 15 Market Concentration HHI & Moats](reports/figures/30_market_concentration_hhi_and_competitive_moats.png)
+
+#### Figure 31: Global PPP Pricing, Monetization Frontier & RICE Product Roadmap
+![Day 15 Global PPP Pricing & Monetization Frontier](reports/figures/31_global_ppp_pricing_and_monetization_frontier.png)
+
+---
+
 ## 📁 Repository Structure
 
 ```
@@ -1199,7 +1302,9 @@ Google Playstore Analysis/
 │   ├── 10_counterfactual_simulation_and_ab_testing.ipynb # Day 10: Counterfactual Simulation & A/B Testing
 │   ├── 11_app_recommendation_and_discovery_engine.ipynb  # Day 11: Multi-Modal App Recommendation & Discovery
 │   ├── 12_aso_intelligence_and_aspect_sentiment.ipynb    # Day 12: ASO Keyword Gap & Aspect Review Intelligence
-│   └── 13_cohort_retention_churn_and_ltv_forecasting.ipynb # Day 13: Cohort Retention, Churn & LTV Forecasting
+│   ├── 13_cohort_retention_churn_and_ltv_forecasting.ipynb # Day 13: Cohort Retention, Churn & LTV Forecasting
+│   ├── 14_fraud_anomaly_and_review_manipulation.ipynb      # Day 14: Fraud Anomaly & Review Manipulation
+│   └── 15_strategic_market_expansion_and_monetization.ipynb# Day 15: Strategic Expansion & Monetization
 ├── presentation/
 │   └── index.html                      # Day 8: Interactive 14-slide executive HTML5 presentation deck
 ├── reports/
@@ -1287,7 +1392,8 @@ Google Playstore Analysis/
 │   ├── recommendation_engine.py        # Day 11: Multi-modal app recommendation & discovery engine
 │   ├── aso_intelligence_engine.py         # Day 12: Aspect sentiment, LDA topics, authenticity & ASO engine
 │   ├── retention_churn_ltv_engine.py      # Day 13: Cohort retention, churn risk & LTV forecasting engine
-│   └── fraud_anomaly_surveillance_engine.py # Day 14: App fraud, anomaly & review manipulation engine
+│   ├── fraud_anomaly_surveillance_engine.py # Day 14: App fraud, anomaly & review manipulation engine
+│   └── strategic_market_expansion_engine.py # Day 15: Strategic expansion, competitive moats & PPP engine
 └── tests/
     ├── test_cleaning.py                # Day 1: Data cleaning pytest suite (4 passed)
     ├── test_category_ratings.py        # Day 2: Category & ratings pytest suite (6 passed)
@@ -1300,7 +1406,10 @@ Google Playstore Analysis/
     ├── test_predictive_modeling.py     # Day 9: Machine learning & MLOps drift pytest suite (9 passed)
     ├── test_simulation_ab_testing.py   # Day 10: Counterfactual simulation & A/B testing suite (14 passed)
     ├── test_recommendation_engine.py   # Day 11: App recommendation & discovery suite (17 passed)
-    └── test_aso_aspect_intelligence.py   # Day 12: ASO & review aspect intelligence suite (20 passed)
+    ├── test_aso_aspect_intelligence.py   # Day 12: ASO & review aspect intelligence suite (20 passed)
+    ├── test_retention_churn_ltv.py       # Day 13: Cohort retention & LTV suite (22 passed)
+    ├── test_fraud_anomaly_surveillance.py# Day 14: Fraud anomaly & Benford suite (23 passed)
+    └── test_strategic_market_expansion.py# Day 15: Strategic expansion & PPP suite (29 passed)
 ```
 
 ---
@@ -1384,11 +1493,14 @@ python src/retention_churn_ltv_engine.py
 
 # Day 14 App Store Fraud, Anomaly & Review Manipulation Pipeline
 python src/fraud_anomaly_surveillance_engine.py
+
+# Day 15 Strategic Market Expansion, Competitive Moats & PPP Pricing Engine
+python src/strategic_market_expansion_engine.py --run-all
 ```
 
 ### 6. Run Automated Pytest Regression Suite
 ```bash
-# Execute entire test suite (175 passed across all modules, 100% pass rate)
+# Execute entire test suite (204 passed across all modules, 100% pass rate)
 pytest tests/ -v
 ```
 
@@ -1408,6 +1520,7 @@ jupyter notebook notebooks/11_app_recommendation_and_discovery_engine.ipynb
 jupyter notebook notebooks/12_aso_intelligence_and_aspect_sentiment.ipynb
 jupyter notebook notebooks/13_cohort_retention_churn_and_ltv_forecasting.ipynb
 jupyter notebook notebooks/14_fraud_anomaly_and_review_manipulation.ipynb
+jupyter notebook notebooks/15_strategic_market_expansion_and_monetization.ipynb
 ```
 
 

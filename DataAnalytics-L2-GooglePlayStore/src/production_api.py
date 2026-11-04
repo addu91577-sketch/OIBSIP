@@ -40,6 +40,7 @@ from src.recommendation_engine import PlayStoreRecommendationEngine
 from src.aso_intelligence_engine import ASOReviewIntelligenceEngine
 from src.retention_churn_ltv_engine import RetentionChurnLTVEngine
 from src.fraud_anomaly_surveillance_engine import PlayStoreFraudSurveillanceEngine
+from src.strategic_market_expansion_engine import PlayStoreStrategicExpansionEngine
 
 
 # ============================================================================
@@ -729,6 +730,117 @@ class BenfordTestResponse(BaseModel):
     expected_dist: Dict[str, float]
 
 
+# ----------------------------------------------------------------------------
+# Day 15 Schemas: Strategic Market Expansion & Monetization Optimizer
+# ----------------------------------------------------------------------------
+
+class MarketConcentrationRequest(BaseModel):
+    """Payload to evaluate category HHI, Gini, and contestability."""
+    category: str = Field(..., json_schema_extra={"example": "GAME"})
+
+
+class MarketConcentrationResponse(BaseModel):
+    """Market concentration and barrier to entry evaluation."""
+    category: str
+    total_apps: int
+    total_installs: int
+    hhi: float
+    hhi_normalized: float
+    concentration_status: str
+    gini_installs: float
+    cr4_share: float
+    cr8_share: float
+    contestability_index: float
+    barrier_to_entry: str
+
+
+class MoatScoreRequest(BaseModel):
+    """Payload to evaluate competitive moat and archetype."""
+    app_name: str = Field(..., json_schema_extra={"example": "Subway Surfers"})
+    category: Optional[str] = Field(None, json_schema_extra={"example": "GAME"})
+    installs: Optional[int] = Field(None, json_schema_extra={"example": 1000000000})
+    rating: Optional[float] = Field(None, json_schema_extra={"example": 4.5})
+    reviews: Optional[int] = Field(None, json_schema_extra={"example": 27000000})
+    price: Optional[float] = Field(None, json_schema_extra={"example": 0.0})
+
+
+class MoatScoreResponse(BaseModel):
+    """App-level competitive advantage and strategic archetype."""
+    app_name: str
+    category: str
+    installs: int
+    rating: float
+    reviews: int
+    market_share_pct: float
+    moat_score: float
+    moat_tier: str
+    archetype: str
+    relative_rating_advantage: float
+    strategic_recommendation: str
+
+
+class CannibalizationRiskRequest(BaseModel):
+    """Payload to evaluate audience overlap and displacement between two apps."""
+    app_a: str = Field(..., json_schema_extra={"example": "Subway Surfers"})
+    app_b: str = Field(..., json_schema_extra={"example": "Temple Run 2"})
+    category_a: Optional[str] = Field(None, json_schema_extra={"example": "GAME"})
+    category_b: Optional[str] = Field(None, json_schema_extra={"example": "GAME"})
+
+
+class CannibalizationRiskResponse(BaseModel):
+    """Cannibalization score and displacement probability response."""
+    app_a: str
+    app_b: str
+    cannibalization_score: float
+    risk_level: str
+    category_overlap: bool
+    genre_overlap: float
+    token_similarity: float
+    displacement_probability: float
+    cannibalization_remedy: str
+
+
+class PPPPricingRequest(BaseModel):
+    """Payload to calculate international purchasing power parity prices."""
+    base_price: float = Field(..., ge=0.0, json_schema_extra={"example": 4.99})
+    app_name: Optional[str] = Field(None, json_schema_extra={"example": "Minecraft"})
+    category: Optional[str] = Field(None, json_schema_extra={"example": "FAMILY"})
+
+
+class PPPPricingResponse(BaseModel):
+    """Global expansion plan and localized pricing response."""
+    app_name: str
+    category: str
+    base_price: float
+    geri_score: float
+    geri_tier: str
+    total_potential_revenue_uplift_pct: float
+    regional_pricings: List[Dict[str, Any]]
+    recommended_launch_order: List[str]
+
+
+class MonetizationRequest(BaseModel):
+    """Payload to evaluate hybrid revenue architectures and ARPU yields."""
+    app_name: Optional[str] = Field(None, json_schema_extra={"example": "Duolingo"})
+    category: Optional[str] = Field(None, json_schema_extra={"example": "EDUCATION"})
+    installs: Optional[int] = Field(None, json_schema_extra={"example": 100000000})
+    rating: Optional[float] = Field(None, json_schema_extra={"example": 4.7})
+    price: Optional[float] = Field(None, json_schema_extra={"example": 0.0})
+
+
+class MonetizationResponse(BaseModel):
+    """Recommended monetization model and ARPU yield projections."""
+    app_name: str
+    category: str
+    recommended_primary_model: str
+    hybrid_split: Dict[str, float]
+    estimated_annual_arpu: float
+    estimated_annual_revenue_per_100k: float
+    optimal_ad_impressions_per_day: float
+    optimal_subscription_price_monthly: float
+    monetization_rationale: str
+
+
 # ============================================================================
 # Engine Singleton & Lifespan Management
 # ============================================================================
@@ -740,6 +852,7 @@ _recommendation_engine_instance: Optional[PlayStoreRecommendationEngine] = None
 _aso_engine_instance: Optional[ASOReviewIntelligenceEngine] = None
 _retention_engine_instance: Optional[RetentionChurnLTVEngine] = None
 _fraud_engine_instance: Optional[PlayStoreFraudSurveillanceEngine] = None
+_strategic_engine_instance: Optional[PlayStoreStrategicExpansionEngine] = None
 _server_start_time: float = time.time()
 
 
@@ -801,6 +914,14 @@ def get_fraud_engine() -> PlayStoreFraudSurveillanceEngine:
     if _fraud_engine_instance is None:
         _fraud_engine_instance = PlayStoreFraudSurveillanceEngine()
     return _fraud_engine_instance
+
+
+def get_strategic_engine() -> PlayStoreStrategicExpansionEngine:
+    """Retrieve or initialize the singleton PlayStoreStrategicExpansionEngine instance."""
+    global _strategic_engine_instance
+    if _strategic_engine_instance is None:
+        _strategic_engine_instance = PlayStoreStrategicExpansionEngine()
+    return _strategic_engine_instance
 
 
 @asynccontextmanager
@@ -1657,6 +1778,191 @@ def create_app() -> FastAPI:
         fraud_engine = get_fraud_engine()
         suspicious = fraud_engine.get_top_suspicious_apps(n=limit)
         return JSONResponse(content=suspicious.to_dict(orient="records"))
+
+    # ------------------------------------------------------------------------
+    # Day 15 Endpoints: Strategic Market Expansion & Monetization Optimizer
+    # ------------------------------------------------------------------------
+
+    @app.post(
+        "/api/v1/strategy/market-concentration",
+        response_model=MarketConcentrationResponse,
+        summary="Evaluate Category HHI Market Concentration & Contestability",
+        tags=["Strategic Expansion & Monetization"]
+    )
+    async def strategy_market_concentration_endpoint(
+        request_body: MarketConcentrationRequest
+    ) -> MarketConcentrationResponse:
+        """Compute category Herfindahl-Hirschman Index, Gini inequality, and barrier to entry."""
+        strat_engine = get_strategic_engine()
+        res = strat_engine.compute_category_concentration(request_body.category)
+        return MarketConcentrationResponse(
+            category=res.category,
+            total_apps=res.total_apps,
+            total_installs=res.total_installs,
+            hhi=res.hhi,
+            hhi_normalized=res.hhi_normalized,
+            concentration_status=res.concentration_status,
+            gini_installs=res.gini_installs,
+            cr4_share=res.cr4_share,
+            cr8_share=res.cr8_share,
+            contestability_index=res.contestability_index,
+            barrier_to_entry=res.barrier_to_entry
+        )
+
+    @app.post(
+        "/api/v1/strategy/moat-scorecard",
+        response_model=MoatScoreResponse,
+        summary="Evaluate App Competitive Moat, Share Dominance & Strategic Archetype",
+        tags=["Strategic Expansion & Monetization"]
+    )
+    async def strategy_moat_scorecard_endpoint(
+        request_body: MoatScoreRequest
+    ) -> MoatScoreResponse:
+        """Compute competitive advantage, relative rating alpha, and archetype positioning."""
+        strat_engine = get_strategic_engine()
+        custom = None
+        if request_body.category or request_body.installs is not None:
+            custom = {
+                "category": request_body.category or "GAME",
+                "installs": request_body.installs or 1000000,
+                "rating": request_body.rating or 4.3,
+                "reviews": request_body.reviews or 25000,
+                "price": request_body.price or 0.0
+            }
+        res = strat_engine.compute_app_moat(request_body.app_name, custom_params=custom)
+        return MoatScoreResponse(
+            app_name=res.app_name,
+            category=res.category,
+            installs=res.installs,
+            rating=res.rating,
+            reviews=res.reviews,
+            market_share_pct=res.market_share_pct,
+            moat_score=res.moat_score,
+            moat_tier=res.moat_tier,
+            archetype=res.archetype,
+            relative_rating_advantage=res.relative_rating_advantage,
+            strategic_recommendation=res.strategic_recommendation
+        )
+
+    @app.post(
+        "/api/v1/strategy/cannibalization-risk",
+        response_model=CannibalizationRiskResponse,
+        summary="Evaluate Pairwise Audience Overlap & Displacement Probability",
+        tags=["Strategic Expansion & Monetization"]
+    )
+    async def strategy_cannibalization_endpoint(
+        request_body: CannibalizationRiskRequest
+    ) -> CannibalizationRiskResponse:
+        """Evaluate competitive overlap, audience conflict, and portfolio displacement."""
+        strat_engine = get_strategic_engine()
+        custom_a = {"category": request_body.category_a} if request_body.category_a else None
+        custom_b = {"category": request_body.category_b} if request_body.category_b else None
+        res = strat_engine.evaluate_cannibalization_risk(
+            request_body.app_a, request_body.app_b, custom_a=custom_a, custom_b=custom_b
+        )
+        return CannibalizationRiskResponse(
+            app_a=res.app_a,
+            app_b=res.app_b,
+            cannibalization_score=res.cannibalization_score,
+            risk_level=res.risk_level,
+            category_overlap=res.category_overlap,
+            genre_overlap=res.genre_overlap,
+            token_similarity=res.token_similarity,
+            displacement_probability=res.displacement_probability,
+            cannibalization_remedy=res.cannibalization_remedy
+        )
+
+    @app.post(
+        "/api/v1/strategy/ppp-pricing-optimizer",
+        response_model=PPPPricingResponse,
+        summary="Optimize Localized Regional Pricing Across 10 Global PPP Zones",
+        tags=["Strategic Expansion & Monetization"]
+    )
+    async def strategy_ppp_pricing_endpoint(
+        request_body: PPPPricingRequest
+    ) -> PPPPricingResponse:
+        """Calculate purchasing power parity prices and international revenue uplift."""
+        strat_engine = get_strategic_engine()
+        plan = strat_engine.optimize_ppp_pricing(
+            base_price=request_body.base_price,
+            app_name=request_body.app_name,
+            category=request_body.category
+        )
+        reg_dicts = [
+            {
+                "region_id": r.region_id,
+                "region_name": r.region_name,
+                "ppp_factor": r.ppp_factor,
+                "localized_price": r.localized_price,
+                "elasticity_uplift_multiplier": r.elasticity_uplift_multiplier,
+                "projected_conversion_index": r.projected_regional_conversion_index,
+                "expansion_priority": r.expansion_priority
+            }
+            for r in plan.regional_pricings
+        ]
+        return PPPPricingResponse(
+            app_name=plan.app_name,
+            category=plan.category,
+            base_price=plan.base_price,
+            geri_score=plan.geri_score,
+            geri_tier=plan.geri_tier,
+            total_potential_revenue_uplift_pct=plan.total_potential_revenue_uplift_pct,
+            regional_pricings=reg_dicts,
+            recommended_launch_order=plan.recommended_launch_order
+        )
+
+    @app.post(
+        "/api/v1/strategy/monetization-recommendation",
+        response_model=MonetizationResponse,
+        summary="Recommend Optimal Hybrid Monetization Model & Simulate ARPU Yield",
+        tags=["Strategic Expansion & Monetization"]
+    )
+    async def strategy_monetization_endpoint(
+        request_body: MonetizationRequest
+    ) -> MonetizationResponse:
+        """Predict optimal revenue model and simulate annual ARPU yields."""
+        strat_engine = get_strategic_engine()
+        custom = None
+        if request_body.category or request_body.installs is not None:
+            custom = {
+                "app_name": request_body.app_name or "Concept App",
+                "category": request_body.category or "GAME",
+                "installs": request_body.installs or 500000,
+                "rating": request_body.rating or 4.3,
+                "price": request_body.price or 0.0
+            }
+        res = strat_engine.recommend_hybrid_monetization(
+            app_name=request_body.app_name, custom_app=custom
+        )
+        return MonetizationResponse(
+            app_name=res.app_name,
+            category=res.category,
+            recommended_primary_model=res.recommended_primary_model,
+            hybrid_split=res.hybrid_split,
+            estimated_annual_arpu=res.estimated_annual_arpu,
+            estimated_annual_revenue_per_100k=res.estimated_annual_revenue_per_100k,
+            optimal_ad_impressions_per_day=res.optimal_ad_impressions_per_day,
+            optimal_subscription_price_monthly=res.optimal_subscription_price_monthly,
+            monetization_rationale=res.monetization_rationale
+        )
+
+    @app.get(
+        "/api/v1/strategy/category-concentration-benchmarks",
+        summary="Retrieve Category Concentration HHI Benchmarks & Contestability",
+        tags=["Strategic Expansion & Monetization"]
+    )
+    async def strategy_category_benchmarks_endpoint(
+        category: Optional[str] = Query(None, description="Optional specific category filter")
+    ):
+        """Retrieve category concentration benchmarks across all 33 Play Store sectors."""
+        strat_engine = get_strategic_engine()
+        benchmarks = strat_engine.compute_all_category_concentrations()
+        if category:
+            cat_match = benchmarks[benchmarks["Category"] == category.upper()]
+            if not cat_match.empty:
+                return JSONResponse(content=cat_match.to_dict(orient="records")[0])
+            return JSONResponse(status_code=404, content={"detail": f"Category {category} not found."})
+        return JSONResponse(content=benchmarks.to_dict(orient="records"))
 
     return app
 

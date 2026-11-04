@@ -75,6 +75,18 @@ from src.fraud_anomaly_surveillance_engine import (
     CategoryIntegrityBenchmark,
     BENFORD_THEORETICAL
 )
+from src.strategic_market_expansion_engine import (
+    PlayStoreStrategicExpansionEngine,
+    MarketConcentrationResult,
+    CompetitiveMoatResult,
+    CannibalizationRiskResult,
+    PPPRegionalPricingResult,
+    GlobalExpansionPlanResult,
+    HybridMonetizationResult,
+    RICERoadmapItem,
+    PPP_REGIONAL_FACTORS,
+    STANDARD_RICE_INITIATIVES
+)
 
 __all__ = [
     "clean_playstore_apps",
@@ -129,5 +141,15 @@ __all__ = [
     "MultivariateAnomalyResult",
     "AppTrustScoreResult",
     "CategoryIntegrityBenchmark",
-    "BENFORD_THEORETICAL"
+    "BENFORD_THEORETICAL",
+    "PlayStoreStrategicExpansionEngine",
+    "MarketConcentrationResult",
+    "CompetitiveMoatResult",
+    "CannibalizationRiskResult",
+    "PPPRegionalPricingResult",
+    "GlobalExpansionPlanResult",
+    "HybridMonetizationResult",
+    "RICERoadmapItem",
+    "PPP_REGIONAL_FACTORS",
+    "STANDARD_RICE_INITIATIVES"
 ]

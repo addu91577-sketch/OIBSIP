@@ -1,0 +1,34 @@
+Category,Recommended_Primary_Model,Annual_ARPU_USD,Annual_Rev_Per_100k,Optimal_Ads_Per_Day,Monthly_Sub_Price,GERI_Expansion_Score,GERI_Expansion_Tier,Monetization_Rationale
+ART_AND_DESIGN,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+AUTO_AND_VEHICLES,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+BEAUTY,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+BOOKS_AND_REFERENCE,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+BUSINESS,HYBRID_SUBSCRIPTION,3.85,385000.0,1.5,4.99,68.2,EXPANSION_VIABLE,High utility workflow generates strong willingness-to-pay for ongoing cloud sync and Pro features.
+COMICS,FREEMIUM_IAP,2.45,245000.0,3.2,2.99,68.2,EXPANSION_VIABLE,High engagement gaming loops benefit from rewarded video ad impressions coupled with consumable gacha/IAP.
+COMMUNICATION,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+DATING,PURE_PAID,1.5,150000.0,0.0,1.99,68.2,EXPANSION_VIABLE,Established premium brand equity supports direct upfront purchase; avoid degrading UX with ads.
+EDUCATION,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+ENTERTAINMENT,FREEMIUM_IAP,2.45,245000.0,3.2,2.99,68.2,EXPANSION_VIABLE,High engagement gaming loops benefit from rewarded video ad impressions coupled with consumable gacha/IAP.
+EVENTS,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+FAMILY,FREEMIUM_IAP,2.45,245000.0,3.2,2.99,68.2,EXPANSION_VIABLE,High engagement gaming loops benefit from rewarded video ad impressions coupled with consumable gacha/IAP.
+FINANCE,HYBRID_SUBSCRIPTION,3.85,385000.0,1.5,4.99,68.2,EXPANSION_VIABLE,High utility workflow generates strong willingness-to-pay for ongoing cloud sync and Pro features.
+FOOD_AND_DRINK,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+GAME,FREEMIUM_IAP,2.45,245000.0,3.2,2.99,68.2,EXPANSION_VIABLE,High engagement gaming loops benefit from rewarded video ad impressions coupled with consumable gacha/IAP.
+HEALTH_AND_FITNESS,HYBRID_SUBSCRIPTION,3.85,385000.0,1.5,4.99,68.2,EXPANSION_VIABLE,High utility workflow generates strong willingness-to-pay for ongoing cloud sync and Pro features.
+HOUSE_AND_HOME,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+LIBRARIES_AND_DEMO,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+LIFESTYLE,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+MAPS_AND_NAVIGATION,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+MEDICAL,PURE_PAID,6.3,630000.0,0.0,1.99,68.2,EXPANSION_VIABLE,Established premium brand equity supports direct upfront purchase; avoid degrading UX with ads.
+NEWS_AND_MAGAZINES,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+PARENTING,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+PERSONALIZATION,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+PHOTOGRAPHY,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+PRODUCTIVITY,HYBRID_SUBSCRIPTION,3.85,385000.0,1.5,4.99,68.2,EXPANSION_VIABLE,High utility workflow generates strong willingness-to-pay for ongoing cloud sync and Pro features.
+SHOPPING,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+SOCIAL,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+SPORTS,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+TOOLS,HYBRID_SUBSCRIPTION,3.85,385000.0,1.5,4.99,68.2,EXPANSION_VIABLE,High utility workflow generates strong willingness-to-pay for ongoing cloud sync and Pro features.
+TRAVEL_AND_LOCAL,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+VIDEO_PLAYERS,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.
+WEATHER,AD_SUPPORTED,1.25,125000.0,3.5,1.99,68.2,EXPANSION_VIABLE,Mass-market casual adoption maximizes ad impressions; integrate non-intrusive rewarded video to maintain retention.

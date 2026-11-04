@@ -31,6 +31,11 @@ from src.recommendation_engine import PlayStoreRecommendationEngine
 from src.aso_intelligence_engine import ASOReviewIntelligenceEngine
 from src.retention_churn_ltv_engine import RetentionChurnLTVEngine
 from src.fraud_anomaly_surveillance_engine import PlayStoreFraudSurveillanceEngine
+from src.strategic_market_expansion_engine import (
+    PlayStoreStrategicExpansionEngine,
+    PPP_REGIONAL_FACTORS,
+    STANDARD_RICE_INITIATIVES
+)
 
 
 # ============================================================================
@@ -174,11 +179,18 @@ def load_fraud_engine() -> PlayStoreFraudSurveillanceEngine:
     return PlayStoreFraudSurveillanceEngine()
 
 
+@st.cache_resource(show_spinner="Initializing Day 15 Strategic Market Expansion Engine...")
+def load_strategic_engine() -> PlayStoreStrategicExpansionEngine:
+    """Initialize and cache the strategic market expansion engine singleton."""
+    return PlayStoreStrategicExpansionEngine()
+
+
 engine = load_master_engine()
 rec_engine = load_recommendation_engine()
 aso_engine = load_aso_engine()
 ret_engine = load_retention_engine()
 fraud_engine = load_fraud_engine()
+strat_engine = load_strategic_engine()
 
 
 # ============================================================================
@@ -236,7 +248,7 @@ st.markdown("---")
 # Interactive Multi-Tab Workspace
 # ============================================================================
 
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9 = st.tabs([
     "📊 Market Intelligence & Category Radar",
     "💡 Developer Concept Feasibility Calculator",
     "⌨️ Real-Time Smart Keyboard Assistant",
@@ -244,7 +256,8 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8 = st.tabs([
     "🎯 App Recommendation & Personalized Discovery",
     "🔍 ASO & Review Aspect Intelligence",
     "📈 Cohort Retention, Churn Risk & LTV Engine",
-    "🛡️ Trust, Fraud & Integrity Surveillance"
+    "🛡️ Trust, Fraud & Integrity Surveillance",
+    "🌐 Strategic Expansion & Monetization Optimizer"
 ])
 
 
@@ -1316,3 +1329,153 @@ with tab8:
                 file_name="playstore_trust_and_safety_audit.csv",
                 mime="text/csv"
             )
+
+
+# ----------------------------------------------------------------------------
+# TAB 9: Strategic Expansion & Monetization Optimizer (Day 15)
+# ----------------------------------------------------------------------------
+with tab9:
+    st.subheader("🌐 Global Strategic Expansion, Market Concentration & Monetization Optimizer")
+    st.markdown(
+        "Day 15 milestone delivering industrial-organization market concentration (HHI), Gini inequality, "
+        "app competitive moats, pairwise cannibalization displacement, World Bank PPP regional pricing arbitrage, "
+        "and quantitative RICE strategic feature prioritization."
+    )
+
+    strat_sub1, strat_sub2, strat_sub3, strat_sub4, strat_sub5 = st.tabs([
+        "🏢 Category HHI & Contestability",
+        "🏰 App Competitive Moat & Archetypes",
+        "🌍 Global PPP Pricing Arbitrage",
+        "⚖️ Cannibalization & Hybrid Monetization",
+        "🎯 Quantitative RICE Product Roadmap"
+    ])
+
+    with strat_sub1:
+        st.markdown("#### Category Market Concentration (HHI) & Industrial Contestability")
+        st.markdown(
+            r"Herfindahl-Hirschman Index ($HHI = \sum s_i^2$) and Gini inequality profiling across all 33 Play Store sectors."
+        )
+
+        all_cats = sorted(strat_engine._category_groups.keys())
+        sel_cat = st.selectbox("Select Play Store Category for Concentration Audit", all_cats, index=all_cats.index("GAME") if "GAME" in all_cats else 0, key="strat_cat_select")
+        cat_res = strat_engine.compute_category_concentration(sel_cat)
+
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Category HHI", f"{cat_res.hhi:,.1f}", delta=cat_res.concentration_status.replace("_", " "))
+        c2.metric("Gini Inequality (0-1)", f"{cat_res.gini_installs:.4f}")
+        c3.metric("CR4 Market Share", f"{cat_res.cr4_share:.1f}%")
+        c4.metric("Contestability Index", f"{cat_res.contestability_index:.1f}/100", delta=f"{cat_res.barrier_to_entry} Barrier")
+
+        # Visual bar of top apps in category
+        if cat_res.top_apps:
+            st.markdown("##### Category Market Share Leaders")
+            df_top = pd.DataFrame(cat_res.top_apps)
+            fig_top = px.bar(
+                df_top,
+                x="market_share_pct",
+                y="app_name",
+                orientation="h",
+                text="market_share_pct",
+                color="market_share_pct",
+                color_continuous_scale="Blues",
+                labels={"market_share_pct": "Market Share (%)", "app_name": "Application Name"},
+                title=f"Top Market Share Captures in {sel_cat}"
+            )
+            fig_top.update_layout(yaxis=dict(autorange="reversed"), height=300)
+            st.plotly_chart(fig_top, use_container_width=True)
+
+    with strat_sub2:
+        st.markdown("#### App Competitive Moat & Strategic Archetype Positioning")
+        st.markdown(r"Evaluates app install dominance, rating alpha ($\Delta r = r - \bar{r}_{cat}$), and defensive barriers.")
+
+        sample_apps = ["Subway Surfers", "Candy Crush Saga", "Temple Run 2", "Clash of Clans", "Pou", "Duolingo", "Dropbox"]
+        custom_app_input = st.text_input("Enter or Search App Name", value="Subway Surfers", key="strat_app_input")
+        moat_res = strat_engine.compute_app_moat(custom_app_input)
+
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Competitive Moat Score", f"{moat_res.moat_score:.1f}/100", delta=moat_res.moat_tier.replace("_", " "))
+        m2.metric("Strategic Archetype", moat_res.archetype.replace("_", " "))
+        m3.metric("Category Share", f"{moat_res.market_share_pct:.2f}%")
+        m4.metric("Rating Advantage (Alpha)", f"{moat_res.relative_rating_advantage:+.2f}★")
+
+        st.info(f"**Strategic Executive Recourse:** {moat_res.strategic_recommendation}")
+
+    with strat_sub3:
+        st.markdown("#### Purchasing Power Parity (PPP) International Pricing Arbitrage")
+        st.markdown("Estimates revenue elasticity and localized price points across 10 global economic zones.")
+
+        base_usd = st.slider("Select Base Tier 1 Price ($ USD)", min_value=0.99, max_value=29.99, value=4.99, step=0.50, key="strat_base_usd")
+        ppp_plan = strat_engine.optimize_ppp_pricing(base_price=base_usd, app_name=custom_app_input)
+
+        p1, p2, p3 = st.columns(3)
+        p1.metric("Global Expansion Readiness (GERI)", f"{ppp_plan.geri_score:.1f}/100", delta=ppp_plan.geri_tier.replace("_", " "))
+        p2.metric("Total Revenue Uplift vs Flat USD", f"+{ppp_plan.total_potential_revenue_uplift_pct:.1f}%")
+        p3.metric("Optimal Launch Tier 1", ", ".join(ppp_plan.recommended_launch_order[:3]))
+
+        # PPP table
+        ppp_df = pd.DataFrame([
+            {
+                "Region": r.region_name,
+                "PPP Factor": f"{r.ppp_factor:.2f}",
+                "Base USD": f"${r.base_usd_price:.2f}",
+                "Recommended Local Price": f"${r.localized_price:.2f}",
+                "Conversion Uplift Index": f"{r.projected_regional_conversion_index:.1f}",
+                "Priority": r.expansion_priority
+            }
+            for r in ppp_plan.regional_pricings
+        ])
+        st.dataframe(ppp_df, use_container_width=True, height=350)
+
+    with strat_sub4:
+        st.markdown("#### Cannibalization Risk & Multi-Model Monetization Yields")
+        col_c1, col_c2 = st.columns(2)
+
+        with col_c1:
+            st.markdown("##### Pairwise Cannibalization Risk Evaluator")
+            c_app1 = st.text_input("App 1 (Flagship)", value="Subway Surfers", key="c_app1")
+            c_app2 = st.text_input("App 2 (Candidate)", value="Temple Run 2", key="c_app2")
+            cann_res = strat_engine.evaluate_cannibalization_risk(c_app1, c_app2)
+
+            st.metric("Cannibalization Risk Score", f"{cann_res.cannibalization_score:.1f}/100", delta=cann_res.risk_level.replace("_", " "))
+            st.metric("Displacement Probability", f"{cann_res.displacement_probability * 100:.1f}%")
+            st.warning(f"**Remedy:** {cann_res.cannibalization_remedy}")
+
+        with col_c2:
+            st.markdown("##### Hybrid Monetization Yield Simulation")
+            mon_res = strat_engine.recommend_hybrid_monetization(app_name=c_app1)
+            st.metric("Recommended Primary Model", mon_res.recommended_primary_model.replace("_", " "))
+            st.metric("Annual ARPU per Active User", f"${mon_res.estimated_annual_arpu:.2f}")
+            st.metric("Annual Revenue per 100k Users", f"${mon_res.estimated_annual_revenue_per_100k:,.2f}")
+
+            # Plot donut chart of hybrid split
+            df_split = pd.DataFrame([{"Channel": k.upper(), "Ratio": v} for k, v in mon_res.hybrid_split.items() if v > 0])
+            fig_split = px.pie(df_split, values="Ratio", names="Channel", hole=0.45, title="Optimal Revenue Channel Allocation")
+            fig_split.update_layout(height=280)
+            st.plotly_chart(fig_split, use_container_width=True)
+
+    with strat_sub5:
+        st.markdown("#### Quantitative RICE Strategic Product Roadmap")
+        st.markdown(r"Quantitative RICE priority scores ($RICE = \frac{\text{Reach} \times \text{Impact} \times \text{Confidence}}{\text{Effort}}$).")
+
+        rice_items = strat_engine.generate_rice_product_roadmap(app_name=custom_app_input)
+        df_rice = pd.DataFrame([
+            {
+                "Priority Tier": r.priority_tier,
+                "RICE Score": r.rice_score,
+                "Initiative": r.initiative,
+                "Reach": r.reach,
+                "Impact": r.impact,
+                "Confidence": f"{r.confidence * 100:.0f}%",
+                "Effort (Mo)": r.effort,
+                "Projected ROI": r.roi_projection
+            }
+            for r in rice_items
+        ])
+        st.dataframe(df_rice, use_container_width=True, height=300)
+
+        st.download_button(
+            "📥 Export Strategic RICE Roadmap (CSV)",
+            df_rice.to_csv(index=False),
+            file_name="strategic_rice_product_roadmap.csv",
+            mime="text/csv"
+        )
