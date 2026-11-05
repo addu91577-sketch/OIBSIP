@@ -41,6 +41,10 @@ from .utils import (
     evaluate_outlier_treatment_policies,
     verify_day13_treatment_integrity,
     plot_day13_treatment_and_sensitivity_audit,
+    compute_day14_comparative_reconciliation,
+    compute_day14_distributional_uplift_matrix,
+    verify_day14_comparative_integrity,
+    plot_day14_before_after_comparative_audit,
 )
 
 __all__ = [
@@ -82,4 +86,8 @@ __all__ = [
     'evaluate_outlier_treatment_policies',
     'verify_day13_treatment_integrity',
     'plot_day13_treatment_and_sensitivity_audit',
+    'compute_day14_comparative_reconciliation',
+    'compute_day14_distributional_uplift_matrix',
+    'verify_day14_comparative_integrity',
+    'plot_day14_before_after_comparative_audit',
 ]
