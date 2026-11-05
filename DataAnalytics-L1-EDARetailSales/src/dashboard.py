@@ -35,6 +35,9 @@ from src.demand_forecasting import MultiHorizonDemandForecaster
 from src.attribution_marketing import AttributionMarketingEngine
 from src.gmroi_assortment import GMROIAssortmentEngine
 from src.cohort_retention import CohortRetentionSurvivalEngine
+from src.dynamic_pricing import DynamicPricingEngine
+from src.next_best_action import NextBestActionEngine
+from src.financial_risk import FinancialRiskStressEngine
 
 st.set_page_config(
     page_title="Retail Sales Analytics & Predictive Intelligence Suite",
@@ -62,10 +65,22 @@ def load_engines():
     attribution = AttributionMarketingEngine()
     gmroi = GMROIAssortmentEngine()
     cohort_retention = CohortRetentionSurvivalEngine()
-    return analytics, ml, drift, segmentation, sim, elasticity, ab_test, clv, inventory, market_basket, forecasting, attribution, gmroi, cohort_retention
+    dynamic_pricing = DynamicPricingEngine()
+    nba = NextBestActionEngine()
+    financial_stress = FinancialRiskStressEngine()
+    return (
+        analytics, ml, drift, segmentation, sim, elasticity, ab_test, clv,
+        inventory, market_basket, forecasting, attribution, gmroi, cohort_retention,
+        dynamic_pricing, nba, financial_stress
+    )
 
 
-analytics, ml, drift_engine, segmentation_engine, sim_engine, elasticity_engine, ab_engine, clv_engine, inventory_engine, market_basket_engine, forecasting_engine = load_engines()
+(
+    analytics, ml, drift_engine, segmentation_engine, sim_engine, elasticity_engine,
+    ab_engine, clv_engine, inventory_engine, market_basket_engine, forecasting_engine,
+    attribution_engine, gmroi_engine, cohort_engine, dynamic_pricing_engine, nba_engine,
+    financial_engine
+) = load_engines()
 df = analytics.df
 
 # Custom CSS for dark modern executive theme
@@ -165,6 +180,12 @@ st.sidebar.info(
     tab_inventory,
     tab_market_basket,
     tab_forecasting,
+    tab_attribution,
+    tab_gmroi,
+    tab_cohorts,
+    tab_dynamic_pricing,
+    tab_nba,
+    tab_finance,
     tab_recs,
 ) = st.tabs(
     [
@@ -183,7 +204,13 @@ st.sidebar.info(
         "📦 Supply Chain & Inventory",
         "🛒 Market Basket Affinity",
         "⏱️ Multi-Horizon Forecasting",
-        "🎯 Strategic Action Plan",
+        "📣 Marketing Attribution",
+        "💎 GMROI & Assortment",
+        "⏳ Cohort Retention & Survival",
+        "🎯 Dynamic Bandit Pricing",
+        "🎯 Causal Uplift & NBA",
+        "🏦 Working Capital & Stress Test",
+        "📋 Strategic Action Plan",
     ]
 )
 
@@ -1291,7 +1318,238 @@ with tab_cohorts:
         st.metric("Net Commercial Gain", f"+${ret_roi['net_commercial_gain']:,.2f}", f"{ret_roi['campaign_roi_pct']:.1f}% ROI")
 
 
-# ----------------- TAB 19: STRATEGIC ACTION PLAN -----------------
+# ----------------- TAB 19: DYNAMIC BANDIT PRICING -----------------
+with tab_dynamic_pricing:
+    st.subheader("🎯 Real-Time Dynamic Pricing & Multi-Armed Bandit (MAB) Rate Optimizer")
+    st.markdown(
+        "Explore real-time dynamic pricing quotes driven by inventory scarcity multipliers, "
+        "demand velocity surges, and evaluate Thompson Sampling vs UCB1 regret minimization."
+    )
+
+    arms_catalog = dynamic_pricing_engine.get_candidate_arms()
+    dp1, dp2, dp3 = st.columns(3)
+    with dp1:
+        st.metric("Supported MAB Algorithms", f"{len(arms_catalog['algorithms_supported'])} Algorithms")
+    with dp2:
+        st.metric("Active Catalog Price Arms", "15 Discrete Arms")
+    with dp3:
+        st.metric("Guardrails Protection", "Margin Floors & Ceilings Enforced")
+
+    st.markdown("---")
+    st.markdown("##### ⚡ Real-Time Dynamic Pricing Quote Sandbox")
+    qc1, qc2, qc3, qc4 = st.columns(4)
+    with qc1:
+        sel_cat = st.selectbox("Merchandise Category", ["Beauty", "Clothing", "Electronics"], key="sel_quote_cat")
+    with qc2:
+        inp_base_price = st.number_input("Catalog Base List Price ($)", min_value=10.0, max_value=800.0, value=300.0 if sel_cat == "Electronics" else (50.0 if sel_cat == "Clothing" else 40.0), step=5.0)
+    with qc3:
+        inp_stock = st.number_input("Current On-Hand Stock (Units)", min_value=0, max_value=150, value=12, step=1)
+    with qc4:
+        inp_velocity = st.slider("7-Day Sales Velocity (vs Baseline)", min_value=0.5, max_value=2.0, value=1.35, step=0.05)
+
+    quote_res = dynamic_pricing_engine.calculate_dynamic_quote(
+        category=sel_cat,
+        base_price=inp_base_price,
+        current_stock=inp_stock,
+        safety_stock=25,
+        demand_velocity_ratio=inp_velocity,
+    )
+
+    qm1, qm2, qm3, qm4 = st.columns(4)
+    with qm1:
+        st.metric("Recommended Dynamic Price", f"${quote_res['recommended_dynamic_price']:,.2f}", f"{quote_res['price_delta_pct']:+.1f}% vs List")
+    with qm2:
+        st.metric("Scarcity Multiplier", f"{quote_res['multipliers']['scarcity_multiplier']:.2f}x", f"Stock: {quote_res['stock_context']['stock_status']}")
+    with qm3:
+        st.metric("Demand Surge Multiplier", f"{quote_res['multipliers']['demand_surge_multiplier']:.2f}x")
+    with qm4:
+        st.metric("Projected Gross Margin", f"{quote_res['economics']['projected_gross_margin_pct']:.1f}%", f"${quote_res['economics']['projected_gross_margin_dollars']:,.2f}/unit")
+
+    st.info(f"**Pricing Action Strategy:** `{quote_res['pricing_action']}` | **Price Floor:** `${quote_res['guardrails']['price_floor']:.2f}` | **Price Ceiling:** `${quote_res['guardrails']['price_ceiling']:.2f}`")
+
+    st.markdown("---")
+    st.markdown("##### 🎰 Multi-Armed Bandit Online Exploration & Regret Minimization Simulation")
+    bc1, bc2 = st.columns(2)
+    with bc1:
+        sel_algo = st.selectbox("Bandit Learning Algorithm", ["thompson_sampling", "ucb1", "epsilon_greedy"], key="sel_mab_algo")
+    with bc2:
+        n_sim_rounds = st.slider("Customer Shopping Impression Rounds", min_value=100, max_value=2000, value=800, step=100)
+
+    sim_mab = dynamic_pricing_engine.simulate_bandit_learning(
+        category=sel_cat,
+        algorithm=sel_algo,
+        n_rounds=n_sim_rounds,
+        epsilon=0.10,
+    )
+
+    bm1, bm2, bm3, bm4 = st.columns(4)
+    with bm1:
+        st.metric("Bandit Realized Revenue", f"${sim_mab['cumulative_bandit_revenue']:,.2f}")
+    with bm2:
+        st.metric("Static Pricing Baseline", f"${sim_mab['cumulative_static_revenue']:,.2f}")
+    with bm3:
+        st.metric("Dynamic Revenue Uplift", f"+${sim_mab['revenue_uplift_vs_static']:,.2f}", f"+{sim_mab['revenue_uplift_pct']:.1f}%")
+    with bm4:
+        st.metric("Cumulative Regret vs Oracle", f"${sim_mab['total_regret']:,.2f}", f"${sim_mab['regret_per_round']:.2f}/round")
+
+    # Plot revenue comparison and regret
+    df_curve = pd.DataFrame(sim_mab["learning_curve"])
+    fig_bandit = go.Figure()
+    fig_bandit.add_trace(go.Scatter(x=df_curve["rounds"], y=df_curve["bandit_revenue"], name=f"Bandit ({sel_algo})", line=dict(color="#22c55e", width=3)))
+    fig_bandit.add_trace(go.Scatter(x=df_curve["rounds"], y=df_curve["static_revenue"], name="Static List Pricing", line=dict(color="#f59e0b", dash="dash", width=2)))
+    fig_bandit.add_trace(go.Scatter(x=df_curve["rounds"], y=df_curve["oracle_revenue"], name="Oracle Optimal Ceiling", line=dict(color="#38bdf8", dash="dot", width=2)))
+    fig_bandit.update_layout(title=f"Cumulative Revenue Trajectory: Bandit Learning vs Static ({sel_cat})", xaxis_title="Simulation Round", yaxis_title="Cumulative Revenue ($)", template="plotly_dark", height=380)
+    st.plotly_chart(fig_bandit, use_container_width=True)
+
+
+# ----------------- TAB 20: CAUSAL UPLIFT & NEXT-BEST-ACTION -----------------
+with tab_nba:
+    st.subheader("🎯 Causal Uplift Micro-Targeting & Next-Best-Action (NBA) Decision Engine")
+    st.markdown(
+        "Segment customers into the 4 causal response quadrants to target Persuadables, "
+        "suppress Sure Things to prevent margin cannibalization, and recommend personalized Next-Best-Actions."
+    )
+
+    uplift_summary = nba_engine.get_uplift_summary()
+    u1, u2, u3, u4 = st.columns(4)
+    with u1:
+        st.metric("Customer Population", f"{uplift_summary['total_customers']:,}")
+    with u2:
+        st.metric("Persuadables (Prime Target)", f"{uplift_summary['persuadable_population']:,}", f"{uplift_summary['persuadable_share_pct']:.1f}% Share")
+    with u3:
+        st.metric("Mean Population Uplift (Tau)", f"+{uplift_summary['overall_mean_uplift_tau']:.4f}")
+    with u4:
+        st.metric("Cannibalization Safeguard", "Active (Sure Things Suppressed)")
+
+    st.markdown("---")
+    st.markdown("##### 🧬 Causal Uplift 4-Quadrant Population Breakdown")
+    df_quad = pd.DataFrame(uplift_summary["quadrant_breakdown"])
+    fig_quad = px.bar(
+        df_quad,
+        x="quadrant",
+        y="customer_count",
+        color="quadrant",
+        color_discrete_map={
+            "Persuadables": "#22c55e",
+            "Sure Things": "#38bdf8",
+            "Lost Causes": "#94a3b8",
+            "Sleeping Dogs / Do Not Disturb": "#ef4444",
+        },
+        title="Customer Distribution by Causal Treatment Response Quadrant",
+        labels={"customer_count": "Customers", "quadrant": "Causal Quadrant"},
+        text_auto=True,
+        template="plotly_dark",
+    )
+    st.plotly_chart(fig_quad, use_container_width=True)
+    st.dataframe(df_quad[["quadrant", "customer_count", "population_share_pct", "avg_historical_spend", "avg_incremental_uplift_tau", "strategic_recommendation"]], use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("##### 🤖 Personalized Next-Best-Action (NBA) Ranking Engine")
+    nbc1, nbc2, nbc3 = st.columns(3)
+    with nbc1:
+        inp_cust_id = st.text_input("Customer ID (e.g. CUST001 to CUST999)", value="CUST001")
+    with nbc2:
+        inp_aov = st.number_input("Expected Order Basket ($)", min_value=50.0, max_value=1500.0, value=300.0, step=25.0)
+    with nbc3:
+        inp_recent_touches = st.slider("Recent Marketing Contacts (Fatigue Count)", min_value=0, max_value=5, value=1)
+
+    nba_rec = nba_engine.recommend_next_best_action(
+        customer_id=inp_cust_id if inp_cust_id else None,
+        estimated_aov=inp_aov,
+        gross_margin_pct=0.45,
+        recent_touches_count=inp_recent_touches,
+    )
+
+    st.success(f"**Top Recommended Action:** `{nba_rec['recommended_action']}` via **Channel:** `{nba_rec['recommended_channel']}` | **Net Utility:** `+${nba_rec['projected_net_utility']:.2f}`")
+    st.dataframe(pd.DataFrame(nba_rec["action_portfolio_ranking"]), use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("##### 💰 Campaign Targeting Benchmark: Mass vs Propensity vs Causal Uplift")
+    opt_camp = nba_engine.optimize_campaign_budget(campaign_budget=10000.0, incentive_cost_per_touch=8.0, avg_basket_value=350.0, gross_margin_pct=0.45)
+    st.dataframe(pd.DataFrame(list(opt_camp["strategies"].values())), use_container_width=True)
+
+
+# ----------------- TAB 21: WORKING CAPITAL & STRESS TEST -----------------
+with tab_finance:
+    st.subheader("🏦 Retail Working Capital, Cash Conversion Cycle & Monte Carlo Stress Testing")
+    st.markdown(
+        "Evaluate the enterprise Cash Conversion Cycle (DIO + DSO - DPO) across categories, "
+        "and simulate 10,000 forward-looking stochastic macroeconomic stress scenarios calculating VaR 95/99 and CVaR."
+    )
+
+    ccc_data = financial_engine.calculate_cash_conversion_cycle()
+    fc1, fc2, fc3, fc4 = st.columns(4)
+    with fc1:
+        st.metric("Store Blended CCC", f"{ccc_data['store_blended_ccc_days']:.1f} Days")
+    with fc2:
+        st.metric("Days Inventory Outstanding (DIO)", f"{ccc_data['store_blended_dio']:.1f} Days")
+    with fc3:
+        st.metric("Days Sales Outstanding (DSO)", f"{ccc_data['store_blended_dso']:.1f} Days")
+    with fc4:
+        st.metric("Days Payables Outstanding (DPO)", f"{ccc_data['store_blended_dpo']:.1f} Days")
+
+    st.markdown("---")
+    st.markdown("##### 📊 Category Working Capital & Cash Conversion Cycle Breakdown")
+    df_ccc_cat = pd.DataFrame(ccc_data["category_metrics"])
+    st.dataframe(df_ccc_cat[["category", "annual_revenue", "annual_cogs", "days_inventory_outstanding_dio", "days_sales_outstanding_dso", "days_payables_outstanding_dpo", "cash_conversion_cycle_days", "net_working_capital_required"]], use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("##### 🎲 Monte Carlo Forward-Looking Macroeconomic Liquidity Stress Test")
+    col_sc1, col_sc2, col_sc3 = st.columns(3)
+    with col_sc1:
+        inp_demand_shock = st.slider("Mean Consumer Demand Contraction (%)", min_value=-30.0, max_value=0.0, value=-10.0, step=1.0)
+    with col_sc2:
+        inp_cogs_infl = st.slider("Mean Supplier COGS Inflation (%)", min_value=0.0, max_value=20.0, value=6.0, step=1.0)
+    with col_sc3:
+        inp_cash_buf = st.number_input("Starting Treasury Cash Buffer ($)", min_value=10000.0, max_value=200000.0, value=60000.0, step=5000.0)
+
+    stress_res = financial_engine.run_monte_carlo_stress_test(
+        n_simulations=2000,
+        demand_shock_mean_pct=inp_demand_shock / 100.0,
+        demand_shock_std_pct=0.06,
+        cogs_inflation_mean_pct=inp_cogs_infl / 100.0,
+        cogs_inflation_std_pct=0.03,
+        dpo_contraction_days=5.0,
+        initial_cash_buffer=inp_cash_buf,
+    )
+
+    sm1, sm2, sm3, sm4 = st.columns(4)
+    with sm1:
+        st.metric("Value at Risk (VaR 95%)", f"${stress_res['stressed_outcomes']['var_95_cash_flow']:,.2f}")
+    with sm2:
+        st.metric("Extreme Tail (VaR 99%)", f"${stress_res['stressed_outcomes']['var_99_cash_flow']:,.2f}")
+    with sm3:
+        st.metric("Expected Shortfall (CVaR 95%)", f"${stress_res['stressed_outcomes']['cvar_95_expected_shortfall']:,.2f}")
+    with sm4:
+        st.metric("Insolvency Depletion Risk", f"{stress_res['liquidity_and_solvency']['insolvency_risk_pct']:.1f}%", f"Runway: {stress_res['liquidity_and_solvency']['average_solvency_runway_months']:.1f} mos")
+
+    # Plot cash flow distribution
+    df_dist = pd.DataFrame(stress_res["cash_flow_distribution"])
+    fig_stress = px.bar(
+        df_dist,
+        x="bin_start",
+        y="frequency",
+        title="Stressed Annual Operating Cash Flow Distribution (Monte Carlo 2,000 Paths)",
+        labels={"bin_start": "Operating Cash Flow ($)", "frequency": "Scenario Count"},
+        template="plotly_dark",
+    )
+    fig_stress.add_vline(x=stress_res['stressed_outcomes']['var_95_cash_flow'], line_dash="dash", line_color="#f59e0b", annotation_text="VaR 95%")
+    fig_stress.add_vline(x=stress_res['stressed_outcomes']['var_99_cash_flow'], line_dash="dash", line_color="#ef4444", annotation_text="VaR 99%")
+    st.plotly_chart(fig_stress, use_container_width=True)
+
+    st.markdown("---")
+    st.markdown("##### 🔄 Working Capital Optimization Simulator")
+    rebal_sim = financial_engine.simulate_working_capital_optimization(dio_reduction_days=12.0, dpo_extension_days=10.0, dso_reduction_days=1.0)
+    w1, w2, w3 = st.columns(3)
+    with w1:
+        st.metric("Permanent Liquidity Unlocked", f"${rebal_sim['optimized_outcomes']['total_permanent_liquidity_unlocked']:,.2f}")
+    with w2:
+        st.metric("CCC Days Eliminated", f"-{rebal_sim['optimized_outcomes']['ccc_reduction_days']:.1f} Days", f"New CCC: {rebal_sim['optimized_outcomes']['optimized_ccc_days']:.1f} Days")
+    with w3:
+        st.metric("Annual Credit Interest Saved", f"${rebal_sim['optimized_outcomes']['annual_borrowing_interest_savings']:,.2f}")
+
+
+# ----------------- TAB 22: STRATEGIC ACTION PLAN -----------------
 with tab_recs:
     st.subheader("Strategic Business Action Plan & Projected Financial Return")
     recommendations = BusinessRecommendationEngine.get_strategic_recommendations()

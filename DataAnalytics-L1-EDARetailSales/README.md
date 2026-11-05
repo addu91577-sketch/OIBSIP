@@ -48,6 +48,12 @@ This repository contains an **Exploratory Data Analysis (EDA)** on retail sales 
 - [x] **Expanded 19-Tab Executive Streamlit Web Analytics Dashboard:** multi-touch marketing attribution testbed, GMROI capital productivity explorer, and cohort survival & churn cliff analyzer (`src/dashboard.py`) (Day 12)
 - [x] **Automated Pytest Regression Suite (152 Tests):** 152 unit and integration tests passing with 100% pass rate across the full enterprise analytical stack (`tests/`) (Day 12)
 - [x] **Comprehensive Production FastAPI REST Application (50 Routes):** 13 new high-performance endpoints covering marketing attribution models, Markov removal effects, budget optimization, GMROI matrices, capital reallocation, cohort retention triangles, Kaplan-Meier survival curves, Log-Rank tests, and retention campaign ROI (`src/api.py`) (Day 12)
+- [x] **Dynamic Real-Time Pricing & Multi-Armed Bandit (MAB) Rate Optimizer:** Thompson Sampling (Beta-Bernoulli conjugate distributions), UCB1 logarithmic regret bounds, Epsilon-Greedy decay, real-time demand surge & inventory scarcity multipliers, and competitive guardrails (`src/dynamic_pricing.py`) (Day 13)
+- [x] **Causal Uplift Modeling & Next-Best-Action (NBA) Algorithmic Dispatch Engine:** 4-Quadrant causal response partition (*Persuadables*, *Sure Things*, *Lost Causes*, *Sleeping Dogs*), Individual Treatment Effect (ITE $\tau$) estimation, deadweight cannibalization suppression, and net-utility-maximizing multi-channel action rankings (`src/next_best_action.py`) (Day 13)
+- [x] **Retail Cash Flow, Working Capital Cycle & Monte Carlo Financial Risk Stress Testing:** Category and storewide Cash Conversion Cycle (DIO + DSO - DPO = CCC), forward-looking 5,000-scenario Monte Carlo macroeconomic stress simulations, Value at Risk ($VaR_{95}, VaR_{99}$), Conditional Value at Risk ($CVaR_{95}$ Expected Shortfall), and working capital liquidity liberation simulator (`src/financial_risk.py`) (Day 13)
+- [x] **Expanded 22-Tab Executive Streamlit Web Analytics Dashboard:** interactive real-time dynamic pricing sandbox, Multi-Armed Bandit regret exploration testbed, causal uplift quadrant analyzer, Next-Best-Action recommendation engine, and Monte Carlo macroeconomic liquidity stress testing simulator (`src/dashboard.py`) (Day 13)
+- [x] **Automated Pytest Regression Suite (187 Tests):** 187 unit and integration tests passing with 100% pass rate across the full enterprise analytical stack (`tests/`) (Day 13)
+- [x] **Comprehensive Production FastAPI REST Application (62 Routes):** 12 new high-performance endpoints covering candidate pricing arms, dynamic quotes, MAB transaction streaming, causal uplift profiles, Next-Best-Action dispatch, campaign optimization, Cash Conversion Cycle summaries, Monte Carlo stress testing, and working capital liberation (`src/api.py`) (Day 13)
 
 ---
 
@@ -651,16 +657,28 @@ The FastAPI service exposes 37 production endpoints documented interactively via
 | **`GET`** | `/api/v1/cohorts/log-rank-test` | Customer Cohort Retention & Survival | Log-Rank statistical hypothesis test comparing survival trajectories across groups | `{"chi_square_statistic": 0.041, "p_value": 0.839}` |
 | **`GET`** | `/api/v1/cohorts/hazard-cliffs` | Customer Cohort Retention & Survival | Profiles empirical hazard rate function lambda(t) and pinpoints acute churn cliffs | `{"critical_churn_cliffs_detected": 2, "cliffs": [...]}` |
 | **`POST`** | `/api/v1/cohorts/retention-campaign` | Customer Cohort Retention & Survival | Business case and projected financial ROI of proactive retention interventions | `{"projected_saved_customers": 182.5, "campaign_roi_pct": 154.2}` |
+| **`GET`** | `/api/v1/pricing/bandit/summary` | Dynamic Pricing & Multi-Armed Bandit | Returns candidate pricing arms, conversion distributions, and oracle price points | `{"algorithms_supported": ["thompson_sampling", "ucb1", "epsilon_greedy"]}` |
+| **`POST`** | `/api/v1/pricing/quote` | Dynamic Pricing & Multi-Armed Bandit | Computes real-time dynamic price quote given inventory stock, safety stock, and velocity | `{"recommended_dynamic_price": 358.20, "pricing_action": "Surge Premium"}` |
+| **`POST`** | `/api/v1/pricing/simulate-stream` | Dynamic Pricing & Multi-Armed Bandit | Simulates streaming customer orders comparing Thompson/UCB1 vs static baseline | `{"cumulative_bandit_revenue": 158400.0, "revenue_uplift_pct": 9.8}` |
+| **`GET`** | `/api/v1/pricing/arms` | Dynamic Pricing & Multi-Armed Bandit | Catalog candidate price arms, conversion expectations, and unit cost baselines | `{"category": "Electronics", "details": {"arms": [...]}}` |
+| **`GET`** | `/api/v1/uplift/summary` | Causal Uplift & Next-Best-Action | Causal response 4-quadrant population breakdown (Persuadables, Sure Things, etc.) | `{"persuadable_population": 328, "overall_mean_uplift_tau": 0.142}` |
+| **`GET`** | `/api/v1/uplift/customer/{customer_id}` | Causal Uplift & Next-Best-Action | Individualized causal uplift score, ITE tau, and quadrant classification | `{"customer_id": "CUST001", "causal_quadrant": "Persuadables", "ite_uplift": 0.185}` |
+| **`POST`** | `/api/v1/uplift/nba/recommend` | Causal Uplift & Next-Best-Action | Next-Best-Action portfolio ranking maximizing net expected utility after fatigue | `{"recommended_action": "VIP Personal Concierge", "projected_net_utility": 32.40}` |
+| **`POST`** | `/api/v1/uplift/campaign/optimize` | Causal Uplift & Next-Best-Action | Campaign targeting benchmark: Mass Blast vs Naive Propensity vs Causal Uplift | `{"uplift_advantage_vs_propensity": {"incremental_profit_delta": 3480.0}}` |
+| **`GET`** | `/api/v1/finance/ccc/summary` | Working Capital & Financial Stress Testing | Storewide & category Cash Conversion Cycle (DIO, DSO, DPO, CCC) | `{"store_blended_ccc_days": 27.4, "net_working_capital_tied_up": 24650.0}` |
+| **`POST`** | `/api/v1/finance/stress-test` | Working Capital & Financial Stress Testing | Monte Carlo 5,000-scenario macroeconomic stress test (VaR 95/99, CVaR, runway) | `{"stressed_outcomes": {"var_95_cash_flow": -12850.0, "cvar_95_expected_shortfall": -19420.0}}` |
+| **`POST`** | `/api/v1/finance/working-capital/simulate` | Working Capital & Financial Stress Testing | Working capital liberation simulator via DIO reduction and DPO extension | `{"total_permanent_liquidity_unlocked": 16840.0, "annual_borrowing_interest_savings": 1263.0}` |
+| **`GET`** | `/api/v1/finance/liquidity-runway` | Working Capital & Financial Stress Testing | Baseline solvency runway and cash buffer depletion probability | `{"liquidity_and_solvency": {"average_solvency_runway_months": 11.4}}` |
 
 ---
 
-### 🖥️ Interactive Streamlit Web Analytics Dashboard (19 Tabs)
+### 🖥️ Interactive Streamlit Web Analytics Dashboard (22 Tabs)
 
 Launch the interactive dashboard:
 ```bash
 streamlit run src/dashboard.py
 ```
-The dashboard features 19 dedicated analytical tabs:
+The dashboard features 22 dedicated analytical tabs:
 1. **📊 Executive KPIs:** High-level scorecard ($456k turnover, $456 AOV, 2.51 units/order), dynamic category/gender/age cohort filtering, monthly trendline, and departmental revenue pie chart.
 2. **📈 Time-Series Trends:** Dual-axis monthly revenue and volume chart, day-of-week sales velocity, and Saturday peak vs. Thursday lull.
 3. **👥 Customer Demographics:** Age cohort distributions (18–25, 26–35, 36–50, 51–64), gender commercial parity, and persona callouts.

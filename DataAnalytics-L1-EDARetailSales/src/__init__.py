@@ -17,8 +17,11 @@ from src.demand_forecasting import MultiHorizonDemandForecaster
 from src.attribution_marketing import AttributionMarketingEngine
 from src.gmroi_assortment import GMROIAssortmentEngine
 from src.cohort_retention import CohortRetentionSurvivalEngine
+from src.dynamic_pricing import DynamicPricingEngine
+from src.next_best_action import NextBestActionEngine
+from src.financial_risk import FinancialRiskStressEngine
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 
 __all__ = [
     "RetailAnalyticsEngine",
@@ -38,4 +41,7 @@ __all__ = [
     "AttributionMarketingEngine",
     "GMROIAssortmentEngine",
     "CohortRetentionSurvivalEngine",
+    "DynamicPricingEngine",
+    "NextBestActionEngine",
+    "FinancialRiskStressEngine",
 ]

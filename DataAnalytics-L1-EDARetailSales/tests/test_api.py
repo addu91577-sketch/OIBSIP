@@ -631,3 +631,190 @@ def test_cohort_retention_campaign_endpoint(test_client):
     assert data["target_population"] > 0
     assert data["projected_saved_customers"] > 0
     assert "campaign_roi_pct" in data
+
+
+# --- DAY 13 API TESTS: DYNAMIC PRICING, CAUSAL UPLIFT & FINANCIAL RISK ---
+def test_pricing_bandit_summary_endpoint(test_client):
+    """GET /api/v1/pricing/bandit/summary returns candidate arms and algorithm list."""
+    response = test_client.get("/api/v1/pricing/bandit/summary")
+    assert response.status_code == 200
+    data = response.json()
+    assert "categories" in data
+    assert "algorithms_supported" in data
+    assert "Electronics" in data["categories"]
+
+
+def test_pricing_quote_endpoint(test_client):
+    """POST /api/v1/pricing/quote calculates real-time quote with dynamic multipliers."""
+    payload = {
+        "category": "Electronics",
+        "base_price": 300.0,
+        "current_stock": 8,
+        "safety_stock": 25,
+        "demand_velocity_ratio": 1.25,
+        "competitor_price": 320.0
+    }
+    response = test_client.post("/api/v1/pricing/quote", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["category"] == "Electronics"
+    assert data["recommended_dynamic_price"] > 0
+    assert "multipliers" in data
+    assert "stock_context" in data
+    assert "guardrails" in data
+
+
+def test_pricing_quote_validation_error(test_client):
+    """POST /api/v1/pricing/quote returns 422 for negative base_price."""
+    payload = {
+        "category": "Beauty",
+        "base_price": -20.0,
+        "current_stock": 10
+    }
+    response = test_client.post("/api/v1/pricing/quote", json=payload)
+    assert response.status_code == 422
+
+
+def test_pricing_simulate_stream_endpoint(test_client):
+    """POST /api/v1/pricing/simulate-stream executes bandit simulation."""
+    payload = {
+        "category": "Clothing",
+        "algorithm": "thompson_sampling",
+        "n_rounds": 100,
+        "epsilon": 0.10
+    }
+    response = test_client.post("/api/v1/pricing/simulate-stream", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["category"] == "Clothing"
+    assert data["algorithm"] == "thompson_sampling"
+    assert data["cumulative_bandit_revenue"] > 0
+    assert len(data["arm_statistics"]) == 5
+
+
+def test_pricing_arms_endpoint(test_client):
+    """GET /api/v1/pricing/arms returns arm catalog and category filter."""
+    response = test_client.get("/api/v1/pricing/arms?category=Beauty")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["category"] == "Beauty"
+    assert "details" in data
+    assert len(data["details"]["arms"]) == 5
+
+
+def test_uplift_summary_endpoint(test_client):
+    """GET /api/v1/uplift/summary returns the 4 causal uplift quadrants."""
+    response = test_client.get("/api/v1/uplift/summary")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_customers"] > 0
+    assert len(data["quadrant_breakdown"]) == 4
+    quad_names = [q["quadrant"] for q in data["quadrant_breakdown"]]
+    assert "Persuadables" in quad_names
+    assert "Sure Things" in quad_names
+
+
+def test_customer_uplift_profile_endpoint(test_client):
+    """GET /api/v1/uplift/customer/{customer_id} returns individual uplift score."""
+    # First get a valid customer id from analytics
+    response_cust = test_client.get("/api/v1/uplift/summary")
+    assert response_cust.status_code == 200
+
+    response = test_client.get("/api/v1/uplift/customer/CUST001")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["customer_id"] == "CUST001"
+    assert "causal_quadrant" in data
+    assert "individual_treatment_effect_tau" in data
+
+
+def test_customer_uplift_profile_not_found(test_client):
+    """GET /api/v1/uplift/customer/{customer_id} returns 404 for unknown customer."""
+    response = test_client.get("/api/v1/uplift/customer/UNKNOWN_CUST_9999")
+    assert response.status_code in [404, 422]
+
+
+def test_recommend_next_best_action_endpoint(test_client):
+    """POST /api/v1/uplift/nba/recommend returns ranked action portfolio."""
+    payload = {
+        "customer_id": "CUST001",
+        "estimated_aov": 280.0,
+        "gross_margin_pct": 0.45,
+        "recent_touches_count": 1
+    }
+    response = test_client.post("/api/v1/uplift/nba/recommend", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "recommended_action" in data
+    assert "top_action_key" in data
+    assert len(data["action_portfolio_ranking"]) == 5
+
+
+def test_optimize_campaign_budget_endpoint(test_client):
+    """POST /api/v1/uplift/campaign/optimize compares targeting strategies."""
+    payload = {
+        "campaign_budget": 8000.0,
+        "incentive_cost_per_touch": 10.0,
+        "avg_basket_value": 320.0,
+        "gross_margin_pct": 0.45
+    }
+    response = test_client.post("/api/v1/uplift/campaign/optimize", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "strategies" in data
+    assert "causal_uplift_targeting" in data["strategies"]
+    assert "uplift_advantage_vs_propensity" in data
+
+
+def test_cash_conversion_cycle_endpoint(test_client):
+    """GET /api/v1/finance/ccc/summary returns storewide and category CCC metrics."""
+    response = test_client.get("/api/v1/finance/ccc/summary")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["store_blended_ccc_days"] > 0
+    assert data["net_working_capital_tied_up"] > 0
+    assert len(data["category_metrics"]) == 3
+
+
+def test_monte_carlo_stress_test_endpoint(test_client):
+    """POST /api/v1/finance/stress-test calculates VaR 95/99 and solvency runway."""
+    payload = {
+        "n_simulations": 500,
+        "demand_shock_mean_pct": -0.10,
+        "demand_shock_std_pct": 0.05,
+        "cogs_inflation_mean_pct": 0.05,
+        "cogs_inflation_std_pct": 0.03,
+        "dpo_contraction_days": 4.0,
+        "initial_cash_buffer": 55000.0
+    }
+    response = test_client.post("/api/v1/finance/stress-test", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["simulations_count"] == 500
+    assert "stressed_outcomes" in data
+    assert "liquidity_and_solvency" in data
+    assert len(data["cash_flow_distribution"]) == 30
+
+
+def test_simulate_working_capital_endpoint(test_client):
+    """POST /api/v1/finance/working-capital/simulate models liquidity unlocked."""
+    payload = {
+        "dio_reduction_days": 10.0,
+        "dpo_extension_days": 8.0,
+        "dso_reduction_days": 1.0,
+        "short_term_borrowing_rate_pct": 7.0
+    }
+    response = test_client.post("/api/v1/finance/working-capital/simulate", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["optimized_outcomes"]["total_permanent_liquidity_unlocked"] > 0
+    assert data["optimized_outcomes"]["annual_borrowing_interest_savings"] > 0
+
+
+def test_liquidity_runway_baseline_endpoint(test_client):
+    """GET /api/v1/finance/liquidity-runway returns baseline solvency runway."""
+    response = test_client.get("/api/v1/finance/liquidity-runway?initial_cash_buffer=65000")
+    assert response.status_code == 200
+    data = response.json()
+    assert "liquidity_and_solvency" in data
+

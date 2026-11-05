@@ -27,6 +27,9 @@ from src.demand_forecasting import MultiHorizonDemandForecaster
 from src.attribution_marketing import AttributionMarketingEngine
 from src.gmroi_assortment import GMROIAssortmentEngine
 from src.cohort_retention import CohortRetentionSurvivalEngine
+from src.dynamic_pricing import DynamicPricingEngine
+from src.next_best_action import NextBestActionEngine
+from src.financial_risk import FinancialRiskStressEngine
 
 # Global singletons
 analytics_engine: Optional[RetailAnalyticsEngine] = None
@@ -43,6 +46,9 @@ forecasting_engine: Optional[MultiHorizonDemandForecaster] = None
 attribution_engine: Optional[AttributionMarketingEngine] = None
 gmroi_engine: Optional[GMROIAssortmentEngine] = None
 cohort_engine: Optional[CohortRetentionSurvivalEngine] = None
+pricing_engine: Optional[DynamicPricingEngine] = None
+nba_engine: Optional[NextBestActionEngine] = None
+financial_risk_engine: Optional[FinancialRiskStressEngine] = None
 
 
 @asynccontextmanager
@@ -52,6 +58,7 @@ async def lifespan(app: FastAPI):
     global elasticity_optimizer, ab_engine, clv_engine
     global inventory_engine, market_basket_engine, forecasting_engine
     global attribution_engine, gmroi_engine, cohort_engine
+    global pricing_engine, nba_engine, financial_risk_engine
     analytics_engine = RetailAnalyticsEngine()
     ml_manager = RetailMLManager()
     ml_manager.load_or_train_models()
@@ -67,6 +74,9 @@ async def lifespan(app: FastAPI):
     attribution_engine = AttributionMarketingEngine()
     gmroi_engine = GMROIAssortmentEngine()
     cohort_engine = CohortRetentionSurvivalEngine()
+    pricing_engine = DynamicPricingEngine()
+    nba_engine = NextBestActionEngine()
+    financial_risk_engine = FinancialRiskStressEngine()
     yield
 
 
@@ -300,6 +310,57 @@ class RetentionCampaignRequest(BaseModel):
     expected_churn_reduction_pct: float = Field(default=0.25, ge=0.01, le=0.80, description="Expected churn reduction fraction")
 
 
+
+# --- DAY 13 REQUEST MODELS: DYNAMIC PRICING, CAUSAL UPLIFT & FINANCIAL RISK ---
+class DynamicQuoteRequest(BaseModel):
+    category: str = Field(..., description="Merchandise category: 'Beauty', 'Clothing', or 'Electronics'")
+    base_price: float = Field(..., gt=0.0, description="Catalog base list price")
+    current_stock: int = Field(..., ge=0, description="Current on-hand inventory count")
+    safety_stock: Optional[int] = Field(default=25, gt=0, description="Calibrated safety stock threshold")
+    demand_velocity_ratio: Optional[float] = Field(default=1.0, gt=0.0, description="Rolling sales velocity multiplier")
+    competitor_price: Optional[float] = Field(default=None, gt=0.0, description="Optional competitor price benchmark")
+
+
+class BanditSimulationRequest(BaseModel):
+    category: str = Field(default="Electronics", description="Merchandise category")
+    algorithm: str = Field(default="thompson_sampling", description="Algorithm: 'thompson_sampling', 'ucb1', or 'epsilon_greedy'")
+    n_rounds: int = Field(default=1000, ge=10, le=50000, description="Number of simulation rounds")
+    epsilon: Optional[float] = Field(default=0.10, ge=0.01, le=0.50, description="Exploration rate for epsilon")
+
+
+class NBARecommendationRequest(BaseModel):
+    customer_id: Optional[str] = Field(default=None, description="Optional customer ID to personalize")
+    age: Optional[int] = Field(default=None, ge=18, le=100)
+    gender: Optional[str] = Field(default=None)
+    category: Optional[str] = Field(default=None)
+    estimated_aov: float = Field(default=250.0, gt=0.0, description="Estimated average order value")
+    gross_margin_pct: float = Field(default=0.45, ge=0.05, le=0.95, description="Expected gross margin percentage")
+    recent_touches_count: int = Field(default=1, ge=0, description="Number of recent marketing contacts")
+
+
+class UpliftCampaignRequest(BaseModel):
+    campaign_budget: float = Field(default=10000.0, gt=0.0, description="Total campaign budget")
+    incentive_cost_per_touch: float = Field(default=8.0, gt=0.0, description="Unit cost per incentive touch")
+    avg_basket_value: float = Field(default=350.0, gt=0.0, description="Average order value")
+    gross_margin_pct: float = Field(default=0.45, ge=0.10, le=0.90, description="Gross margin percentage")
+
+
+class MonteCarloStressRequest(BaseModel):
+    n_simulations: int = Field(default=5000, ge=100, le=20000, description="Number of Monte Carlo paths")
+    demand_shock_mean_pct: float = Field(default=-0.10, ge=-0.50, le=0.20, description="Mean demand shock percentage")
+    demand_shock_std_pct: float = Field(default=0.08, ge=0.01, le=0.30, description="Standard deviation of demand")
+    cogs_inflation_mean_pct: float = Field(default=0.06, ge=-0.10, le=0.30, description="Mean supplier price inflation")
+    cogs_inflation_std_pct: float = Field(default=0.04, ge=0.01, le=0.20, description="Standard deviation of inflation")
+    dpo_contraction_days: float = Field(default=5.0, ge=0.0, le=30.0, description="Days supplier terms are compressed")
+    initial_cash_buffer: float = Field(default=60000.0, gt=0.0, description="Starting treasury cash reserves")
+
+
+class WorkingCapitalOptimizationRequest(BaseModel):
+    dio_reduction_days: float = Field(default=12.0, ge=0.0, le=60.0, description="DIO days reduction")
+    dpo_extension_days: float = Field(default=10.0, ge=0.0, le=45.0, description="DPO supplier credit extension")
+    dso_reduction_days: float = Field(default=1.0, ge=0.0, le=15.0, description="DSO settlement acceleration")
+    short_term_borrowing_rate_pct: float = Field(default=7.5, ge=0.0, le=30.0, description="Annual credit borrowing rate")
+
 def get_analytics() -> RetailAnalyticsEngine:
     global analytics_engine
     if analytics_engine is None:
@@ -397,6 +458,27 @@ def get_cohort_retention() -> CohortRetentionSurvivalEngine:
     if cohort_engine is None:
         cohort_engine = CohortRetentionSurvivalEngine()
     return cohort_engine
+
+
+def get_pricing() -> DynamicPricingEngine:
+    global pricing_engine
+    if pricing_engine is None:
+        pricing_engine = DynamicPricingEngine()
+    return pricing_engine
+
+
+def get_nba() -> NextBestActionEngine:
+    global nba_engine
+    if nba_engine is None:
+        nba_engine = NextBestActionEngine()
+    return nba_engine
+
+
+def get_financial_risk() -> FinancialRiskStressEngine:
+    global financial_risk_engine
+    if financial_risk_engine is None:
+        financial_risk_engine = FinancialRiskStressEngine()
+    return financial_risk_engine
 
 
 # --- ROOT & HEALTH ---
@@ -1197,3 +1279,198 @@ def calculate_retention_campaign_roi_endpoint(payload: RetentionCampaignRequest)
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+# --- DAY 13 REST ENDPOINTS: DYNAMIC PRICING, CAUSAL UPLIFT & FINANCIAL RISK ---
+@app.get("/api/v1/pricing/bandit/summary", tags=["Dynamic Pricing & Multi-Armed Bandit"])
+def get_pricing_bandit_summary_endpoint() -> Dict[str, Any]:
+    """Returns candidate price arms, conversion probabilities, and theoretical oracle price points."""
+    try:
+        engine = get_pricing()
+        return engine.get_candidate_arms()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/pricing/quote", tags=["Dynamic Pricing & Multi-Armed Bandit"])
+def get_dynamic_price_quote_endpoint(payload: DynamicQuoteRequest) -> Dict[str, Any]:
+    """Computes real-time dynamic pricing quote with demand surge, inventory scarcity multiplier, and price guardrails."""
+    try:
+        engine = get_pricing()
+        return engine.calculate_dynamic_quote(
+            category=payload.category,
+            base_price=payload.base_price,
+            current_stock=payload.current_stock,
+            safety_stock=payload.safety_stock or 25,
+            demand_velocity_ratio=payload.demand_velocity_ratio or 1.0,
+            competitor_price=payload.competitor_price,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/pricing/simulate-stream", tags=["Dynamic Pricing & Multi-Armed Bandit"])
+def simulate_pricing_stream_endpoint(payload: BanditSimulationRequest) -> Dict[str, Any]:
+    """Simulates multi-period customer transactions comparing Thompson Sampling, UCB1, or Epsilon-Greedy vs static baseline."""
+    try:
+        engine = get_pricing()
+        return engine.simulate_bandit_learning(
+            category=payload.category,
+            algorithm=payload.algorithm,
+            n_rounds=payload.n_rounds,
+            epsilon=payload.epsilon or 0.10,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/pricing/arms", tags=["Dynamic Pricing & Multi-Armed Bandit"])
+def get_pricing_arms_endpoint(
+    category: Optional[str] = Query(None, description="Optional category filter: Beauty, Clothing, or Electronics"),
+) -> Dict[str, Any]:
+    """Returns candidate price arms and parameters for all or a specific category."""
+    try:
+        engine = get_pricing()
+        arms_data = engine.get_candidate_arms()
+        if category:
+            if category not in arms_data["categories"]:
+                raise ValueError(f"Category '{category}' not found in candidate arms catalog.")
+            return {"category": category, "details": arms_data["categories"][category]}
+        return arms_data
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/uplift/summary", tags=["Causal Uplift & Next-Best-Action"])
+def get_uplift_summary_endpoint() -> Dict[str, Any]:
+    """Summarizes the 4 causal uplift response quadrants (Persuadables, Sure Things, Lost Causes, Sleeping Dogs)."""
+    try:
+        engine = get_nba()
+        return engine.get_uplift_summary()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/uplift/customer/{customer_id}", tags=["Causal Uplift & Next-Best-Action"])
+def get_customer_uplift_profile_endpoint(customer_id: str) -> Dict[str, Any]:
+    """Retrieves individualized causal uplift score, individual treatment effect tau, and quadrant classification."""
+    try:
+        engine = get_nba()
+        return engine.get_customer_uplift_profile(customer_id=customer_id)
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/uplift/nba/recommend", tags=["Causal Uplift & Next-Best-Action"])
+def recommend_next_best_action_endpoint(payload: NBARecommendationRequest) -> Dict[str, Any]:
+    """Ranks and recommends the optimal Next-Best-Action maximizing net utility after channel fatigue and cannibalization."""
+    try:
+        engine = get_nba()
+        return engine.recommend_next_best_action(
+            customer_id=payload.customer_id,
+            age=payload.age,
+            gender=payload.gender,
+            category=payload.category,
+            estimated_aov=payload.estimated_aov,
+            gross_margin_pct=payload.gross_margin_pct,
+            recent_touches_count=payload.recent_touches_count,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/uplift/campaign/optimize", tags=["Causal Uplift & Next-Best-Action"])
+def optimize_campaign_budget_endpoint(payload: UpliftCampaignRequest) -> Dict[str, Any]:
+    """Benchmarks Mass Marketing vs Naive Propensity Targeting vs Causal Uplift Targeting."""
+    try:
+        engine = get_nba()
+        return engine.optimize_campaign_budget(
+            campaign_budget=payload.campaign_budget,
+            incentive_cost_per_touch=payload.incentive_cost_per_touch,
+            avg_basket_value=payload.avg_basket_value,
+            gross_margin_pct=payload.gross_margin_pct,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/finance/ccc/summary", tags=["Working Capital & Financial Stress Testing"])
+def get_cash_conversion_cycle_endpoint() -> Dict[str, Any]:
+    """Calculates storewide and merchandise category Cash Conversion Cycle (DIO, DSO, DPO, CCC)."""
+    try:
+        engine = get_financial_risk()
+        return engine.calculate_cash_conversion_cycle()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/finance/stress-test", tags=["Working Capital & Financial Stress Testing"])
+def run_monte_carlo_stress_test_endpoint(payload: MonteCarloStressRequest) -> Dict[str, Any]:
+    """Simulates 10,000 forward-looking macroeconomic stress scenarios, calculating VaR 95/99, CVaR, and solvency runway."""
+    try:
+        engine = get_financial_risk()
+        return engine.run_monte_carlo_stress_test(
+            n_simulations=payload.n_simulations,
+            demand_shock_mean_pct=payload.demand_shock_mean_pct,
+            demand_shock_std_pct=payload.demand_shock_std_pct,
+            cogs_inflation_mean_pct=payload.cogs_inflation_mean_pct,
+            cogs_inflation_std_pct=payload.cogs_inflation_std_pct,
+            dpo_contraction_days=payload.dpo_contraction_days,
+            initial_cash_buffer=payload.initial_cash_buffer,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/finance/working-capital/simulate", tags=["Working Capital & Financial Stress Testing"])
+def simulate_working_capital_optimization_endpoint(payload: WorkingCapitalOptimizationRequest) -> Dict[str, Any]:
+    """Simulates permanent liquidity unlocked and borrowing interest saved via DIO, DPO, and DSO rebalancing."""
+    try:
+        engine = get_financial_risk()
+        return engine.simulate_working_capital_optimization(
+            dio_reduction_days=payload.dio_reduction_days,
+            dpo_extension_days=payload.dpo_extension_days,
+            dso_reduction_days=payload.dso_reduction_days,
+            short_term_borrowing_rate_pct=payload.short_term_borrowing_rate_pct,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/finance/liquidity-runway", tags=["Working Capital & Financial Stress Testing"])
+def get_liquidity_runway_baseline_endpoint(
+    initial_cash_buffer: float = Query(60000.0, gt=0.0, description="Starting cash buffer in dollars"),
+) -> Dict[str, Any]:
+    """Calculates baseline liquidity runway and risk profile under normal operational variance."""
+    try:
+        engine = get_financial_risk()
+        return engine.run_monte_carlo_stress_test(
+            n_simulations=1000,
+            demand_shock_mean_pct=-0.05,
+            demand_shock_std_pct=0.04,
+            cogs_inflation_mean_pct=0.03,
+            cogs_inflation_std_pct=0.02,
+            dpo_contraction_days=0.0,
+            initial_cash_buffer=initial_cash_buffer,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
