@@ -45,6 +45,10 @@ from .utils import (
     compute_day14_distributional_uplift_matrix,
     verify_day14_comparative_integrity,
     plot_day14_before_after_comparative_audit,
+    export_clean_dataset_and_metadata,
+    build_enterprise_data_dictionary,
+    verify_day15_export_and_roundtrip_integrity,
+    plot_day15_export_roundtrip_and_dictionary,
 )
 
 __all__ = [
@@ -90,4 +94,8 @@ __all__ = [
     'compute_day14_distributional_uplift_matrix',
     'verify_day14_comparative_integrity',
     'plot_day14_before_after_comparative_audit',
+    'export_clean_dataset_and_metadata',
+    'build_enterprise_data_dictionary',
+    'verify_day15_export_and_roundtrip_integrity',
+    'plot_day15_export_roundtrip_and_dictionary',
 ]
