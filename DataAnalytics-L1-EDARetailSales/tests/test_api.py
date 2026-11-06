@@ -818,3 +818,194 @@ def test_liquidity_runway_baseline_endpoint(test_client):
     data = response.json()
     assert "liquidity_and_solvency" in data
 
+
+# ============================================================================
+# DAY 14: OMNICHANNEL FULFILLMENT, GEOSPATIAL GRAVITY & RETURN FRAUD FORENSICS
+# ============================================================================
+
+
+def test_fulfillment_network_endpoint(test_client):
+    """GET /api/v1/fulfillment/network returns network topology."""
+    response = test_client.get("/api/v1/fulfillment/network")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_nodes"] == 6
+    assert "nodes_catalog" in data
+    assert "carrier_zones_rate_card" in data
+
+
+def test_route_order_endpoint(test_client):
+    """POST /api/v1/fulfillment/route-order routes single order."""
+    payload = {
+        "category": "Clothing",
+        "quantity": 2,
+        "price_per_unit": 50.0,
+        "destination_zone": 2,
+        "channel_preference": "BOPIS",
+        "expedited": False,
+    }
+    response = test_client.post("/api/v1/fulfillment/route-order", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["optimal_fulfillment"]["channel"] == "BOPIS"
+    assert data["optimal_fulfillment"]["total_fulfillment_cost"] == 1.50
+    assert "cost_breakdown" in data
+
+
+def test_route_order_validation_error(test_client):
+    """POST /api/v1/fulfillment/route-order returns 422 on invalid category."""
+    payload = {
+        "category": "InvalidCat",
+        "quantity": 1,
+        "price_per_unit": 50.0,
+        "destination_zone": 1,
+    }
+    response = test_client.post("/api/v1/fulfillment/route-order", json=payload)
+    assert response.status_code == 422
+
+
+def test_simulate_network_fulfillment_endpoint(test_client):
+    """POST /api/v1/fulfillment/simulate runs multi-channel simulation."""
+    payload = {
+        "bopis_adoption_rate": 0.20,
+        "sfs_allocation_rate": 0.30,
+        "expedited_share_rate": 0.10,
+    }
+    response = test_client.post("/api/v1/fulfillment/simulate", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert data["simulation_parameters"]["total_orders_simulated"] == 1000
+    assert "financial_summary" in data
+    assert "operational_metrics" in data
+
+
+def test_delivery_tradeoff_endpoint(test_client):
+    """POST /api/v1/fulfillment/delivery-tradeoff evaluates SLA tiers."""
+    payload = {
+        "order_value": 300.0,
+        "category": "Electronics",
+        "destination_zone": 3,
+    }
+    response = test_client.post("/api/v1/fulfillment/delivery-tradeoff", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["sla_tiers"]) == 3
+
+
+def test_fulfillment_esg_carbon_endpoint(test_client):
+    """GET /api/v1/fulfillment/esg-carbon returns Scope 3 carbon audit."""
+    response = test_client.get("/api/v1/fulfillment/esg-carbon")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["storewide_scope3_carbon_kg"] > 0
+    assert "green_logistics_initiatives" in data
+
+
+def test_geospatial_network_endpoint(test_client):
+    """GET /api/v1/geospatial/network returns store nodes and tracts."""
+    response = test_client.get("/api/v1/geospatial/network")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_active_stores"] == 3
+    assert data["total_demand_tracts"] == 10
+
+
+def test_huff_market_shares_endpoint(test_client):
+    """GET /api/v1/geospatial/huff-shares returns Huff gravity shares."""
+    response = test_client.get("/api/v1/geospatial/huff-shares?beta=1.75&lambda_param=1.0")
+    assert response.status_code == 200
+    data = response.json()
+    assert "store_market_shares" in data
+    assert "STORE_A_MANHATTAN" in data["store_market_shares"]
+
+
+def test_store_catchment_endpoint(test_client):
+    """GET /api/v1/geospatial/catchment/{store_id} returns trade zones."""
+    response = test_client.get("/api/v1/geospatial/catchment/STORE_A_MANHATTAN")
+    assert response.status_code == 200
+    data = response.json()
+    assert "primary_trade_area_60pct" in data
+    assert "secondary_trade_area_80pct" in data
+
+
+def test_store_catchment_not_found(test_client):
+    """GET /api/v1/geospatial/catchment/{store_id} returns 422 for invalid store."""
+    response = test_client.get("/api/v1/geospatial/catchment/STORE_NONEXISTENT")
+    assert response.status_code == 422
+
+
+def test_analyze_store_cannibalization_endpoint(test_client):
+    """POST /api/v1/geospatial/cannibalization simulates candidate store."""
+    payload = {
+        "new_store_name": "Brooklyn Heights Expansion",
+        "new_store_lat": 40.6960,
+        "new_store_lon": -73.9933,
+        "new_store_sqft": 30000.0,
+        "new_store_attractiveness": 85.0,
+        "beta": 1.75,
+    }
+    response = test_client.post("/api/v1/geospatial/cannibalization", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "financial_impact_summary" in data
+    assert "pairwise_cannibalization_breakdown" in data
+
+
+def test_evaluate_expansion_candidates_endpoint(test_client):
+    """GET /api/v1/geospatial/expansion-candidates ranks candidate sites."""
+    response = test_client.get("/api/v1/geospatial/expansion-candidates")
+    assert response.status_code == 200
+    data = response.json()
+    assert len(data["ranked_expansion_sites"]) == 3
+
+
+def test_benford_law_analysis_endpoint(test_client):
+    """GET /api/v1/fraud/benford-analysis returns Benford test."""
+    response = test_client.get("/api/v1/fraud/benford-analysis?target_column=Total Amount")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["target_column"] == "Total Amount"
+    assert "chi_square_statistic" in data
+    assert len(data["benford_distribution_table"]) == 9
+
+
+def test_return_fraud_summary_endpoint(test_client):
+    """GET /api/v1/fraud/return-summary returns storewide returns profile."""
+    response = test_client.get("/api/v1/fraud/return-summary")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["total_transactions"] == 1000
+    assert "wardrobing_fraud" in data
+    assert "archetype_distribution" in data
+
+
+def test_customer_return_risk_endpoint(test_client):
+    """GET /api/v1/fraud/customer/{customer_id} evaluates customer return risk."""
+    response = test_client.get("/api/v1/fraud/customer/CUST001")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["customer_id"] == "CUST001"
+    assert "composite_abuse_risk_score" in data
+    assert "authorization_protocol" in data
+
+
+def test_customer_return_risk_not_found(test_client):
+    """GET /api/v1/fraud/customer/{customer_id} returns 422 for unknown customer."""
+    response = test_client.get("/api/v1/fraud/customer/CUST99999")
+    assert response.status_code == 422
+
+
+def test_simulate_return_policy_endpoint(test_client):
+    """POST /api/v1/fraud/policy-simulate models policy tightening."""
+    payload = {
+        "restocking_fee_pct": 0.10,
+        "return_window_days": 14,
+        "credit_only_for_high_risk": True,
+    }
+    response = test_client.post("/api/v1/fraud/policy-simulate", json=payload)
+    assert response.status_code == 200
+    data = response.json()
+    assert "financial_impact" in data
+    assert data["financial_impact"]["net_annual_profit_uplift_usd"] > 0
+
+

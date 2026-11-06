@@ -38,6 +38,9 @@ from src.cohort_retention import CohortRetentionSurvivalEngine
 from src.dynamic_pricing import DynamicPricingEngine
 from src.next_best_action import NextBestActionEngine
 from src.financial_risk import FinancialRiskStressEngine
+from src.omnichannel_fulfillment import OmnichannelFulfillmentEngine
+from src.geospatial_gravity import GeospatialGravityEngine
+from src.return_fraud_anomaly import ReturnFraudAnomalyEngine
 
 st.set_page_config(
     page_title="Retail Sales Analytics & Predictive Intelligence Suite",
@@ -68,10 +71,13 @@ def load_engines():
     dynamic_pricing = DynamicPricingEngine()
     nba = NextBestActionEngine()
     financial_stress = FinancialRiskStressEngine()
+    fulfillment = OmnichannelFulfillmentEngine()
+    geospatial = GeospatialGravityEngine()
+    return_fraud = ReturnFraudAnomalyEngine()
     return (
         analytics, ml, drift, segmentation, sim, elasticity, ab_test, clv,
         inventory, market_basket, forecasting, attribution, gmroi, cohort_retention,
-        dynamic_pricing, nba, financial_stress
+        dynamic_pricing, nba, financial_stress, fulfillment, geospatial, return_fraud
     )
 
 
@@ -79,7 +85,7 @@ def load_engines():
     analytics, ml, drift_engine, segmentation_engine, sim_engine, elasticity_engine,
     ab_engine, clv_engine, inventory_engine, market_basket_engine, forecasting_engine,
     attribution_engine, gmroi_engine, cohort_engine, dynamic_pricing_engine, nba_engine,
-    financial_engine
+    financial_engine, fulfillment_engine, geospatial_engine, return_fraud_engine
 ) = load_engines()
 df = analytics.df
 
@@ -186,6 +192,9 @@ st.sidebar.info(
     tab_dynamic_pricing,
     tab_nba,
     tab_finance,
+    tab_fulfillment,
+    tab_geospatial,
+    tab_fraud,
     tab_recs,
 ) = st.tabs(
     [
@@ -210,6 +219,9 @@ st.sidebar.info(
         "🎯 Dynamic Bandit Pricing",
         "🎯 Causal Uplift & NBA",
         "🏦 Working Capital & Stress Test",
+        "🚚 Omnichannel Fulfillment",
+        "🗺️ Geospatial Catchment",
+        "🛡️ Return Fraud & Benford",
         "📋 Strategic Action Plan",
     ]
 )
@@ -1549,7 +1561,155 @@ with tab_finance:
         st.metric("Annual Credit Interest Saved", f"${rebal_sim['optimized_outcomes']['annual_borrowing_interest_savings']:,.2f}")
 
 
-# ----------------- TAB 22: STRATEGIC ACTION PLAN -----------------
+# ----------------- TAB 22: OMNICHANNEL FULFILLMENT -----------------
+with tab_fulfillment:
+    st.subheader("🚚 Omnichannel Order Fulfillment Routing & Micro-Fulfillment Unit Economics")
+    st.markdown(
+        "Evaluate distributed multi-node order fulfillment routing across Central Distribution Centers (CDC), "
+        "Regional DCs, Ship-from-Store (SFS), and Buy-Online-Pick-Up-In-Store (BOPIS) while optimizing margin preservation and Scope 3 carbon."
+    )
+
+    ful_sim = fulfillment_engine.simulate_network_fulfillment_demand()
+    fin_f = ful_sim["financial_summary"]
+    op_f = ful_sim["operational_metrics"]
+
+    fk1, fk2, fk3, fk4 = st.columns(4)
+    with fk1:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>${fin_f['total_fulfillment_expenditure_usd']:,.0f}</div><div class='metric-lbl'>Total Fulfillment Cost</div></div>", unsafe_allow_html=True)
+    with fk2:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>${fin_f['average_cost_per_order_usd']:.2f}</div><div class='metric-lbl'>Avg Cost / Order</div></div>", unsafe_allow_html=True)
+    with fk3:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>${fin_f['cost_savings_vs_naive_central_dc_usd']:,.0f}</div><div class='metric-lbl'>Cost Saved vs All-CDC</div></div>", unsafe_allow_html=True)
+    with fk4:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>{op_f['carbon_emissions_avoided_tonnes_co2e']:.2f} t</div><div class='metric-lbl'>CO2e Avoided</div></div>", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("##### ⚡ Interactive Delivery Promise SLA Sandbox")
+    sc1, sc2, sc3 = st.columns(3)
+    with sc1:
+        sla_cat = st.selectbox("Product Category", ["Beauty", "Clothing", "Electronics"], index=2, key="sla_cat_sel")
+    with sc2:
+        sla_val = st.number_input("Basket Order Value ($)", min_value=25.0, max_value=2000.0, value=300.0, step=25.0, key="sla_val_inp")
+    with sc3:
+        sla_zone = st.slider("Destination Delivery Zone", min_value=1, max_value=5, value=3, key="sla_zone_sld")
+
+    sla_res = fulfillment_engine.optimize_delivery_promise_tradeoff(order_value=sla_val, category=sla_cat, destination_zone=sla_zone)
+    sla_df = pd.DataFrame(sla_res["sla_tiers"])
+    st.dataframe(sla_df[["tier_name", "transit_days", "fulfillment_cost_usd", "net_margin_usd", "carbon_kg"]].rename(columns={
+        "tier_name": "Delivery SLA Tier",
+        "transit_days": "Transit Days",
+        "fulfillment_cost_usd": "Fulfillment Cost ($)",
+        "net_margin_usd": "Net Margin ($)",
+        "carbon_kg": "Carbon (kg CO2e)",
+    }), use_container_width=True)
+
+    st.info(f"💡 **Strategic SLA Policy:** {sla_res['strategic_recommendation']}")
+
+# ----------------- TAB 23: GEOSPATIAL GRAVITY -----------------
+with tab_geospatial:
+    st.subheader("🗺️ Geospatial Catchment, Huff Gravity Trade Area & Store Cannibalization")
+    st.markdown(
+        "Model retail trade area shopping attraction via Huff's Gravity Formulation, "
+        "analyze catchment hierarchy (Primary 60%, Secondary 80%), and forecast candidate store cannibalization leakage."
+    )
+
+    huff_data = geospatial_engine.compute_huff_market_shares()
+    shares_dict = huff_data["store_market_shares"]
+
+    gk1, gk2, gk3 = st.columns(3)
+    with gk1:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>${shares_dict['STORE_A_MANHATTAN']['captured_market_spend_millions']:.1f}M</div><div class='metric-lbl'>Flagship Manhattan ({shares_dict['STORE_A_MANHATTAN']['market_share_pct']}%)</div></div>", unsafe_allow_html=True)
+    with gk2:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>${shares_dict['STORE_B_WHITE_PLAINS']['captured_market_spend_millions']:.1f}M</div><div class='metric-lbl'>Suburban White Plains ({shares_dict['STORE_B_WHITE_PLAINS']['market_share_pct']}%)</div></div>", unsafe_allow_html=True)
+    with gk3:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>${shares_dict['STORE_C_JERSEY_CITY']['captured_market_spend_millions']:.1f}M</div><div class='metric-lbl'>Metro Jersey City ({shares_dict['STORE_C_JERSEY_CITY']['market_share_pct']}%)</div></div>", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("##### 🏢 Retail Store Expansion & Cannibalization Forecaster")
+    can1, can2, can3, can4 = st.columns(4)
+    with can1:
+        cand_name = st.text_input("Candidate Store Location", value="Brooklyn Heights Hub", key="cand_name_inp")
+    with can2:
+        cand_sqft = st.number_input("Retail Floor Space (sq.ft)", min_value=5000.0, max_value=100000.0, value=30000.0, step=2500.0, key="cand_sqft_inp")
+    with can3:
+        cand_attract = st.slider("Store Attractiveness Score", min_value=50.0, max_value=100.0, value=85.0, step=1.0, key="cand_attr_sld")
+    with can4:
+        cand_beta = st.slider("Distance Friction (Beta)", min_value=1.0, max_value=3.0, value=1.75, step=0.05, key="cand_beta_sld")
+
+    cand_sim = geospatial_engine.analyze_store_cannibalization(
+        new_store_name=cand_name,
+        new_store_lat=40.6960,
+        new_store_lon=-73.9933,
+        new_store_sqft=cand_sqft,
+        new_store_attractiveness=cand_attract,
+        beta=cand_beta,
+    )
+    c_fin = cand_sim["financial_impact_summary"]
+
+    cr1, cr2, cr3, cr4 = st.columns(4)
+    with cr1:
+        st.metric("New Store Gross Sales", f"${c_fin['new_store_gross_projected_millions']:.2f}M")
+    with cr2:
+        st.metric("Sister Stores Cannibalized", f"${c_fin['sister_stores_cannibalized_millions']:.2f}M")
+    with cr3:
+        st.metric("Net Incremental Revenue", f"${c_fin['net_incremental_expansion_revenue_millions']:.2f}M")
+    with cr4:
+        st.metric("Cannibalization Ratio", f"{c_fin['cannibalization_ratio_pct']:.1f}%")
+
+    st.info(f"📍 **Expansion Recommendation:** {c_fin['strategic_recommendation']}")
+
+# ----------------- TAB 24: RETURN FRAUD & BENFORD FORENSICS -----------------
+with tab_fraud:
+    st.subheader("🛡️ Retail Return Fraud Forensics, Wardrobing Abuse & Benford Digital Surveillance")
+    st.markdown(
+        "Detect transaction tampering via Benford's First-Digit Law Goodness-of-Fit, "
+        "profile wardrobing and serial returner abuse, and simulate policy interventions to maximize net margin recovery."
+    )
+
+    benford = return_fraud_engine.run_benford_law_analysis("Total Amount")
+    fraud_cohorts = return_fraud_engine.profile_return_fraud_cohorts()
+    wardrobe = fraud_cohorts["wardrobing_fraud"]
+
+    rk1, rk2, rk3, rk4 = st.columns(4)
+    with rk1:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>{benford['nigrini_conformity_status']}</div><div class='metric-lbl'>Benford Conformity (MAD: {benford['mean_absolute_deviation_mad']:.4f})</div></div>", unsafe_allow_html=True)
+    with rk2:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>{fraud_cohorts['overall_dollar_return_rate_pct']:.1f}%</div><div class='metric-lbl'>Dollar Return Rate (${fraud_cohorts['total_returned_value_usd']:,.0f})</div></div>", unsafe_allow_html=True)
+    with rk3:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>${wardrobe['dollar_loss_usd']:,.0f}</div><div class='metric-lbl'>Wardrobing Fraud Losses</div></div>", unsafe_allow_html=True)
+    with rk4:
+        st.markdown(f"<div class='metric-card'><div class='metric-val'>{wardrobe['incident_count']}</div><div class='metric-lbl'>Wardrobing Incidents</div></div>", unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("##### ⚖️ Return Policy Intervention Simulator")
+    pol1, pol2, pol3 = st.columns(3)
+    with pol1:
+        sel_fee = st.slider("Restocking Fee (%)", min_value=0.0, max_value=25.0, value=10.0, step=2.5, key="pol_fee_sld") / 100.0
+    with pol2:
+        sel_win = st.selectbox("Return Window Policy", [7, 14, 21, 30, 45, 60], index=1, key="pol_win_sel")
+    with pol3:
+        sel_credit = st.checkbox("Mandate Store Credit Only for High-Risk Shoppers", value=True, key="pol_cred_chk")
+
+    pol_res = return_fraud_engine.simulate_policy_intervention(
+        restocking_fee_pct=sel_fee,
+        return_window_days=sel_win,
+        credit_only_for_high_risk=sel_credit,
+    )
+    pol_fin = pol_res["financial_impact"]
+
+    pf1, pf2, pf3, pf4 = st.columns(4)
+    with pf1:
+        st.metric("Fraud & Wardrobing Prevented", f"+${pol_fin['prevented_fraud_and_wardrobing_usd']:,.0f}")
+    with pf2:
+        st.metric("Restocking Fee Income", f"+${pol_fin['restocking_fee_recovered_income_usd']:,.0f}")
+    with pf3:
+        st.metric("Customer Churn Friction", f"-${pol_fin['customer_friction_churn_cost_usd']:,.0f}")
+    with pf4:
+        st.metric("Net Annual Profit Uplift", f"+${pol_fin['net_annual_profit_uplift_usd']:,.0f}", delta=f"{pol_fin['net_roi_ratio']:.1f}x ROI")
+
+    st.success(f"🎯 **Policy Verdict:** {pol_res['executive_verdict']}")
+
+# ----------------- TAB 25: STRATEGIC ACTION PLAN -----------------
 with tab_recs:
     st.subheader("Strategic Business Action Plan & Projected Financial Return")
     recommendations = BusinessRecommendationEngine.get_strategic_recommendations()

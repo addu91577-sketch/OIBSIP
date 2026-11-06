@@ -51,9 +51,12 @@ This repository contains an **Exploratory Data Analysis (EDA)** on retail sales 
 - [x] **Dynamic Real-Time Pricing & Multi-Armed Bandit (MAB) Rate Optimizer:** Thompson Sampling (Beta-Bernoulli conjugate distributions), UCB1 logarithmic regret bounds, Epsilon-Greedy decay, real-time demand surge & inventory scarcity multipliers, and competitive guardrails (`src/dynamic_pricing.py`) (Day 13)
 - [x] **Causal Uplift Modeling & Next-Best-Action (NBA) Algorithmic Dispatch Engine:** 4-Quadrant causal response partition (*Persuadables*, *Sure Things*, *Lost Causes*, *Sleeping Dogs*), Individual Treatment Effect (ITE $\tau$) estimation, deadweight cannibalization suppression, and net-utility-maximizing multi-channel action rankings (`src/next_best_action.py`) (Day 13)
 - [x] **Retail Cash Flow, Working Capital Cycle & Monte Carlo Financial Risk Stress Testing:** Category and storewide Cash Conversion Cycle (DIO + DSO - DPO = CCC), forward-looking 5,000-scenario Monte Carlo macroeconomic stress simulations, Value at Risk ($VaR_{95}, VaR_{99}$), Conditional Value at Risk ($CVaR_{95}$ Expected Shortfall), and working capital liquidity liberation simulator (`src/financial_risk.py`) (Day 13)
-- [x] **Expanded 22-Tab Executive Streamlit Web Analytics Dashboard:** interactive real-time dynamic pricing sandbox, Multi-Armed Bandit regret exploration testbed, causal uplift quadrant analyzer, Next-Best-Action recommendation engine, and Monte Carlo macroeconomic liquidity stress testing simulator (`src/dashboard.py`) (Day 13)
-- [x] **Automated Pytest Regression Suite (187 Tests):** 187 unit and integration tests passing with 100% pass rate across the full enterprise analytical stack (`tests/`) (Day 13)
-- [x] **Comprehensive Production FastAPI REST Application (62 Routes):** 12 new high-performance endpoints covering candidate pricing arms, dynamic quotes, MAB transaction streaming, causal uplift profiles, Next-Best-Action dispatch, campaign optimization, Cash Conversion Cycle summaries, Monte Carlo stress testing, and working capital liberation (`src/api.py`) (Day 13)
+- [x] **Omnichannel Order Fulfillment Routing & Micro-Fulfillment Unit Economics:** Distributed multi-node order fulfillment routing across Central Distribution Centers (CDC), Regional DCs, Ship-from-Store (SFS), and Buy-Online-Pick-Up-in-Store (BOPIS); split-shipment penalty minimization, delivery SLA margin preservation frontiers, and Scope 3 ESG carbon accounting (`src/omnichannel_fulfillment.py`) (Day 14)
+- [x] **Geospatial Catchment, Huff Gravity Trade Area & Store Cannibalization Engine:** Huff Gravity formulation ($P_{ij} = \frac{S_j^\lambda / d_{ij}^\beta}{\sum S_k^\lambda / d_{ik}^\beta}$) computing customer trade area patronage probabilities across metropolitan census tracts, Primary (60%), Secondary (80%), and Tertiary (95%) trade zone profiling, and sister-store cannibalization leakage vs net incremental expansion revenue (`src/geospatial_gravity.py`) (Day 14)
+- [x] **Retail Return Merchandise Authorization (RMA) Forensics & Benford Anomaly Surveillance:** Benford's First-Digit Law Goodness-of-Fit Pearson Chi-Square ($\chi^2$) and Nigrini Mean Absolute Deviation (MAD) digital conformance testing, forensic customer returner archetype classification (*Legitimate*, *Remorse*, *Opportunistic Wardrober*, *Serial Abuser*), and policy intervention optimization (`src/return_fraud_anomaly.py`) (Day 14)
+- [x] **Expanded 25-Tab Executive Streamlit Web Analytics Dashboard:** interactive omnichannel fulfillment sandbox, delivery SLA margin frontier explorer, Huff gravity catchment analyzer, store expansion cannibalization forecaster, Benford's Law distribution tester, and return policy optimization simulator (`src/dashboard.py`) (Day 14)
+- [x] **Automated Pytest Regression Suite (228 Tests):** 228 unit and integration tests passing with 100% pass rate across the full enterprise analytical stack (`tests/`) (Day 14)
+- [x] **Comprehensive Production FastAPI REST Application (76 Routes):** 14 new high-performance endpoints covering network topology, dynamic order routing, fulfillment simulations, delivery tradeoffs, Scope 3 ESG carbon, geospatial store networks, Huff market shares, catchment trade zones, store cannibalization simulations, expansion site ranking, Benford's Law analysis, store return profiles, customer return abuse scoring, and return policy simulations (`src/api.py`) (Day 14)
 
 ---
 
@@ -669,6 +672,20 @@ The FastAPI service exposes 37 production endpoints documented interactively via
 | **`POST`** | `/api/v1/finance/stress-test` | Working Capital & Financial Stress Testing | Monte Carlo 5,000-scenario macroeconomic stress test (VaR 95/99, CVaR, runway) | `{"stressed_outcomes": {"var_95_cash_flow": -12850.0, "cvar_95_expected_shortfall": -19420.0}}` |
 | **`POST`** | `/api/v1/finance/working-capital/simulate` | Working Capital & Financial Stress Testing | Working capital liberation simulator via DIO reduction and DPO extension | `{"total_permanent_liquidity_unlocked": 16840.0, "annual_borrowing_interest_savings": 1263.0}` |
 | **`GET`** | `/api/v1/finance/liquidity-runway` | Working Capital & Financial Stress Testing | Baseline solvency runway and cash buffer depletion probability | `{"liquidity_and_solvency": {"average_solvency_runway_months": 11.4}}` |
+| **`GET`** | `/api/v1/fulfillment/network` | Omnichannel Fulfillment & Logistics | Fulfillment network topology, node capacities, carrier delivery zones, and unit weights | `{"total_nodes": 6, "distribution_centers": [...]}` |
+| **`POST`** | `/api/v1/fulfillment/route-order` | Omnichannel Fulfillment & Logistics | Evaluates candidate fulfillment routes, pick-pack, carrier freight, and margin preservation | `{"optimal_fulfillment": {"channel": "BOPIS", "total_fulfillment_cost": 1.50}}` |
+| **`POST`** | `/api/v1/fulfillment/simulate` | Omnichannel Fulfillment & Logistics | Simulates multi-channel fulfillment demand over transaction history and Scope 3 carbon | `{"financial_summary": {"cost_savings_vs_naive_central_dc_usd": 4620.0}}` |
+| **`POST`** | `/api/v1/fulfillment/delivery-tradeoff` | Omnichannel Fulfillment & Logistics | Analyzes delivery SLA frontier (Expedited Next-Day vs Standard Ground vs Eco-Consolidated) | `{"sla_tiers": [{"tier_name": "Expedited Next-Day", "transit_days": 1}]}` |
+| **`GET`** | `/api/v1/fulfillment/esg-carbon` | Omnichannel Fulfillment & Logistics | Audits Scope 3 last-mile transportation emissions and green logistics mitigation savings | `{"storewide_scope3_carbon_kg": 1845.0, "green_logistics_initiatives": [...]}` |
+| **`GET`** | `/api/v1/geospatial/network` | Geospatial Gravity & Cannibalization | Store network locations, retail floor space, attractiveness ratings, and demand tracts | `{"total_active_stores": 3, "total_demand_tracts": 10}` |
+| **`GET`** | `/api/v1/geospatial/huff-shares` | Geospatial Gravity & Cannibalization | Store patronage attraction probabilities and market share capture via Huff Gravity model | `{"store_market_shares": {"STORE_A_MANHATTAN": {"market_share_pct": 23.1}}}` |
+| **`GET`** | `/api/v1/geospatial/catchment/{store_id}` | Geospatial Gravity & Cannibalization | Profiles Primary (60%), Secondary (80%), and Tertiary (95%) trade area catchment zones | `{"store_id": "STORE_A_MANHATTAN", "primary_trade_area_60pct": {...}}` |
+| **`POST`** | `/api/v1/geospatial/cannibalization` | Geospatial Gravity & Cannibalization | Simulates introducing a new candidate store, sister store leakage, and net incremental ROI | `{"financial_impact_summary": {"net_incremental_expansion_revenue_millions": 14.3}}` |
+| **`GET`** | `/api/v1/geospatial/expansion-candidates` | Geospatial Gravity & Cannibalization | Evaluates and ranks candidate retail expansion locations by net ROI and spatial efficiency | `{"ranked_expansion_sites": [{"rank": 1, "candidate_name": "..."}]}` |
+| **`GET`** | `/api/v1/fraud/benford-analysis` | Return Fraud & Forensic Surveillance | Benford's First-Digit Law Pearson Chi-Square Goodness-of-Fit and Nigrini MAD status | `{"chi_square_statistic": 11.24, "nigrini_conformity_status": "Close Conformity"}` |
+| **`GET`** | `/api/v1/fraud/return-summary` | Return Fraud & Forensic Surveillance | Storewide returns, wardrobing abuse incidence, dollar losses, and forensic archetypes | `{"overall_dollar_return_rate_pct": 11.8, "wardrobing_fraud": {...}}` |
+| **`GET`** | `/api/v1/fraud/customer/{customer_id}` | Return Fraud & Forensic Surveillance | Composite return abuse score, risk tier, and frontline RMA authorization protocol | `{"customer_id": "CUST001", "composite_abuse_risk_score": 0.12, "risk_tier": "Low Risk"}` |
+| **`POST`** | `/api/v1/fraud/policy-simulate` | Return Fraud & Forensic Surveillance | Simulates financial impact of return policy tightening: fraud mitigated and profit uplift | `{"financial_impact": {"net_annual_profit_uplift_usd": 18920.0}}` |
 
 ---
 
@@ -701,9 +718,9 @@ The dashboard features 22 dedicated analytical tabs:
 
 ---
 
-### 🧪 Automated Pytest Regression Suite (152 Tests Passing — 100% Pass Rate)
+### 🧪 Automated Pytest Regression Suite (228 Tests Passing — 100% Pass Rate)
 
-The project includes an end-to-end automated test suite verifying data hygiene, mathematical invariants, analytical aggregations, ML model accuracy, statistical drift, customer clustering, financial simulations, and API endpoints:
+The project includes an end-to-end automated test suite verifying data hygiene, mathematical invariants, analytical aggregations, ML model accuracy, statistical drift, customer clustering, financial simulations, omnichannel logistics, geospatial gravity, return fraud, and API endpoints:
 
 ```bash
 python -m pytest tests/ -v
@@ -711,36 +728,29 @@ python -m pytest tests/ -v
 
 | Test Module | Coverage Scope | Tests | Status |
 | :--- | :--- | :---: | :---: |
-| **`tests/test_data_integrity.py`** | Raw dataset presence, schema shape (1,000 × 9), zero nulls, unique transaction IDs, age bounds (18–64), discrete price tiers, quantity bounds (1–4), and mathematical invariant ($Total = Qty \times Price$). | 8 | **152 / 152 PASSED** ✅ |
-| **`tests/test_analytics.py`** | Baseline executive KPIs ($456k rev, 1k orders, 2,514 units), descriptive statistics profiles, monthly seasonality (May peak, Sept trough), day-of-week velocity, weekend technology lift, gender symmetry, and Gini precision ($0.6091 \pm 0.001$). | 7 | **152 / 152 PASSED** ✅ |
-| **`tests/test_ml_models.py`** | VIP Whale classifier benchmark metrics ($Acc \ge 85\%, AUC \ge 85\%$), Spend regressor ($R^2 \ge 90\%$), elite VIP inference, budget classification, regression confidence intervals, and bundle discount math (10% and 15%). | 6 | **152 / 152 PASSED** ✅ |
-| **`tests/test_api.py`** | FastAPI `TestClient` verification across root, health, overview, descriptive stats, time-series, demographics, products, pareto, ML inference, drift audits, RFM segments, simulations, elasticity, Bayesian A/B testing, CLV, inventory, market basket, forecasting, attribution, GMROI, and cohort survival endpoints. | 56 | **152 / 152 PASSED** ✅ |
-| **`tests/test_mlops_drift.py`** | Population Stability Index (PSI) calculation, identical distribution zero assertions, critical drift triggers ($PSI \ge 0.25$), Kolmogorov-Smirnov test p-values, categorical TVD, and automated retraining flags. | 5 | **152 / 152 PASSED** ✅ |
-| **`tests/test_segmentation.py`** | Customer RFM feature calculation, Recency bounds, K-Means clustering ($k=4$), silhouette score ($>0.15$), Davies-Bouldin index, and cluster profile completeness. | 3 | **152 / 152 PASSED** ✅ |
-| **`tests/test_simulation.py`** | Financial baseline initialization, bundle expansion revenue and profit uplift, VIP retention repeat lift, unified multi-lever financial simulation, and input boundary validation. | 5 | **152 / 152 PASSED** ✅ |
-| **`tests/test_elasticity_optimization.py`** | Econometric log-log regression slope, arc price elasticity, promotional markdown financial impact, and discrete pricing tier gross margin optimization. | 7 | **152 / 152 PASSED** ✅ |
-| **`tests/test_ab_experimentation.py`** | Welch's t-test, Mann-Whitney U test, two-proportion z/chi-square tests, Bayesian Beta-Binomial conjugate updating, Monte Carlo lift HDI, and power calculation. | 7 | **152 / 152 PASSED** ✅ |
-| **`tests/test_clv_churn.py`** | Transaction recency survival decay function, 4-tier lifecycle churn classification, forward 12-month discounted CLV forecasting, customer equity audit, and VIP early warning triage. | 6 | **152 / 152 PASSED** ✅ |
-| **`tests/test_inventory_supply_chain.py`** | Safety stock calibration, lead-time variance, Reorder Points, EOQ cost minimization, G(k) stockout loss, and ABC-FSN stratification. | 9 | **152 / 152 PASSED** ✅ |
-| **`tests/test_market_basket.py`** | Co-occurrence matrix mining, support-confidence-lift rules, margin-protected combo pairings, and demographic affinity cross-tabulation. | 6 | **152 / 152 PASSED** ✅ |
-| **`tests/test_demand_forecasting.py`** | Daily time-series decomposition, day-of-week seasonality, 80% & 95% conformal bounds, walk-forward holdout metrics, and rolling Z-score anomalies. | 6 | **152 / 152 PASSED** ✅ |
-| **`tests/test_attribution_marketing.py`** | Heuristic attribution models, Markov first-order removal effects, Shapley value attribution, and Markowitz MPT optimal budget allocation. | 5 | **152 / 152 PASSED** ✅ |
-| **`tests/test_gmroi_assortment.py`** | Category GMROI, Margin-Turn 4-Quadrant Strategic Matrix, SKU capital drag diagnostics, and working capital reallocation simulation. | 5 | **152 / 152 PASSED** ✅ |
-| **`tests/test_cohort_retention.py`** | Monthly acquisition cohort triangle, Kaplan-Meier empirical survival, Greenwood 95% CI, demographic log-rank tests, hazard cliffs, and campaign ROI. | 9 | **152 / 152 PASSED** ✅ |
-| **Total Test Suite** | **Comprehensive end-to-end regression validation** | **152** | **100% Pass Rate** 💯 |
-
---- | :--- | :---: | :---: |
-| **`tests/test_data_integrity.py`** | Raw dataset presence, schema shape (1,000 × 9), zero nulls, unique transaction IDs, age bounds (18–64), discrete price tiers, quantity bounds (1–4), and mathematical invariant ($Total = Qty \times Price$). | 8 | **82 / 82 PASSED** ✅ |
-| **`tests/test_analytics.py`** | Baseline executive KPIs ($456k rev, 1k orders, 2,514 units), descriptive statistics profiles, monthly seasonality (May peak, Sept trough), day-of-week velocity, weekend technology lift, gender symmetry, and Gini precision ($0.6091 \pm 0.001$). | 7 | **82 / 82 PASSED** ✅ |
-| **`tests/test_ml_models.py`** | VIP Whale classifier benchmark metrics ($Acc \ge 85\%, AUC \ge 85\%$), Spend regressor ($R^2 \ge 90\%$), elite VIP inference, budget classification, regression confidence intervals, and bundle discount math (10% and 15%). | 6 | **82 / 82 PASSED** ✅ |
-| **`tests/test_api.py`** | FastAPI `TestClient` verification across root, health, overview, descriptive stats, time-series, demographics, products, pareto, ML VIP inference, spend regression, input validation errors (422), bundles, drift audits, RFM segments, what-if simulations, elasticity summary/simulations, Bayesian A/B testing, and CLV endpoints. | 28 | **82 / 82 PASSED** ✅ |
-| **`tests/test_mlops_drift.py`** | Population Stability Index (PSI) calculation, identical distribution zero assertions, critical drift triggers ($PSI \ge 0.25$), Kolmogorov-Smirnov test p-values, categorical TVD, and automated retraining flags. | 5 | **82 / 82 PASSED** ✅ |
-| **`tests/test_segmentation.py`** | Customer RFM feature calculation, Recency bounds, K-Means clustering ($k=4$), silhouette score ($>0.15$), Davies-Bouldin index, and cluster profile completeness. | 3 | **82 / 82 PASSED** ✅ |
-| **`tests/test_simulation.py`** | Financial baseline initialization, bundle expansion revenue and profit uplift, VIP retention repeat lift, unified multi-lever financial simulation, and input boundary validation. | 5 | **82 / 82 PASSED** ✅ |
-| **`tests/test_elasticity_optimization.py`** | Econometric log-log regression slope, arc price elasticity, promotional markdown financial impact, and discrete pricing tier gross margin optimization. | 7 | **82 / 82 PASSED** ✅ |
-| **`tests/test_ab_experimentation.py`** | Welch's t-test, Mann-Whitney U test, two-proportion z/chi-square tests, Bayesian Beta-Binomial conjugate updating, Monte Carlo lift HDI, and power calculation. | 7 | **82 / 82 PASSED** ✅ |
-| **`tests/test_clv_churn.py`** | Transaction recency survival decay function, 4-tier lifecycle churn classification, forward 12-month discounted CLV forecasting, customer equity audit, and VIP early warning triage. | 6 | **82 / 82 PASSED** ✅ |
-| **Total Test Suite** | **Comprehensive end-to-end regression validation** | **82** | **100% Pass Rate** 🏆 |
+| **`tests/test_data_integrity.py`** | Raw dataset presence, schema shape (1,000 × 9), zero nulls, unique transaction IDs, age bounds (18–64), discrete price tiers, quantity bounds (1–4), and mathematical invariant ($Total = Qty \times Price$). | 8 | **228 / 228 PASSED** ✅ |
+| **`tests/test_analytics.py`** | Baseline executive KPIs ($456k rev, 1k orders, 2,514 units), descriptive statistics profiles, monthly seasonality (May peak, Sept trough), day-of-week velocity, weekend technology lift, gender symmetry, and Gini precision ($0.6091 \pm 0.001$). | 7 | **228 / 228 PASSED** ✅ |
+| **`tests/test_ml_models.py`** | VIP Whale classifier benchmark metrics ($Acc \ge 85\%, AUC \ge 85\%$), Spend regressor ($R^2 \ge 90\%$), elite VIP inference, budget classification, regression confidence intervals, and bundle discount math (10% and 15%). | 6 | **228 / 228 PASSED** ✅ |
+| **`tests/test_mlops_drift.py`** | Population Stability Index (PSI) calculation, identical distribution zero assertions, critical drift triggers ($PSI \ge 0.25$), Kolmogorov-Smirnov test p-values, categorical TVD, and automated retraining flags. | 5 | **228 / 228 PASSED** ✅ |
+| **`tests/test_segmentation.py`** | Customer RFM feature calculation, Recency bounds, K-Means clustering ($k=4$), silhouette score ($>0.15$), Davies-Bouldin index, and cluster profile completeness. | 3 | **228 / 228 PASSED** ✅ |
+| **`tests/test_simulation.py`** | Financial baseline initialization, bundle expansion revenue and profit uplift, VIP retention repeat lift, unified multi-lever financial simulation, and input boundary validation. | 5 | **228 / 228 PASSED** ✅ |
+| **`tests/test_elasticity_optimization.py`** | Econometric log-log regression slope, arc price elasticity, promotional markdown financial impact, and discrete pricing tier gross margin optimization. | 7 | **228 / 228 PASSED** ✅ |
+| **`tests/test_ab_experimentation.py`** | Welch's t-test, Mann-Whitney U test, two-proportion z/chi-square tests, Bayesian Beta-Binomial conjugate updating, Monte Carlo lift HDI, and power calculation. | 7 | **228 / 228 PASSED** ✅ |
+| **`tests/test_clv_churn.py`** | Transaction recency survival decay function, 4-tier lifecycle churn classification, forward 12-month discounted CLV forecasting, customer equity audit, and VIP early warning triage. | 6 | **228 / 228 PASSED** ✅ |
+| **`tests/test_inventory_supply_chain.py`** | Safety stock calibration, lead-time variance, Reorder Points, EOQ cost minimization, G(k) stockout loss, and ABC-FSN stratification. | 9 | **228 / 228 PASSED** ✅ |
+| **`tests/test_market_basket.py`** | Co-occurrence matrix mining, support-confidence-lift rules, margin-protected combo pairings, and demographic affinity cross-tabulation. | 7 | **228 / 228 PASSED** ✅ |
+| **`tests/test_demand_forecasting.py`** | Daily time-series decomposition, day-of-week seasonality, 80% & 95% conformal bounds, walk-forward holdout metrics, and rolling Z-score anomalies. | 7 | **228 / 228 PASSED** ✅ |
+| **`tests/test_attribution_marketing.py`** | Heuristic attribution models, Markov first-order removal effects, Shapley value attribution, and Markowitz MPT optimal budget allocation. | 5 | **228 / 228 PASSED** ✅ |
+| **`tests/test_gmroi_assortment.py`** | Category GMROI, Margin-Turn 4-Quadrant Strategic Matrix, SKU capital drag diagnostics, and working capital reallocation simulation. | 5 | **228 / 228 PASSED** ✅ |
+| **`tests/test_cohort_retention.py`** | Monthly acquisition cohort triangle, Kaplan-Meier empirical survival, Greenwood 95% CI, demographic log-rank tests, hazard cliffs, and campaign ROI. | 9 | **228 / 228 PASSED** ✅ |
+| **`tests/test_dynamic_pricing.py`** | Multi-Armed Bandit candidate price arms, Thompson Sampling Beta conjugate learning, UCB1 logarithmic regret bounds, dynamic scarcity quotes, and stream simulation. | 9 | **228 / 228 PASSED** ✅ |
+| **`tests/test_next_best_action.py`** | Causal uplift 4-quadrant assignment, ITE tau calculations, customer uplift profiles, Next-Best-Action net utility maximization, and campaign ROI. | 7 | **228 / 228 PASSED** ✅ |
+| **`tests/test_financial_risk.py`** | Category and storewide Cash Conversion Cycle (DIO, DSO, DPO, CCC), Monte Carlo 5,000-scenario macroeconomic stress testing, VaR/CVaR, and liquidity liberation. | 5 | **228 / 228 PASSED** ✅ |
+| **`tests/test_omnichannel_fulfillment.py`** | Distributed network topology, multi-channel order routing, split-shipment penalties, delivery SLA margin frontiers, and Scope 3 ESG carbon accounting. | 8 | **228 / 228 PASSED** ✅ |
+| **`tests/test_geospatial_gravity.py`** | Haversine distance calculations, Huff Gravity market share probabilities, Primary/Secondary/Tertiary catchment zones, sister store cannibalization, and expansion ranking. | 9 | **228 / 228 PASSED** ✅ |
+| **`tests/test_return_fraud_anomaly.py`** | Benford's First-Digit Law Chi-Square test, Nigrini MAD conformity, RMA customer forensic archetypes, wardrobing abuse scoring, and return policy optimization. | 7 | **228 / 228 PASSED** ✅ |
+| **`tests/test_api.py`** | FastAPI `TestClient` verification across all 76 endpoints covering analytics, ML, drift, segmentation, simulations, elasticity, Bayesian A/B, CLV, inventory, market basket, forecasting, attribution, GMROI, cohort survival, dynamic pricing, causal uplift NBA, financial stress testing, omnichannel fulfillment, geospatial gravity, and return fraud forensics. | 87 | **228 / 228 PASSED** ✅ |
+| **Total Test Suite** | **Comprehensive end-to-end regression validation** | **228** | **100% Pass Rate** 🏆 |
 
 ---
 
@@ -780,7 +790,7 @@ docker-compose up --build
    jupyter notebook retail_sales_eda.ipynb
    ```
 
-4. **Execute Automated Pytest Regression Suite (152 Tests):**
+4. **Execute Automated Pytest Regression Suite (228 Tests):**
    ```bash
    pytest tests/ -v
    ```

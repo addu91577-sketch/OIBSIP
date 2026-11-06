@@ -20,8 +20,11 @@ from src.cohort_retention import CohortRetentionSurvivalEngine
 from src.dynamic_pricing import DynamicPricingEngine
 from src.next_best_action import NextBestActionEngine
 from src.financial_risk import FinancialRiskStressEngine
+from src.omnichannel_fulfillment import OmnichannelFulfillmentEngine
+from src.geospatial_gravity import GeospatialGravityEngine
+from src.return_fraud_anomaly import ReturnFraudAnomalyEngine
 
-__version__ = "1.5.0"
+__version__ = "1.6.0"
 
 __all__ = [
     "RetailAnalyticsEngine",
@@ -44,4 +47,7 @@ __all__ = [
     "DynamicPricingEngine",
     "NextBestActionEngine",
     "FinancialRiskStressEngine",
+    "OmnichannelFulfillmentEngine",
+    "GeospatialGravityEngine",
+    "ReturnFraudAnomalyEngine",
 ]

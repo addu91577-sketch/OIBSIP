@@ -30,6 +30,9 @@ from src.cohort_retention import CohortRetentionSurvivalEngine
 from src.dynamic_pricing import DynamicPricingEngine
 from src.next_best_action import NextBestActionEngine
 from src.financial_risk import FinancialRiskStressEngine
+from src.omnichannel_fulfillment import OmnichannelFulfillmentEngine
+from src.geospatial_gravity import GeospatialGravityEngine
+from src.return_fraud_anomaly import ReturnFraudAnomalyEngine
 
 # Global singletons
 analytics_engine: Optional[RetailAnalyticsEngine] = None
@@ -49,6 +52,9 @@ cohort_engine: Optional[CohortRetentionSurvivalEngine] = None
 pricing_engine: Optional[DynamicPricingEngine] = None
 nba_engine: Optional[NextBestActionEngine] = None
 financial_risk_engine: Optional[FinancialRiskStressEngine] = None
+fulfillment_engine: Optional[OmnichannelFulfillmentEngine] = None
+geospatial_engine: Optional[GeospatialGravityEngine] = None
+return_fraud_engine: Optional[ReturnFraudAnomalyEngine] = None
 
 
 @asynccontextmanager
@@ -59,6 +65,7 @@ async def lifespan(app: FastAPI):
     global inventory_engine, market_basket_engine, forecasting_engine
     global attribution_engine, gmroi_engine, cohort_engine
     global pricing_engine, nba_engine, financial_risk_engine
+    global fulfillment_engine, geospatial_engine, return_fraud_engine
     analytics_engine = RetailAnalyticsEngine()
     ml_manager = RetailMLManager()
     ml_manager.load_or_train_models()
@@ -77,6 +84,9 @@ async def lifespan(app: FastAPI):
     pricing_engine = DynamicPricingEngine()
     nba_engine = NextBestActionEngine()
     financial_risk_engine = FinancialRiskStressEngine()
+    fulfillment_engine = OmnichannelFulfillmentEngine()
+    geospatial_engine = GeospatialGravityEngine()
+    return_fraud_engine = ReturnFraudAnomalyEngine()
     yield
 
 
@@ -361,6 +371,42 @@ class WorkingCapitalOptimizationRequest(BaseModel):
     dso_reduction_days: float = Field(default=1.0, ge=0.0, le=15.0, description="DSO settlement acceleration")
     short_term_borrowing_rate_pct: float = Field(default=7.5, ge=0.0, le=30.0, description="Annual credit borrowing rate")
 
+
+class RouteOrderRequest(BaseModel):
+    category: str = Field(..., description="Product category ('Beauty', 'Clothing', 'Electronics')")
+    quantity: int = Field(default=1, ge=1, le=50, description="Item quantity")
+    price_per_unit: float = Field(..., gt=0.0, description="Price per unit in USD")
+    destination_zone: int = Field(default=2, ge=1, le=5, description="Delivery zone (1-5)")
+    channel_preference: Optional[str] = Field(default=None, description="Preferred channel: BOPIS, SHIP_FROM_STORE, CDC_DIRECT, REGIONAL_DC")
+    expedited: bool = Field(default=False, description="Whether to request expedited delivery")
+
+
+class FulfillmentSimulationRequest(BaseModel):
+    bopis_adoption_rate: float = Field(default=0.25, ge=0.0, le=1.0, description="BOPIS customer pickup adoption rate")
+    sfs_allocation_rate: float = Field(default=0.35, ge=0.0, le=1.0, description="Ship-from-store dispatch allocation rate")
+    expedited_share_rate: float = Field(default=0.15, ge=0.0, le=1.0, description="Expedited delivery order share")
+
+
+class DeliveryTradeoffRequest(BaseModel):
+    order_value: float = Field(default=300.0, gt=0.0, description="Total order basket value")
+    category: str = Field(default="Electronics", description="Product category")
+    destination_zone: int = Field(default=3, ge=1, le=5, description="Delivery zone")
+
+
+class StoreCannibalizationRequest(BaseModel):
+    new_store_name: str = Field(default="Brooklyn Heights Expansion", description="Candidate expansion location name")
+    new_store_lat: float = Field(default=40.6960, description="Candidate store latitude")
+    new_store_lon: float = Field(default=-73.9933, description="Candidate store longitude")
+    new_store_sqft: float = Field(default=30000.0, gt=0.0, description="Store retail floor space in sqft")
+    new_store_attractiveness: float = Field(default=85.0, gt=0.0, description="Store attractiveness score")
+    beta: float = Field(default=1.75, gt=0.0, description="Distance decay friction exponent")
+
+
+class ReturnPolicySimulationRequest(BaseModel):
+    restocking_fee_pct: float = Field(default=0.10, ge=0.0, le=0.30, description="Restocking fee percentage (0.0 to 0.30)")
+    return_window_days: int = Field(default=14, description="Return window days (7, 14, 21, 30, 45, 60)")
+    credit_only_for_high_risk: bool = Field(default=True, description="Enforce store credit only for high-risk accounts")
+
 def get_analytics() -> RetailAnalyticsEngine:
     global analytics_engine
     if analytics_engine is None:
@@ -479,6 +525,27 @@ def get_financial_risk() -> FinancialRiskStressEngine:
     if financial_risk_engine is None:
         financial_risk_engine = FinancialRiskStressEngine()
     return financial_risk_engine
+
+
+def get_fulfillment() -> OmnichannelFulfillmentEngine:
+    global fulfillment_engine
+    if fulfillment_engine is None:
+        fulfillment_engine = OmnichannelFulfillmentEngine()
+    return fulfillment_engine
+
+
+def get_geospatial() -> GeospatialGravityEngine:
+    global geospatial_engine
+    if geospatial_engine is None:
+        geospatial_engine = GeospatialGravityEngine()
+    return geospatial_engine
+
+
+def get_return_fraud() -> ReturnFraudAnomalyEngine:
+    global return_fraud_engine
+    if return_fraud_engine is None:
+        return_fraud_engine = ReturnFraudAnomalyEngine()
+    return return_fraud_engine
 
 
 # --- ROOT & HEALTH ---
@@ -1473,4 +1540,209 @@ def get_liquidity_runway_baseline_endpoint(
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+# ============================================================================
+# DAY 14: OMNICHANNEL FULFILLMENT, GEOSPATIAL GRAVITY & RETURN FRAUD FORENSICS
+# ============================================================================
+
+
+# --- 1. OMNICHANNEL FULFILLMENT & LOGISTICS ---
+@app.get("/api/v1/fulfillment/network", tags=["Omnichannel Fulfillment & Logistics"])
+def get_fulfillment_network_endpoint() -> Dict[str, Any]:
+    """Returns fulfillment network topology, node capacities, carrier delivery zones, and unit weights."""
+    try:
+        engine = get_fulfillment()
+        return engine.get_network_topology()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/fulfillment/route-order", tags=["Omnichannel Fulfillment & Logistics"])
+def route_order_endpoint(payload: RouteOrderRequest) -> Dict[str, Any]:
+    """Calculates optimal node assignment, routing costs, delivery SLA, margin preservation, and carbon emissions."""
+    try:
+        engine = get_fulfillment()
+        return engine.route_order(
+            category=payload.category,
+            quantity=payload.quantity,
+            price_per_unit=payload.price_per_unit,
+            destination_zone=payload.destination_zone,
+            channel_preference=payload.channel_preference,
+            expedited=payload.expedited,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/fulfillment/simulate", tags=["Omnichannel Fulfillment & Logistics"])
+def simulate_network_fulfillment_endpoint(payload: FulfillmentSimulationRequest) -> Dict[str, Any]:
+    """Simulates multi-channel fulfillment demand over transaction history, calculating costs, splits, and Scope 3 carbon."""
+    try:
+        engine = get_fulfillment()
+        return engine.simulate_network_fulfillment_demand(
+            bopis_adoption_rate=payload.bopis_adoption_rate,
+            sfs_allocation_rate=payload.sfs_allocation_rate,
+            expedited_share_rate=payload.expedited_share_rate,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/fulfillment/delivery-tradeoff", tags=["Omnichannel Fulfillment & Logistics"])
+def delivery_promise_tradeoff_endpoint(payload: DeliveryTradeoffRequest) -> Dict[str, Any]:
+    """Evaluates the delivery SLA frontier (Expedited vs Standard vs Eco-Consolidated) and margin preservation."""
+    try:
+        engine = get_fulfillment()
+        return engine.optimize_delivery_promise_tradeoff(
+            order_value=payload.order_value,
+            category=payload.category,
+            destination_zone=payload.destination_zone,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/fulfillment/esg-carbon", tags=["Omnichannel Fulfillment & Logistics"])
+def get_fulfillment_esg_carbon_endpoint() -> Dict[str, Any]:
+    """Audits storewide Scope 3 last-mile transportation emissions and benchmarks ESG green logistics initiatives."""
+    try:
+        engine = get_fulfillment()
+        return engine.calculate_esg_carbon_footprint()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+# --- 2. GEOSPATIAL GRAVITY & STORE CANNIBALIZATION ---
+@app.get("/api/v1/geospatial/network", tags=["Geospatial Gravity & Cannibalization"])
+def get_geospatial_network_endpoint() -> Dict[str, Any]:
+    """Returns store network locations, retail floor space, attractiveness ratings, and demand tract demographics."""
+    try:
+        engine = get_geospatial()
+        return engine.get_network_catalog()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/geospatial/huff-shares", tags=["Geospatial Gravity & Cannibalization"])
+def get_huff_market_shares_endpoint(
+    beta: float = Query(1.75, gt=0.0, description="Distance decay friction exponent"),
+    lambda_param: float = Query(1.0, gt=0.0, description="Store attractiveness elasticity"),
+) -> Dict[str, Any]:
+    """Computes store patronage attraction probabilities and market share capture via Huff Gravity model."""
+    try:
+        engine = get_geospatial()
+        return engine.compute_huff_market_shares(beta=beta, lambda_param=lambda_param)
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/geospatial/catchment/{store_id}", tags=["Geospatial Gravity & Cannibalization"])
+def get_store_catchment_endpoint(
+    store_id: str,
+    beta: float = Query(1.75, gt=0.0, description="Distance decay exponent"),
+) -> Dict[str, Any]:
+    """Profiles Primary (60%), Secondary (80%), and Tertiary (95%) trade area catchment zones for a specific retail store."""
+    try:
+        engine = get_geospatial()
+        return engine.calculate_catchment_trade_areas(store_id=store_id, beta=beta)
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/geospatial/cannibalization", tags=["Geospatial Gravity & Cannibalization"])
+def analyze_store_cannibalization_endpoint(payload: StoreCannibalizationRequest) -> Dict[str, Any]:
+    """Simulates introducing a new store into the retail network, calculating gross revenue, sister store leakage, and net ROI."""
+    try:
+        engine = get_geospatial()
+        return engine.analyze_store_cannibalization(
+            new_store_name=payload.new_store_name,
+            new_store_lat=payload.new_store_lat,
+            new_store_lon=payload.new_store_lon,
+            new_store_sqft=payload.new_store_sqft,
+            new_store_attractiveness=payload.new_store_attractiveness,
+            beta=payload.beta,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/geospatial/expansion-candidates", tags=["Geospatial Gravity & Cannibalization"])
+def evaluate_expansion_candidates_endpoint(
+    beta: float = Query(1.75, gt=0.0, description="Distance decay exponent"),
+) -> Dict[str, Any]:
+    """Evaluates and ranks candidate retail expansion locations by net ROI and cannibalization resistance."""
+    try:
+        engine = get_geospatial()
+        return engine.evaluate_expansion_candidates(beta=beta)
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+# --- 3. RETURN FRAUD & BENFORD DIGITAL SURVEILLANCE ---
+@app.get("/api/v1/fraud/benford-analysis", tags=["Return Fraud & Forensic Surveillance"])
+def get_benford_law_analysis_endpoint(
+    target_column: str = Query("Total Amount", description="Numeric sales or refund column to test"),
+) -> Dict[str, Any]:
+    """Executes Benford's First-Digit Law Pearson Chi-Square Goodness-of-Fit test and Nigrini MAD conformity classification."""
+    try:
+        engine = get_return_fraud()
+        return engine.run_benford_law_analysis(target_column=target_column)
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/fraud/return-summary", tags=["Return Fraud & Forensic Surveillance"])
+def get_return_fraud_summary_endpoint() -> Dict[str, Any]:
+    """Profiles storewide returns, wardrobing abuse incidence, dollar losses, and forensic returner archetypes."""
+    try:
+        engine = get_return_fraud()
+        return engine.profile_return_fraud_cohorts()
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.get("/api/v1/fraud/customer/{customer_id}", tags=["Return Fraud & Forensic Surveillance"])
+def get_customer_return_risk_endpoint(customer_id: str) -> Dict[str, Any]:
+    """Computes composite return abuse score, risk tier, and frontline RMA authorization protocol for a customer."""
+    try:
+        engine = get_return_fraud()
+        return engine.score_customer_return_risk(customer_id=customer_id)
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+
+@app.post("/api/v1/fraud/policy-simulate", tags=["Return Fraud & Forensic Surveillance"])
+def simulate_return_policy_endpoint(payload: ReturnPolicySimulationRequest) -> Dict[str, Any]:
+    """Simulates financial impact of return policy tightening: fraud mitigated, fees collected, and net profit uplift."""
+    try:
+        engine = get_return_fraud()
+        return engine.simulate_policy_intervention(
+            restocking_fee_pct=payload.restocking_fee_pct,
+            return_window_days=payload.return_window_days,
+            credit_only_for_high_risk=payload.credit_only_for_high_risk,
+        )
+    except ValueError as ve:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(ve))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
 
